@@ -1,0 +1,230 @@
+[
+    {
+        "merged": "com.furniture.app-debug-57:/mipmap-hdpi_ic_launcher_round.xml.flat",
+        "source": "com.furniture.app-main-59:/mipmap-hdpi/ic_launcher_round.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/drawable_ic_home.xml.flat",
+        "source": "com.furniture.app-main-59:/drawable/ic_home.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/layout_item_cart.xml.flat",
+        "source": "com.furniture.app-main-59:/layout/item_cart.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/menu_bottom_nav_menu.xml.flat",
+        "source": "com.furniture.app-main-59:/menu/bottom_nav_menu.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/drawable_tab_selector.xml.flat",
+        "source": "com.furniture.app-main-59:/drawable/tab_selector.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/layout_item_chat_receiver.xml.flat",
+        "source": "com.furniture.app-main-59:/layout/item_chat_receiver.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/drawable_ic_plus.xml.flat",
+        "source": "com.furniture.app-main-59:/drawable/ic_plus.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/drawable_ic_search.xml.flat",
+        "source": "com.furniture.app-main-59:/drawable/ic_search.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/drawable_ic_back.xml.flat",
+        "source": "com.furniture.app-main-59:/drawable/ic_back.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/drawable_placeholder_product.xml.flat",
+        "source": "com.furniture.app-main-59:/drawable/placeholder_product.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/layout_dialog_edit_address.xml.flat",
+        "source": "com.furniture.app-main-59:/layout/dialog_edit_address.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/layout_fragment_profile.xml.flat",
+        "source": "com.furniture.app-main-59:/layout/fragment_profile.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/drawable_bg_variant_selected.xml.flat",
+        "source": "com.furniture.app-main-59:/drawable/bg_variant_selected.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/layout_activity_main.xml.flat",
+        "source": "com.furniture.app-main-59:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/mipmap-mdpi_ic_launcher_round.xml.flat",
+        "source": "com.furniture.app-main-59:/mipmap-mdpi/ic_launcher_round.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/drawable_ic_location.xml.flat",
+        "source": "com.furniture.app-main-59:/drawable/ic_location.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/layout_activity_login.xml.flat",
+        "source": "com.furniture.app-main-59:/layout/activity_login.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/layout_activity_edit_profile.xml.flat",
+        "source": "com.furniture.app-main-59:/layout/activity_edit_profile.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/drawable_ic_cart.xml.flat",
+        "source": "com.furniture.app-main-59:/drawable/ic_cart.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/mipmap-hdpi_ic_launcher.xml.flat",
+        "source": "com.furniture.app-main-59:/mipmap-hdpi/ic_launcher.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/layout_fragment_cart.xml.flat",
+        "source": "com.furniture.app-main-59:/layout/fragment_cart.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/layout_item_chat_sender.xml.flat",
+        "source": "com.furniture.app-main-59:/layout/item_chat_sender.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/drawable_bg_chat_input.xml.flat",
+        "source": "com.furniture.app-main-59:/drawable/bg_chat_input.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/mipmap-xhdpi_ic_launcher_round.xml.flat",
+        "source": "com.furniture.app-main-59:/mipmap-xhdpi/ic_launcher_round.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/mipmap-anydpi-v33_ic_launcher.xml.flat",
+        "source": "com.furniture.app-main-59:/mipmap-anydpi-v33/ic_launcher.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/drawable_bg_chat_receiver.xml.flat",
+        "source": "com.furniture.app-main-59:/drawable/bg_chat_receiver.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/layout_activity_product_detail.xml.flat",
+        "source": "com.furniture.app-main-59:/layout/activity_product_detail.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/layout_activity_chat.xml.flat",
+        "source": "com.furniture.app-main-59:/layout/activity_chat.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/drawable_ic_launcher_foreground.xml.flat",
+        "source": "com.furniture.app-main-59:/drawable/ic_launcher_foreground.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/mipmap-mdpi_ic_launcher.xml.flat",
+        "source": "com.furniture.app-main-59:/mipmap-mdpi/ic_launcher.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/layout_item_variant.xml.flat",
+        "source": "com.furniture.app-main-59:/layout/item_variant.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/layout_activity_shop_detail.xml.flat",
+        "source": "com.furniture.app-main-59:/layout/activity_shop_detail.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/layout_fragment_home.xml.flat",
+        "source": "com.furniture.app-main-59:/layout/fragment_home.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/drawable_ic_person.xml.flat",
+        "source": "com.furniture.app-main-59:/drawable/ic_person.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/drawable_ic_minus.xml.flat",
+        "source": "com.furniture.app-main-59:/drawable/ic_minus.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/drawable_ic_profile.xml.flat",
+        "source": "com.furniture.app-main-59:/drawable/ic_profile.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/layout_activity_customer_main.xml.flat",
+        "source": "com.furniture.app-main-59:/layout/activity_customer_main.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/drawable_ic_delete.xml.flat",
+        "source": "com.furniture.app-main-59:/drawable/ic_delete.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/mipmap-xxxhdpi_ic_launcher_round.xml.flat",
+        "source": "com.furniture.app-main-59:/mipmap-xxxhdpi/ic_launcher_round.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/layout_item_product.xml.flat",
+        "source": "com.furniture.app-main-59:/layout/item_product.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/mipmap-xhdpi_ic_launcher.xml.flat",
+        "source": "com.furniture.app-main-59:/mipmap-xhdpi/ic_launcher.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/mipmap-xxhdpi_ic_launcher.xml.flat",
+        "source": "com.furniture.app-main-59:/mipmap-xxhdpi/ic_launcher.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/drawable_bg_chat_sender.xml.flat",
+        "source": "com.furniture.app-main-59:/drawable/bg_chat_sender.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/layout_item_order.xml.flat",
+        "source": "com.furniture.app-main-59:/layout/item_order.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/layout_activity_checkout.xml.flat",
+        "source": "com.furniture.app-main-59:/layout/activity_checkout.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/layout_activity_splash.xml.flat",
+        "source": "com.furniture.app-main-59:/layout/activity_splash.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/mipmap-xxhdpi_ic_launcher_round.xml.flat",
+        "source": "com.furniture.app-main-59:/mipmap-xxhdpi/ic_launcher_round.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/drawable_ic_launcher_background.xml.flat",
+        "source": "com.furniture.app-main-59:/drawable/ic_launcher_background.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/layout_item_image_slider.xml.flat",
+        "source": "com.furniture.app-main-59:/layout/item_image_slider.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/layout_fragment_search.xml.flat",
+        "source": "com.furniture.app-main-59:/layout/fragment_search.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "com.furniture.app-main-59:/mipmap-anydpi-v26/ic_launcher.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/layout_activity_order_history.xml.flat",
+        "source": "com.furniture.app-main-59:/layout/activity_order_history.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/drawable_bg_quantity_button.xml.flat",
+        "source": "com.furniture.app-main-59:/drawable/bg_quantity_button.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/drawable_bg_variant_normal.xml.flat",
+        "source": "com.furniture.app-main-59:/drawable/bg_variant_normal.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/layout_activity_register.xml.flat",
+        "source": "com.furniture.app-main-59:/layout/activity_register.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/mipmap-xxxhdpi_ic_launcher.xml.flat",
+        "source": "com.furniture.app-main-59:/mipmap-xxxhdpi/ic_launcher.xml"
+    },
+    {
+        "merged": "com.furniture.app-debug-57:/layout_item_checkout_product.xml.flat",
+        "source": "com.furniture.app-main-59:/layout/item_checkout_product.xml"
+    }
+]
