@@ -78,7 +78,8 @@ Furniture-Android/
 │           │       └── impl/
 │           └── resources/
 │               ├── application.properties
-│               └── data.sql           ← Seed data (roles, ảnh mẫu)
+│               ├── data.sql           ← Seed data tối giản
+│               └── DataInitializer.java ← Tự động tạo dữ liệu mẫu khi khởi động
 │
 └── android-app/                       ← Android App
     └── app/src/main/
@@ -178,13 +179,26 @@ API Base URL: http://localhost:8080/api
 ===========================================
 ```
 
-#### Bước 4 – Thêm dữ liệu mẫu (tùy chọn)
+#### Bước 4 – Dữ liệu mẫu (tự động)
 
-File `data.sql` sẽ tự chạy khi khởi động và tạo sẵn:
-- 4 vai trò: `CUSTOMER`, `VENDOR`, `ADMIN`, `SHIPPER`
-- Ảnh placeholder cho categories và product variants
+Khi backend khởi động lần đầu, `DataInitializer` sẽ tự động tạo:
 
-Để thêm sản phẩm mẫu, có thể dùng Postman gọi API `POST /api/auth/register` để tạo tài khoản, sau đó dùng MySQL Workbench nhập dữ liệu sản phẩm trực tiếp vào bảng `Products` và `Product_Variants`.
+| Loại | Nội dung |
+|------|----------|
+| Vai trò | CUSTOMER, VENDOR, ADMIN, SHIPPER |
+| Danh mục | 6 danh mục: Phòng khách, Phòng ngủ, Phòng ăn, Phòng làm việc, Ngoài trời, Trang trí |
+| Cửa hàng | "Nội Thất Gia Đình" (1 shop mẫu) |
+| Sản phẩm | 10 sản phẩm nội thất với ảnh và biến thể |
+
+**Tài khoản demo** (mật khẩu đều là `123456`):
+
+| Email | Vai trò | Ghi chú |
+|-------|---------|---------|
+| `customer@furniture.com` | CUSTOMER | Dùng để test mua hàng |
+| `vendor@furniture.com` | VENDOR | Chủ shop "Nội Thất Gia Đình" |
+| `admin@furniture.com` | ADMIN | Tài khoản quản trị |
+
+> Dữ liệu chỉ được tạo **1 lần duy nhất** — các lần khởi động tiếp theo không bị trùng lặp.
 
 ---
 

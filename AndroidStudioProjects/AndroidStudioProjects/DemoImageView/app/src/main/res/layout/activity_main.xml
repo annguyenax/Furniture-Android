@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:baselineAligned="false"
+    android:padding="5dp"
+    tools:context=".MainActivity">
+
+    <!-- Cột bên trái: Danh sách nút bấm -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:padding="5dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:gravity="center"
+            android:text="Chọn Kiểu"
+            android:textColor="#E91E63"
+            android:textStyle="bold" />
+
+        <Button android:id="@+id/button3" android:layout_width="140dp" android:layout_height="wrap_content" android:text="CENTER" android:textSize="11sp" />
+        <Button android:id="@+id/button4" android:layout_width="140dp" android:layout_height="wrap_content" android:text="CENTER_CROP" android:textSize="11sp" />
+        <Button android:id="@+id/button5" android:layout_width="140dp" android:layout_height="wrap_content" android:text="CENTER_INSIDE" android:textSize="11sp" />
+        <Button android:id="@+id/button6" android:layout_width="140dp" android:layout_height="wrap_content" android:text="FIT_CENTER" android:textSize="11sp" />
+        <Button android:id="@+id/button7" android:layout_width="140dp" android:layout_height="wrap_content" android:text="FIT_END" android:textSize="11sp" />
+        <Button android:id="@+id/button8" android:layout_width="140dp" android:layout_height="wrap_content" android:text="FIT_START" android:textSize="11sp" />
+        <Button android:id="@+id/button9" android:layout_width="140dp" android:layout_height="wrap_content" android:text="FIT_XY" android:textSize="11sp" />
+    </LinearLayout>
+
+    <!-- Cột bên phải: ImageView chiếm trọn phần còn lại -->
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="#E0E0E0"
+        android:scaleType="center"
+        tools:srcCompat="@drawable/vitdonnald" />
+
+</LinearLayout>

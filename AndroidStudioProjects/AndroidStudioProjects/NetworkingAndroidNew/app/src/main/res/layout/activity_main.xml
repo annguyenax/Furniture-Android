@@ -1,0 +1,62 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".activity.MainActivity" >
+    <TextView
+        android:id="@+id/txtCityName"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:textSize="30sp"
+        android:gravity="center"
+        android:textStyle="bold"
+        android:text="Hochiminh" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:orientation="horizontal">
+        <EditText
+            android:id="@+id/editTextTextPersonName"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_weight="3"
+            android:ems="10"
+            android:hint="Enter City"
+            android:inputType="textPersonName" />
+        <ImageView
+            android:id="@+id/imgSearch"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_baseline_search_24" />
+    </LinearLayout>
+    <TextView
+        android:id="@+id/txtTemperature"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:gravity="center"
+        android:textSize="80dp"
+        android:textStyle="bold"
+        android:text="28.0°C" />
+    <ImageView
+        android:id="@+id/imgSeasonForecast"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_gravity="center"
+        tools:srcCompat="@tools:sample/avatars" />
+    <TextView
+        android:id="@+id/txtCityTemperature"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:gravity="center"
+        android:textSize="25dp"
+        android:text="28.0°C" />
+    <ListView
+        android:id="@+id/lvWeatherForecast"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="5dp" />
+</LinearLayout>
