@@ -52,6 +52,14 @@ public class ReviewController {
                 ReviewResponse.fromEntity(review, resolveUserName(userId))));
     }
 
+    @GetMapping("/check/{productId}")
+    public ResponseEntity<ApiResponse<Boolean>> hasReviewed(
+            @PathVariable Integer productId, Authentication auth) {
+        Integer userId = Integer.parseInt(auth.getName());
+        boolean reviewed = reviewRepository.existsByProductIdAndUserId(productId, userId);
+        return ResponseEntity.ok(ApiResponse.success(reviewed));
+    }
+
     @GetMapping("/product/{productId}")
     public ResponseEntity<ApiResponse<Page<ReviewResponse>>> getProductReviews(
             @PathVariable Integer productId,
