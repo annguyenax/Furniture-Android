@@ -32,6 +32,7 @@ public class DataInitializer implements ApplicationRunner {
     @Transactional
     public void run(ApplicationArguments args) {
         seedRoles();
+        seedDemoAccounts();
         seedCategories();
         seedVendorAndShop();
         seedProducts();
@@ -101,13 +102,18 @@ public class DataInitializer implements ApplicationRunner {
             shopRepository.save(shop);
         }
 
-        // Admin account
+    }
+
+    private void seedDemoAccounts() {
         Role adminRole = roleRepository.findByRoleName("ADMIN")
             .orElseThrow(() -> new RuntimeException("ADMIN role not found"));
-        if (!userRepository.existsByEmail("admin@furniture.com")) {
+        Role customerRole = roleRepository.findByRoleName("CUSTOMER")
+            .orElseThrow(() -> new RuntimeException("CUSTOMER role not found"));
+
+        if (!userRepository.existsByEmail("admin@furniture.com") && !userRepository.existsByUsername("admin_system")) {
             userRepository.save(User.builder()
                 .firstName("Admin").lastName("System")
-                .username("admin")
+                .username("admin_system")
                 .email("admin@furniture.com")
                 .password(passwordEncoder.encode("123456"))
                 .status(User.UserStatus.ACTIVE)
@@ -115,9 +121,9 @@ public class DataInitializer implements ApplicationRunner {
                 .isVerified(true)
                 .roles(Set.of(adminRole))
                 .build());
+            log.info("Created admin account: admin@furniture.com");
         }
 
-        // Demo customer account
         if (!userRepository.existsByEmail("customer@furniture.com")) {
             userRepository.save(User.builder()
                 .firstName("Khách").lastName("Hàng")
@@ -129,6 +135,7 @@ public class DataInitializer implements ApplicationRunner {
                 .isVerified(true)
                 .roles(Set.of(customerRole))
                 .build());
+            log.info("Created customer account: customer@furniture.com");
         }
     }
 
