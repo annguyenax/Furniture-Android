@@ -39,9 +39,9 @@ public class AuthViewModel extends ViewModel {
         authRepository.login(email, password, new AuthRepository.AuthCallback() {
             @Override
             public void onSuccess(AuthResponse response) {
-                authResponseLiveData.setValue(response);
-                // Save session
                 User user = response.getUser();
+                String role = (user.getRoles() != null && !user.getRoles().isEmpty())
+                        ? user.getRoles().get(0) : "CUSTOMER";
                 sessionManager.saveUserSession(
                         response.getAccessToken(),
                         response.getRefreshToken(),
@@ -51,8 +51,10 @@ public class AuthViewModel extends ViewModel {
                         user.getPhone(),
                         user.getFirstName(),
                         user.getLastName(),
-                        user.getProfilePicture()
+                        user.getProfilePicture(),
+                        role
                 );
+                authResponseLiveData.setValue(response);
                 loadingLiveData.setValue(false);
             }
 

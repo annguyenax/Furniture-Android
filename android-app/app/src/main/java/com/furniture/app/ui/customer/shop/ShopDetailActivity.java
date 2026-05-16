@@ -156,9 +156,8 @@ public class ShopDetailActivity extends AppCompatActivity {
             }
         });
 
-        // Load shop products
         if (shopId > 0) {
-            productViewModel.loadProducts(0, 50); // TODO: Filter by shop ID
+            productViewModel.loadProductsByShop(shopId);
         }
     }
 

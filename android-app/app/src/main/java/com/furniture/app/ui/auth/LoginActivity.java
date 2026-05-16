@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.furniture.app.R;
 import com.furniture.app.data.repository.AuthRepository;
+import com.furniture.app.ui.admin.AdminMainActivity;
 import com.furniture.app.ui.customer.CustomerMainActivity;
 import com.furniture.app.ui.viewmodel.AuthViewModel;
 import com.furniture.app.ui.viewmodel.AuthViewModelFactory;
@@ -116,7 +117,10 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void navigateToHome() {
-        startActivity(new Intent(this, CustomerMainActivity.class));
+        Class<?> targetActivity = sessionManager.isAdmin()
+                ? AdminMainActivity.class
+                : CustomerMainActivity.class;
+        startActivity(new Intent(this, targetActivity));
         finish();
     }
 }

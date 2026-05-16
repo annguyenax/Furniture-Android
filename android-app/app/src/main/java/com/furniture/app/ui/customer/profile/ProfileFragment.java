@@ -12,14 +12,24 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.bumptech.glide.Glide;
 import com.furniture.app.R;
+import com.furniture.app.data.model.ApiResponse;
+import com.furniture.app.data.model.User;
 import com.furniture.app.data.remote.RetrofitClient;
+import com.furniture.app.data.remote.api.UserApi;
 import com.furniture.app.ui.auth.LoginActivity;
+import com.furniture.app.ui.customer.chat.ChatActivity;
 import com.furniture.app.ui.customer.order.OrderHistoryActivity;
+import com.furniture.app.ui.customer.profile.AddressListActivity;
+import com.furniture.app.ui.customer.profile.WishlistActivity;
 import com.furniture.app.util.SessionManager;
 import com.google.android.material.button.MaterialButton;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ProfileFragment extends Fragment {
 
@@ -27,10 +37,9 @@ public class ProfileFragment extends Fragment {
     private TextView userName;
     private TextView userEmail;
     private View menuOrders;
+    private View menuWishlist;
     private View menuAddresses;
-    private View menuPayment;
-    private View menuSettings;
-    private View menuHelp;
+    private View menuChat;
     private MaterialButton btnLogout;
     private SessionManager sessionManager;
 
@@ -57,29 +66,44 @@ public class ProfileFragment extends Fragment {
         userName = view.findViewById(R.id.user_name);
         userEmail = view.findViewById(R.id.user_email);
         menuOrders = view.findViewById(R.id.menu_orders);
+        menuWishlist = view.findViewById(R.id.menu_wishlist);
         menuAddresses = view.findViewById(R.id.menu_addresses);
-        menuPayment = view.findViewById(R.id.menu_payment);
-        menuSettings = view.findViewById(R.id.menu_settings);
-        menuHelp = view.findViewById(R.id.menu_help);
+        menuChat = view.findViewById(R.id.menu_chat);
         btnLogout = view.findViewById(R.id.btn_logout);
     }
 
     private void loadUserProfile() {
-        // Load user info from session
+        // Show session data first (fast)
         String name = sessionManager.getUserName();
         String email = sessionManager.getUserEmail();
+        userName.setText(name != null && !name.isEmpty() ? name : "User");
+        userEmail.setText(email != null && !email.isEmpty() ? email : "user@example.com");
 
-        if (name != null && !name.isEmpty()) {
-            userName.setText(name);
-        } else {
-            userName.setText("User");
-        }
+        // Refresh from server
+        String token = sessionManager.getToken();
+        if (token == null) return;
+        UserApi userApi = RetrofitClient.getInstance(token).create(UserApi.class);
+        userApi.getMe().enqueue(new Callback<ApiResponse<User>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
+                    User user = response.body().getData();
+                    sessionManager.updateUserInfo(user.getFirstName(), user.getLastName(), user.getPhone());
+                    String fullName = user.getFullName();
+                    userName.setText(fullName != null && !fullName.isEmpty() ? fullName : user.getUsername());
+                    userEmail.setText(user.getEmail() != null ? user.getEmail() : "");
+                    if (user.getProfilePicture() != null && !user.getProfilePicture().isEmpty()) {
+                        Glide.with(requireContext()).load(user.getProfilePicture())
+                                .placeholder(R.drawable.ic_person).into(profileImage);
+                    }
+                }
+            }
 
-        if (email != null && !email.isEmpty()) {
-            userEmail.setText(email);
-        } else {
-            userEmail.setText("user@example.com");
-        }
+            @Override
+            public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
+                // Keep session data
+            }
+        });
     }
 
     private void setupListeners() {
@@ -88,29 +112,24 @@ public class ProfileFragment extends Fragment {
             startActivity(new Intent(requireContext(), EditProfileActivity.class));
         });
 
-        menuOrders.setOnClickListener(v -> {
-            startActivity(new Intent(requireContext(), OrderHistoryActivity.class));
+        menuOrders.setOnClickListener(v ->
+                startActivity(new Intent(requireContext(), OrderHistoryActivity.class)));
+
+        menuWishlist.setOnClickListener(v ->
+                startActivity(new Intent(requireContext(), WishlistActivity.class)));
+
+        menuAddresses.setOnClickListener(v ->
+                startActivity(new Intent(requireContext(), AddressListActivity.class)));
+
+        menuChat.setOnClickListener(v -> {
+            Intent intent = new Intent(requireContext(), ChatActivity.class);
+            intent.putExtra(ChatActivity.EXTRA_SHOP_ID, 1);
+            intent.putExtra(ChatActivity.EXTRA_SHOP_NAME, "Hỗ trợ Shop");
+            intent.putExtra(ChatActivity.EXTRA_IS_ADMIN, false);
+            startActivity(intent);
         });
 
-        menuAddresses.setOnClickListener(v -> {
-            startActivity(new Intent(requireContext(), EditProfileActivity.class));
-        });
-
-        menuPayment.setOnClickListener(v -> {
-            Toast.makeText(requireContext(), "Phương thức thanh toán đang phát triển", Toast.LENGTH_SHORT).show();
-        });
-
-        menuSettings.setOnClickListener(v -> {
-            Toast.makeText(requireContext(), "Cài đặt đang phát triển", Toast.LENGTH_SHORT).show();
-        });
-
-        menuHelp.setOnClickListener(v -> {
-            Toast.makeText(requireContext(), "Hỗ trợ: hotline@furniture.com", Toast.LENGTH_SHORT).show();
-        });
-
-        btnLogout.setOnClickListener(v -> {
-            handleLogout();
-        });
+        btnLogout.setOnClickListener(v -> handleLogout());
     }
 
     @Override

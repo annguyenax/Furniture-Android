@@ -13,24 +13,38 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.furniture.app.R;
+import com.furniture.app.data.model.ApiResponse;
+import com.furniture.app.data.model.Category;
 import com.furniture.app.data.model.Product;
+import com.furniture.app.data.remote.RetrofitClient;
+import com.furniture.app.data.remote.api.CategoryApi;
 import com.furniture.app.data.repository.ProductRepository;
+import com.furniture.app.ui.adapter.CategoryAdapter;
 import com.furniture.app.ui.adapter.ProductAdapter;
 import com.furniture.app.ui.customer.CustomerMainActivity;
+import com.furniture.app.ui.customer.product.CategoryProductsActivity;
 import com.furniture.app.ui.customer.product.ProductDetailActivity;
 import com.furniture.app.ui.viewmodel.ProductViewModel;
 import com.furniture.app.ui.viewmodel.ProductViewModelFactory;
+import com.furniture.app.util.SessionManager;
 
 import java.util.ArrayList;
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class HomeFragment extends Fragment {
 
     private SwipeRefreshLayout swipeRefreshLayout;
     private RecyclerView featuredProductsRecyclerView;
+    private RecyclerView categoriesRecyclerView;
     private ProgressBar progressBar;
     private View emptyState;
     private View searchBar;
@@ -39,6 +53,8 @@ public class HomeFragment extends Fragment {
     private View seeAllCategories;
     private ProductViewModel productViewModel;
     private ProductAdapter productAdapter;
+    private CategoryAdapter categoryAdapter;
+    private CategoryApi categoryApi;
 
     @Nullable
     @Override
@@ -51,16 +67,21 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        SessionManager sessionManager = new SessionManager(requireContext());
+        categoryApi = RetrofitClient.getInstance(sessionManager.getToken()).create(CategoryApi.class);
+
         initViews(view);
         setupViewModel();
-        setupRecyclerView();
+        setupRecyclerViews();
         setupListeners();
         loadProducts();
+        loadCategories();
     }
 
     private void initViews(View view) {
         swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout);
         featuredProductsRecyclerView = view.findViewById(R.id.featured_products_recycler_view);
+        categoriesRecyclerView = view.findViewById(R.id.categories_recycler_view);
         progressBar = view.findViewById(R.id.progress_bar);
         emptyState = view.findViewById(R.id.empty_state);
         searchBar = view.findViewById(R.id.search_bar);
@@ -74,7 +95,6 @@ public class HomeFragment extends Fragment {
         ProductViewModelFactory factory = new ProductViewModelFactory(productRepository);
         productViewModel = new ViewModelProvider(this, factory).get(ProductViewModel.class);
 
-        // Observe products
         productViewModel.getProducts().observe(getViewLifecycleOwner(), products -> {
             if (products != null && !products.isEmpty()) {
                 productAdapter.setProducts(products);
@@ -86,13 +106,11 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        // Observe loading state
         productViewModel.getLoading().observe(getViewLifecycleOwner(), isLoading -> {
             progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
             swipeRefreshLayout.setRefreshing(isLoading);
         });
 
-        // Observe errors
         productViewModel.getError().observe(getViewLifecycleOwner(), error -> {
             if (error != null && !error.isEmpty()) {
                 Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
@@ -100,27 +118,49 @@ public class HomeFragment extends Fragment {
         });
     }
 
-    private void setupRecyclerView() {
+    private void setupRecyclerViews() {
         productAdapter = new ProductAdapter(new ArrayList<>(), this::onProductClick);
         featuredProductsRecyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 2));
         featuredProductsRecyclerView.setAdapter(productAdapter);
+
+        categoryAdapter = new CategoryAdapter(new ArrayList<>(), this::onCategoryClick);
+        categoriesRecyclerView.setLayoutManager(
+                new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
+        categoriesRecyclerView.setAdapter(categoryAdapter);
     }
 
     private void setupListeners() {
-        swipeRefreshLayout.setOnRefreshListener(this::loadProducts);
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            loadProducts();
+            loadCategories();
+        });
 
-        if (searchBar != null) {
-            searchBar.setOnClickListener(v -> navigateToTab(1));
-        }
-        if (btnCartHome != null) {
-            btnCartHome.setOnClickListener(v -> navigateToTab(2));
-        }
-        if (seeAllFeatured != null) {
-            seeAllFeatured.setOnClickListener(v -> navigateToTab(1));
-        }
-        if (seeAllCategories != null) {
-            seeAllCategories.setOnClickListener(v -> navigateToTab(1));
-        }
+        if (searchBar != null) searchBar.setOnClickListener(v -> navigateToTab(1));
+        if (btnCartHome != null) btnCartHome.setOnClickListener(v -> navigateToTab(2));
+        if (seeAllFeatured != null) seeAllFeatured.setOnClickListener(v -> navigateToTab(1));
+        if (seeAllCategories != null) seeAllCategories.setOnClickListener(v -> navigateToTab(1));
+    }
+
+    private void loadProducts() {
+        productViewModel.loadProducts(0, 20);
+    }
+
+    private void loadCategories() {
+        categoryApi.getAllCategories().enqueue(new Callback<ApiResponse<List<Category>>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<List<Category>>> call,
+                                   Response<ApiResponse<List<Category>>> response) {
+                if (response.isSuccessful() && response.body() != null
+                        && response.body().getData() != null) {
+                    categoryAdapter.setCategories(response.body().getData());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<List<Category>>> call, Throwable t) {
+                // Silent fail - categories are supplementary
+            }
+        });
     }
 
     private void navigateToTab(int tab) {
@@ -129,13 +169,15 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    private void loadProducts() {
-        productViewModel.loadProducts(0, 20);
-    }
-
     private void onProductClick(Product product) {
         Intent intent = new Intent(requireContext(), ProductDetailActivity.class);
         intent.putExtra(ProductDetailActivity.EXTRA_PRODUCT, product);
+        startActivity(intent);
+    }
+
+    private void onCategoryClick(Category category) {
+        Intent intent = new Intent(requireContext(), CategoryProductsActivity.class);
+        intent.putExtra(CategoryProductsActivity.EXTRA_CATEGORY, category);
         startActivity(intent);
     }
 }

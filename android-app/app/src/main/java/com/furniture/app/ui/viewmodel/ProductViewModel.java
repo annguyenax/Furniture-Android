@@ -49,6 +49,23 @@ public class ProductViewModel extends ViewModel {
         });
     }
 
+    public void loadProductsByShop(int shopId) {
+        loadingLiveData.setValue(true);
+        productRepository.getProductsByShop(shopId, 0, 50, new ProductRepository.ProductCallback() {
+            @Override
+            public void onSuccess(List<Product> products) {
+                productsLiveData.setValue(products);
+                loadingLiveData.setValue(false);
+            }
+
+            @Override
+            public void onError(String error) {
+                errorLiveData.setValue(error);
+                loadingLiveData.setValue(false);
+            }
+        });
+    }
+
     public void searchProducts(String keyword) {
         loadingLiveData.setValue(true);
         productRepository.searchProducts(keyword, 0, 50, new ProductRepository.ProductCallback() {

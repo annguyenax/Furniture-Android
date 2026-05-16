@@ -9,7 +9,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.furniture.app.R;
 import com.furniture.app.ui.auth.LoginActivity;
-import com.furniture.app.ui.customer.CustomerMainActivity;
 import com.furniture.app.util.SessionManager;
 
 /**
@@ -25,16 +24,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_splash);
 
         SessionManager sessionManager = new SessionManager(this);
+        sessionManager.clearSession();
 
         // Delay for splash effect then navigate
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            Intent intent;
-            if (sessionManager.isLoggedIn()) {
-                intent = new Intent(this, CustomerMainActivity.class);
-            } else {
-                intent = new Intent(this, LoginActivity.class);
-            }
-            startActivity(intent);
+            startActivity(new Intent(this, LoginActivity.class));
             finish();
         }, SPLASH_DELAY);
     }

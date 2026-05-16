@@ -82,6 +82,26 @@ public class ProductRepository {
                 });
     }
 
+    public void getProductsByShop(int shopId, int page, int size, final ProductCallback callback) {
+        productApi.getProductsByShop(shopId, page, size)
+                .enqueue(new Callback<ApiResponse<PageResponse<Product>>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<PageResponse<Product>>> call,
+                                           Response<ApiResponse<PageResponse<Product>>> response) {
+                        if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
+                            callback.onSuccess(response.body().getData().getContent());
+                        } else {
+                            callback.onError("Không tải được sản phẩm shop");
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ApiResponse<PageResponse<Product>>> call, Throwable t) {
+                        callback.onError(t.getMessage());
+                    }
+                });
+    }
+
     public interface ProductCallback {
         void onSuccess(List<Product> products);
         void onError(String error);

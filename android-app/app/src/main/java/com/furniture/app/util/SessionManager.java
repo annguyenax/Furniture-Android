@@ -15,6 +15,7 @@ public class SessionManager {
     private static final String KEY_LAST_NAME = "last_name";
     private static final String KEY_PROFILE_PIC = "profile_picture";
     private static final String KEY_IS_LOGGED_IN = "is_logged_in";
+    private static final String KEY_USER_ROLE = "user_role";
 
     private final SharedPreferences sharedPreferences;
     private final SharedPreferences.Editor editor;
@@ -22,6 +23,13 @@ public class SessionManager {
     public SessionManager(Context context) {
         sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         editor = sharedPreferences.edit();
+    }
+
+    public void saveUserSession(String accessToken, String refreshToken, int userId,
+                               String username, String email, String phone, String firstName,
+                               String lastName, String profilePicture, String role) {
+        editor.putString(KEY_USER_ROLE, role != null ? role : "CUSTOMER");
+        saveUserSession(accessToken, refreshToken, userId, username, email, phone, firstName, lastName, profilePicture);
     }
 
     public void saveUserSession(String accessToken, String refreshToken, int userId,
@@ -138,5 +146,24 @@ public class SessionManager {
     public String getShippingPhone() {
         String phone = sharedPreferences.getString("shipping_phone", null);
         return phone != null ? phone : getPhone();
+    }
+
+    public String getUserRole() {
+        return sharedPreferences.getString(KEY_USER_ROLE, "CUSTOMER");
+    }
+
+    public boolean isAdmin() {
+        return "ADMIN".equals(getUserRole());
+    }
+
+    public boolean isVendor() {
+        return "VENDOR".equals(getUserRole());
+    }
+
+    public void updateUserInfo(String firstName, String lastName, String phone) {
+        editor.putString(KEY_FIRST_NAME, firstName);
+        editor.putString(KEY_LAST_NAME, lastName);
+        editor.putString(KEY_PHONE, phone);
+        editor.apply();
     }
 }

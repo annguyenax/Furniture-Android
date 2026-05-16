@@ -1,9 +1,12 @@
 package com.furniture.app.ui.customer.order;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.EditText;
+import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,26 +19,37 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.furniture.app.R;
+import com.furniture.app.data.model.Address;
+import com.furniture.app.data.model.ApiResponse;
 import com.furniture.app.data.model.Cart;
 import com.furniture.app.data.model.CartItem;
 import com.furniture.app.data.model.Order;
 import com.furniture.app.data.model.Product;
 import com.furniture.app.data.model.ProductVariant;
+import com.furniture.app.data.remote.RetrofitClient;
+import com.furniture.app.data.remote.api.AddressApi;
 import com.furniture.app.data.repository.CartRepository;
 import com.furniture.app.data.repository.OrderRepository;
 import com.furniture.app.ui.adapter.CheckoutItemAdapter;
+import com.furniture.app.ui.customer.profile.AddAddressActivity;
 import com.furniture.app.ui.viewmodel.CartViewModel;
 import com.furniture.app.ui.viewmodel.CartViewModelFactory;
 import com.furniture.app.ui.viewmodel.OrderViewModel;
 import com.furniture.app.ui.viewmodel.OrderViewModelFactory;
 import com.furniture.app.util.SessionManager;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class CheckoutActivity extends AppCompatActivity {
 
@@ -44,16 +58,19 @@ public class CheckoutActivity extends AppCompatActivity {
     public static final String EXTRA_VARIANT = "variant";
     public static final String EXTRA_QUANTITY = "quantity";
 
+    private static final int REQUEST_ADD_ADDRESS = 1002;
+
     private SessionManager sessionManager;
     private NumberFormat currencyFormat;
     private CartViewModel cartViewModel;
     private OrderViewModel orderViewModel;
+    private AddressApi addressApi;
 
     // Views
-    private TextView tvRecipientName, tvPhone, tvAddress;
+    private TextView tvRecipientName, tvPhone, tvAddress, tvNoAddress;
     private RecyclerView rvOrderItems;
     private RadioGroup rgPaymentMethod;
-    private EditText etNote;
+    private TextInputEditText etNote;
     private TextView tvSubtotal, tvShipping, tvTotal, tvBottomTotal;
     private MaterialButton btnPlaceOrder;
     private ProgressBar progressBar;
@@ -63,6 +80,9 @@ public class CheckoutActivity extends AppCompatActivity {
     private BigDecimal shippingFee = BigDecimal.ZERO;
     private boolean isFromCart = false;
 
+    private List<Address> savedAddresses = new ArrayList<>();
+    private Address selectedAddress;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,11 +90,13 @@ public class CheckoutActivity extends AppCompatActivity {
 
         sessionManager = new SessionManager(this);
         currencyFormat = NumberFormat.getInstance(new Locale("vi", "VN"));
+        addressApi = RetrofitClient.getInstance(sessionManager.getToken()).create(AddressApi.class);
 
         initViews();
         setupToolbar();
         setupViewModels();
         loadOrderData();
+        loadSavedAddresses();
         setupListeners();
     }
 
@@ -82,6 +104,7 @@ public class CheckoutActivity extends AppCompatActivity {
         tvRecipientName = findViewById(R.id.tv_recipient_name);
         tvPhone = findViewById(R.id.tv_phone);
         tvAddress = findViewById(R.id.tv_address);
+        tvNoAddress = findViewById(R.id.tv_no_address);
         rvOrderItems = findViewById(R.id.rv_order_items);
         rgPaymentMethod = findViewById(R.id.rg_payment_method);
         etNote = findViewById(R.id.et_note);
@@ -93,13 +116,7 @@ public class CheckoutActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progress_bar);
 
         rvOrderItems.setLayoutManager(new LinearLayoutManager(this));
-
-        // Load shipping info (ưu tiên thông tin đã lưu, fallback về thông tin tài khoản)
-        tvRecipientName.setText(sessionManager.getShippingName());
-        String savedPhone = sessionManager.getShippingPhone();
-        tvPhone.setText(savedPhone != null ? savedPhone : "Chưa có số điện thoại");
-        String savedAddress = sessionManager.getUserAddress();
-        tvAddress.setText(savedAddress != null ? savedAddress : "Chưa có địa chỉ");
+        showNoAddressState();
     }
 
     private void setupToolbar() {
@@ -123,10 +140,8 @@ public class CheckoutActivity extends AppCompatActivity {
         orderViewModel = new ViewModelProvider(this,
                 new OrderViewModelFactory(orderRepository)).get(OrderViewModel.class);
 
-        // Observe cart
         cartViewModel.getCart().observe(this, this::populateFromCart);
 
-        // Observe order result
         orderViewModel.getCreateOrderResult().observe(this, result -> {
             progressBar.setVisibility(View.GONE);
             btnPlaceOrder.setEnabled(true);
@@ -149,10 +164,8 @@ public class CheckoutActivity extends AppCompatActivity {
         isFromCart = getIntent().getBooleanExtra(EXTRA_FROM_CART, false);
 
         if (isFromCart) {
-            // Load from cart
             cartViewModel.loadCart();
         } else {
-            // Direct buy - create single item
             Product product = (Product) getIntent().getSerializableExtra(EXTRA_PRODUCT);
             ProductVariant variant = (ProductVariant) getIntent().getSerializableExtra(EXTRA_VARIANT);
             int quantity = getIntent().getIntExtra(EXTRA_QUANTITY, 1);
@@ -178,6 +191,109 @@ public class CheckoutActivity extends AppCompatActivity {
         }
     }
 
+    private void loadSavedAddresses() {
+        addressApi.getAddresses().enqueue(new Callback<ApiResponse<List<Address>>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<List<Address>>> call,
+                                   Response<ApiResponse<List<Address>>> response) {
+                if (response.isSuccessful() && response.body() != null
+                        && response.body().isSuccess() && response.body().getData() != null) {
+                    savedAddresses = response.body().getData();
+                    if (!savedAddresses.isEmpty()) {
+                        selectedAddress = null;
+                        for (Address a : savedAddresses) {
+                            if (Boolean.TRUE.equals(a.getIsDefault())) {
+                                selectedAddress = a;
+                                break;
+                            }
+                        }
+                        if (selectedAddress == null) selectedAddress = savedAddresses.get(0);
+                        updateAddressUI();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<List<Address>>> call, Throwable t) {
+                // No addresses loaded — keep no-address state
+            }
+        });
+    }
+
+    private void updateAddressUI() {
+        if (selectedAddress == null) {
+            showNoAddressState();
+            return;
+        }
+        tvNoAddress.setVisibility(View.GONE);
+        tvRecipientName.setVisibility(View.VISIBLE);
+        tvPhone.setVisibility(View.VISIBLE);
+        tvAddress.setVisibility(View.VISIBLE);
+
+        tvRecipientName.setText(selectedAddress.getRecipientName());
+        tvPhone.setText(selectedAddress.getPhone());
+
+        String full = selectedAddress.getFullAddress();
+        if (full == null || full.isEmpty()) {
+            full = buildFullAddress(selectedAddress);
+        }
+        tvAddress.setText(full);
+    }
+
+    private void showNoAddressState() {
+        tvRecipientName.setVisibility(View.GONE);
+        tvPhone.setVisibility(View.GONE);
+        tvAddress.setVisibility(View.GONE);
+        if (tvNoAddress != null) tvNoAddress.setVisibility(View.VISIBLE);
+    }
+
+    private String buildFullAddress(Address a) {
+        StringBuilder sb = new StringBuilder();
+        if (a.getAddressLine() != null && !a.getAddressLine().isEmpty()) {
+            sb.append(a.getAddressLine()).append(", ");
+        }
+        if (a.getWard() != null) sb.append(a.getWard()).append(", ");
+        if (a.getDistrict() != null) sb.append(a.getDistrict()).append(", ");
+        if (a.getCity() != null) sb.append(a.getCity());
+        return sb.toString().replaceAll(", $", "");
+    }
+
+    private void setupListeners() {
+        btnPlaceOrder.setOnClickListener(v -> placeOrder());
+        findViewById(R.id.btn_change_address).setOnClickListener(v -> showAddressPicker());
+    }
+
+    private void showAddressPicker() {
+        BottomSheetDialog sheet = new BottomSheetDialog(this);
+        View sheetView = getLayoutInflater().inflate(R.layout.dialog_address_picker, null);
+        sheet.setContentView(sheetView);
+
+        RecyclerView rv = sheetView.findViewById(R.id.rv_addresses);
+        rv.setLayoutManager(new LinearLayoutManager(this));
+        rv.setAdapter(new AddressPickerAdapter(savedAddresses, selectedAddress, address -> {
+            selectedAddress = address;
+            updateAddressUI();
+            sheet.dismiss();
+        }));
+
+        sheetView.findViewById(R.id.btn_add_new_address).setOnClickListener(v -> {
+            sheet.dismiss();
+            startActivityForResult(
+                    new Intent(this, AddAddressActivity.class),
+                    REQUEST_ADD_ADDRESS);
+        });
+
+        sheet.show();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_ADD_ADDRESS && resultCode == RESULT_OK) {
+            loadSavedAddresses();
+        }
+    }
+
     private void populateFromCart(Cart cart) {
         if (cart != null && cart.getItems() != null) {
             orderItems.clear();
@@ -191,75 +307,24 @@ public class CheckoutActivity extends AppCompatActivity {
         CheckoutItemAdapter adapter = new CheckoutItemAdapter(orderItems, currencyFormat);
         rvOrderItems.setAdapter(adapter);
 
-        // Calculate subtotal if not from cart
         if (!isFromCart) {
             subtotal = BigDecimal.ZERO;
             for (CartItem item : orderItems) {
                 if (item.getPrice() != null) {
-                    BigDecimal itemTotal = item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
-                    subtotal = subtotal.add(itemTotal);
+                    subtotal = subtotal.add(item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
                 }
             }
         }
-
         updateTotals();
     }
 
     private void updateTotals() {
         BigDecimal total = subtotal.add(shippingFee);
-
         tvSubtotal.setText(String.format("₫%s", currencyFormat.format(subtotal)));
-        tvShipping.setText(shippingFee.compareTo(BigDecimal.ZERO) > 0 ?
-                String.format("₫%s", currencyFormat.format(shippingFee)) : "Miễn phí");
+        tvShipping.setText(shippingFee.compareTo(BigDecimal.ZERO) > 0
+                ? String.format("₫%s", currencyFormat.format(shippingFee)) : "Miễn phí");
         tvTotal.setText(String.format("₫%s", currencyFormat.format(total)));
         tvBottomTotal.setText(String.format("₫%s", currencyFormat.format(total)));
-    }
-
-    private void setupListeners() {
-        btnPlaceOrder.setOnClickListener(v -> placeOrder());
-
-        findViewById(R.id.btn_change_address).setOnClickListener(v -> showAddressEditDialog());
-    }
-
-    private void showAddressEditDialog() {
-        View dialogView = getLayoutInflater().inflate(R.layout.dialog_edit_address, null);
-        EditText etName = dialogView.findViewById(R.id.et_name);
-        EditText etPhone = dialogView.findViewById(R.id.et_phone);
-        EditText etAddress = dialogView.findViewById(R.id.et_address);
-
-        // Pre-fill current values
-        etName.setText(tvRecipientName.getText());
-        String phone = tvPhone.getText().toString();
-        if (!phone.equals("Chưa có số điện thoại")) {
-            etPhone.setText(phone);
-        }
-        String address = tvAddress.getText().toString();
-        if (!address.equals("Chưa có địa chỉ")) {
-            etAddress.setText(address);
-        }
-
-        new AlertDialog.Builder(this)
-                .setTitle("Cập nhật địa chỉ giao hàng")
-                .setView(dialogView)
-                .setPositiveButton("Lưu", (dialog, which) -> {
-                    String name = etName.getText().toString().trim();
-                    String newPhone = etPhone.getText().toString().trim();
-                    String newAddress = etAddress.getText().toString().trim();
-
-                    if (name.isEmpty() || newPhone.isEmpty() || newAddress.isEmpty()) {
-                        Toast.makeText(this, "Vui lòng điền đầy đủ thông tin", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    tvRecipientName.setText(name);
-                    tvPhone.setText(newPhone);
-                    tvAddress.setText(newAddress);
-
-                    // Save to session for future use
-                    sessionManager.saveShippingInfo(name, newPhone, newAddress);
-                })
-                .setNegativeButton("Hủy", null)
-                .show();
     }
 
     private void placeOrder() {
@@ -268,17 +333,18 @@ public class CheckoutActivity extends AppCompatActivity {
             return;
         }
 
-        String recipientName = tvRecipientName.getText().toString();
-        String phone = tvPhone.getText().toString();
-        String address = tvAddress.getText().toString();
-
-        if (address.equals("Chưa có địa chỉ") || phone.equals("Chưa có số điện thoại")) {
-            Toast.makeText(this, "Vui lòng cập nhật thông tin giao hàng", Toast.LENGTH_SHORT).show();
+        if (selectedAddress == null) {
+            Toast.makeText(this, "Vui lòng chọn địa chỉ giao hàng", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        String recipientName = selectedAddress.getRecipientName();
+        String phone = selectedAddress.getPhone();
+        String full = selectedAddress.getFullAddress();
+        if (full == null || full.isEmpty()) full = buildFullAddress(selectedAddress);
+
         String paymentMethod = rgPaymentMethod.getCheckedRadioButtonId() == R.id.rb_cod ? "COD" : "BANK";
-        String note = etNote.getText().toString().trim();
+        String note = etNote.getText() != null ? etNote.getText().toString().trim() : "";
 
         progressBar.setVisibility(View.VISIBLE);
         btnPlaceOrder.setEnabled(false);
@@ -286,10 +352,10 @@ public class CheckoutActivity extends AppCompatActivity {
         orderViewModel.createOrder(
                 recipientName,
                 phone,
-                address,
+                full,
                 paymentMethod,
                 note,
-                isFromCart ? null : orderItems  // If from cart, backend will get items from cart
+                isFromCart ? null : orderItems
         );
     }
 
@@ -299,13 +365,86 @@ public class CheckoutActivity extends AppCompatActivity {
                 .setMessage("Mã đơn hàng: " + (order != null ? order.getOrderCode() : "N/A") +
                         "\n\nCảm ơn bạn đã đặt hàng. Chúng tôi sẽ liên hệ với bạn sớm nhất.")
                 .setPositiveButton("OK", (dialog, which) -> {
-                    // Clear cart if ordered from cart
-                    if (isFromCart) {
-                        cartViewModel.clearCart();
-                    }
+                    if (isFromCart) cartViewModel.clearCart();
                     finish();
                 })
                 .setCancelable(false)
                 .show();
+    }
+
+    // ── Address Picker Adapter ────────────────────────────────────────────────
+
+    interface OnAddressSelected {
+        void onSelected(Address address);
+    }
+
+    private static class AddressPickerAdapter
+            extends RecyclerView.Adapter<AddressPickerAdapter.VH> {
+
+        private final List<Address> addresses;
+        private Address selected;
+        private final OnAddressSelected callback;
+
+        AddressPickerAdapter(List<Address> addresses, Address selected, OnAddressSelected callback) {
+            this.addresses = addresses;
+            this.selected = selected;
+            this.callback = callback;
+        }
+
+        @Override
+        public VH onCreateViewHolder(ViewGroup parent, int viewType) {
+            View v = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.item_address_picker, parent, false);
+            return new VH(v);
+        }
+
+        @Override
+        public void onBindViewHolder(VH h, int position) {
+            Address a = addresses.get(position);
+            h.tvName.setText(a.getRecipientName());
+            h.tvPhone.setText(a.getPhone());
+
+            String full = a.getFullAddress();
+            if (full == null || full.isEmpty()) {
+                StringBuilder sb = new StringBuilder();
+                if (a.getAddressLine() != null && !a.getAddressLine().isEmpty())
+                    sb.append(a.getAddressLine()).append(", ");
+                if (a.getWard() != null) sb.append(a.getWard()).append(", ");
+                if (a.getDistrict() != null) sb.append(a.getDistrict()).append(", ");
+                if (a.getCity() != null) sb.append(a.getCity());
+                full = sb.toString().replaceAll(", $", "");
+            }
+            h.tvAddress.setText(full);
+
+            h.tvDefault.setVisibility(Boolean.TRUE.equals(a.getIsDefault()) ? View.VISIBLE : View.GONE);
+
+            boolean isSelected = selected != null
+                    && selected.getAddressId() != null
+                    && selected.getAddressId().equals(a.getAddressId());
+            h.rbSelect.setChecked(isSelected);
+
+            h.itemView.setOnClickListener(v -> {
+                selected = a;
+                notifyDataSetChanged();
+                callback.onSelected(a);
+            });
+        }
+
+        @Override
+        public int getItemCount() { return addresses.size(); }
+
+        static class VH extends RecyclerView.ViewHolder {
+            RadioButton rbSelect;
+            TextView tvName, tvPhone, tvAddress, tvDefault;
+
+            VH(View v) {
+                super(v);
+                rbSelect = v.findViewById(R.id.rb_select);
+                tvName = v.findViewById(R.id.tv_addr_name);
+                tvPhone = v.findViewById(R.id.tv_addr_phone);
+                tvAddress = v.findViewById(R.id.tv_addr_text);
+                tvDefault = v.findViewById(R.id.tv_addr_default);
+            }
+        }
     }
 }

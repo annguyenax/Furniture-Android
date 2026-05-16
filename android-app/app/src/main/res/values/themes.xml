@@ -32,4 +32,14 @@
         <item name="android:windowBackground">@color/primary</item>
     </style>
 
+    <style name="BottomNavTextActive">
+        <item name="android:textSize">11sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="BottomNavTextInactive">
+        <item name="android:textSize">11sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
 </resources>

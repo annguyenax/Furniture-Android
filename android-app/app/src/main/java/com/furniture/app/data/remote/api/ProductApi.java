@@ -41,6 +41,13 @@ public interface ProductApi {
             @Query("size") int size
     );
 
+    @GET("products/shop/{shopId}")
+    Call<ApiResponse<PageResponse<Product>>> getProductsByShop(
+            @Path("shopId") int shopId,
+            @Query("page") int page,
+            @Query("size") int size
+    );
+
     @GET("products/featured")
     Call<ApiResponse<List<Product>>> getFeaturedProducts(@Query("limit") int limit);
 

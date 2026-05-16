@@ -16,6 +16,7 @@ public class OrderViewModel extends ViewModel {
 
     private final OrderRepository orderRepository;
     private final MutableLiveData<List<Order>> orders = new MutableLiveData<>();
+    private final MutableLiveData<Order> orderDetail = new MutableLiveData<>();
     private final MutableLiveData<ApiResponse<Order>> createOrderResult = new MutableLiveData<>();
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
 
@@ -25,6 +26,22 @@ public class OrderViewModel extends ViewModel {
 
     public LiveData<List<Order>> getOrders() {
         return orders;
+    }
+
+    public LiveData<Order> getOrderDetail() {
+        return orderDetail;
+    }
+
+    public void loadOrderById(Integer orderId) {
+        isLoading.setValue(true);
+        MediatorLiveData<Order> result = new MediatorLiveData<>();
+        LiveData<Order> source = orderRepository.getOrderById(orderId);
+        result.addSource(source, order -> {
+            isLoading.setValue(false);
+            orderDetail.setValue(order);
+            result.removeSource(source);
+        });
+        result.observeForever(o -> {});
     }
 
     public LiveData<ApiResponse<Order>> getCreateOrderResult() {

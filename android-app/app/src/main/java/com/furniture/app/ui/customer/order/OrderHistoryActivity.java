@@ -1,5 +1,6 @@
 package com.furniture.app.ui.customer.order;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -117,7 +118,9 @@ public class OrderHistoryActivity extends AppCompatActivity implements OrderAdap
 
     @Override
     public void onOrderClick(Order order) {
-        // TODO: Navigate to order detail
+        Intent intent = new Intent(this, OrderDetailActivity.class);
+        intent.putExtra(OrderDetailActivity.EXTRA_ORDER_ID, order.getOrderId());
+        startActivity(intent);
     }
 
     @Override

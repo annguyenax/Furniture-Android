@@ -1,6 +1,6 @@
-# Furniture Shop - Ứng dụng mua sắm nội thất Android
+# Furniture Shop — Ứng dụng mua sắm nội thất Android
 
-Đây là đồ án môn học Lập Trình Android  Ứng dụng cho phép người dùng tìm kiếm, xem chi tiết và đặt mua sản phẩm nội thất, gồm 2 phần chính: **Backend API** (Spring Boot) và **Android App** (Java).
+Đồ án môn học **Lập Trình Android** — Ứng dụng cho phép người dùng tìm kiếm, xem chi tiết và đặt mua sản phẩm nội thất, bao gồm hai phần chính: **Backend API** (Spring Boot) và **Android App** (Java).
 
 ---
 
@@ -8,22 +8,36 @@
 
 | STT | Họ tên | MSSV | Phân công |
 |-----|--------|------|-----------|
-| 1   |        |      | Backend: Auth, User, Product API |
-| 2   |        |      | Backend: Cart, Order API |
-| 3   |        |      | Android: UI Home, Search, Product Detail |
-| 4   |        |      | Android: UI Cart, Checkout, Profile, Order |
+| 1   |        |      | Backend: Auth, User, Product, Category, Wishlist API |
+| 2   |        |      | Backend: Cart, Order, Review, Address, Admin API |
+| 3   |        |      | Android: Home, Search, Product Detail, Wishlist |
+| 4   |        |      | Android: Cart, Checkout, Profile, Order, Chat, Admin |
 
 ---
 
 ## Tổng quan chức năng
 
-- Đăng ký / Đăng nhập bằng email + password (JWT)
-- Xem danh sách sản phẩm, tìm kiếm theo tên
-- Xem chi tiết sản phẩm (hình ảnh, giá, biến thể màu/size)
-- Thêm vào giỏ hàng, cập nhật số lượng, xóa sản phẩm
-- Đặt hàng với địa chỉ giao hàng và phương thức thanh toán (COD / chuyển khoản)
-- Xem lịch sử đơn hàng, hủy đơn hàng
+### Khách hàng
+- Đăng ký / Đăng nhập bằng email + mật khẩu (JWT)
+- Xem trang chủ: sản phẩm nổi bật, danh mục, sản phẩm mới
+- Tìm kiếm sản phẩm (auto-search), lọc theo danh mục, sắp xếp theo giá
+- Xem chi tiết sản phẩm: ảnh slide, biến thể màu/size, đánh giá từ người dùng
+- Thêm / xóa sản phẩm yêu thích (Wishlist)
+- Giỏ hàng: thêm, cập nhật số lượng, xóa, thanh toán
+- Đặt hàng: chọn địa chỉ đã lưu / thêm mới, thanh toán COD hoặc chuyển khoản
+- Theo dõi đơn hàng, hủy đơn (khi còn đang xử lý), xem chi tiết
+- Đánh giá sản phẩm sau khi đơn hàng được giao (1–5 sao + bình luận + ảnh)
+- Quản lý địa chỉ giao hàng (thêm / sửa / xóa)
 - Chỉnh sửa thông tin cá nhân
+- Chat với hỗ trợ shop
+
+### Admin
+- Xem dashboard tổng quan
+- Quản lý sản phẩm: thêm, sửa, xóa, ảnh, biến thể
+- Quản lý danh mục
+- Quản lý đơn hàng: lọc theo trạng thái, tìm kiếm, cập nhật trạng thái
+- Quản lý người dùng: tìm kiếm, khóa/mở khóa tài khoản
+- Xem và phản hồi chat
 
 ---
 
@@ -35,7 +49,7 @@
 | Java | 17 | Ngôn ngữ lập trình |
 | Spring Boot | 3.2.1 | Framework backend |
 | Spring Security | 6.x | Xác thực và phân quyền |
-| Spring Data JPA | - | ORM, tương tác database |
+| Spring Data JPA | — | ORM, tương tác database |
 | MySQL | 8.0+ | Cơ sở dữ liệu |
 | JWT (jjwt) | 0.12.3 | Xác thực token |
 | Maven | 3.6+ | Quản lý dependencies |
@@ -46,11 +60,13 @@
 | Java | 17 | Ngôn ngữ lập trình |
 | Android SDK | API 24–34 | Nền tảng |
 | Retrofit | 2.9.0 | Gọi REST API |
+| OkHttp | 4.12.0 | HTTP client + logging |
 | Glide | 4.16.0 | Load ảnh |
 | Material Design | 3 (1.11.0) | Giao diện |
-| MVVM | - | Kiến trúc |
-| ViewBinding | - | Bind view |
+| MVVM + LiveData | — | Kiến trúc |
+| ViewPager2 | — | Swipe giữa tab |
 | CircleImageView | 3.1.0 | Ảnh đại diện tròn |
+| Lottie | 6.2.0 | Animation |
 
 ---
 
@@ -58,54 +74,53 @@
 
 ```
 Furniture-Android/
-├── README.md                          ← file này
-├── backend-api/                       ← Spring Boot REST API
-│   ├── pom.xml
-│   └── src/
-│       └── main/
-│           ├── java/com/furniture/api/
-│           │   ├── FurnitureApiApplication.java
-│           │   ├── config/            ← SecurityConfig
-│           │   ├── controller/        ← REST Controllers
-│           │   ├── dto/               ← Request/Response DTOs
-│           │   │   ├── request/
-│           │   │   └── response/
-│           │   ├── exception/         ← Custom exceptions + GlobalExceptionHandler
-│           │   ├── model/             ← JPA Entities (User, Product, Order, ...)
-│           │   ├── repository/        ← Spring Data JPA Repositories
-│           │   ├── security/          ← JWT filter, UserDetailsService
-│           │   └── service/           ← Business logic
-│           │       └── impl/
-│           └── resources/
-│               ├── application.properties
-│               ├── data.sql           ← Seed data tối giản
-│               └── DataInitializer.java ← Tự động tạo dữ liệu mẫu khi khởi động
+├── README.md
+├── backend-api/                        ← Spring Boot REST API
+│   └── src/main/java/com/furniture/api/
+│       ├── controller/                 ← REST Controllers
+│       │   ├── AuthController.java
+│       │   ├── ProductController.java
+│       │   ├── CategoryController.java
+│       │   ├── CartController.java
+│       │   ├── OrderController.java
+│       │   ├── AddressController.java
+│       │   ├── ReviewController.java
+│       │   ├── WishlistController.java
+│       │   ├── ChatController.java
+│       │   ├── UserController.java
+│       │   └── AdminController.java
+│       ├── model/                      ← JPA Entities
+│       ├── repository/                 ← Spring Data JPA Repositories
+│       ├── service/                    ← Business logic
+│       ├── security/                   ← JWT filter, UserDetailsService
+│       └── config/                     ← SecurityConfig
 │
-└── android-app/                       ← Android App
-    └── app/src/main/
-        ├── java/com/furniture/app/
-        │   ├── data/
-        │   │   ├── model/             ← Data models (POJO)
-        │   │   ├── remote/            ← Retrofit API interfaces + RetrofitClient
-        │   │   └── repository/        ← Repositories (gọi API)
-        │   ├── ui/
-        │   │   ├── adapter/           ← RecyclerView Adapters
-        │   │   ├── auth/              ← LoginActivity, RegisterActivity
-        │   │   ├── customer/          ← Màn hình chính
-        │   │   │   ├── cart/          ← CartFragment
-        │   │   │   ├── home/          ← HomeFragment
-        │   │   │   ├── order/         ← CheckoutActivity, OrderHistoryActivity
-        │   │   │   ├── product/       ← ProductDetailActivity
-        │   │   │   ├── profile/       ← ProfileFragment, EditProfileActivity
-        │   │   │   └── search/        ← SearchFragment
-        │   │   ├── main/              ← MainActivity (splash/entry)
-        │   │   └── viewmodel/         ← ViewModels + Factories
-        │   └── util/
-        │       └── SessionManager.java ← Lưu token vào SharedPreferences
-        └── res/
-            ├── layout/               ← XML layouts
-            ├── drawable/             ← Icons, backgrounds
-            └── values/               ← colors, strings, themes
+└── android-app/app/src/main/
+    ├── java/com/furniture/app/
+    │   ├── data/
+    │   │   ├── model/                  ← POJOs (Product, Order, WishlistItem, ...)
+    │   │   ├── remote/api/             ← Retrofit interfaces
+    │   │   └── repository/             ← Data layer
+    │   ├── ui/
+    │   │   ├── adapter/                ← RecyclerView Adapters
+    │   │   ├── auth/                   ← Login, Register
+    │   │   ├── customer/
+    │   │   │   ├── home/               ← HomeFragment
+    │   │   │   ├── search/             ← SearchFragment
+    │   │   │   ├── cart/               ← CartFragment
+    │   │   │   ├── product/            ← ProductDetailActivity, CategoryProductsActivity
+    │   │   │   ├── order/              ← Checkout, OrderHistory, OrderDetail, WriteReview
+    │   │   │   ├── profile/            ← ProfileFragment, EditProfile, Address, Wishlist
+    │   │   │   ├── shop/               ← ShopDetailActivity
+    │   │   │   └── chat/               ← ChatActivity
+    │   │   ├── admin/                  ← Admin screens
+    │   │   └── viewmodel/              ← ViewModels + Factories
+    │   └── util/
+    │       └── SessionManager.java     ← Lưu token vào SharedPreferences
+    └── res/
+        ├── layout/                     ← XML layouts
+        ├── drawable/                   ← Icons, backgrounds
+        └── values/                     ← colors, strings, themes
 ```
 
 ---
@@ -119,16 +134,14 @@ Furniture-Android/
 | JDK | 17 |
 | Maven | 3.6+ |
 | MySQL | 8.0+ |
-| Android Studio | Giraffe (2022.3.1) trở lên |
-| Android Emulator | API 24+ |
+| Android Studio | Hedgehog (2023.1.1) trở lên |
+| Android Emulator / Thiết bị thật | API 24+ |
 
 ---
 
 ### Phần 1: Cài đặt Backend
 
-#### Bước 1 – Tạo database MySQL
-
-Mở MySQL Workbench hoặc dùng command line, chạy:
+**Bước 1 — Tạo database MySQL**
 
 ```sql
 CREATE DATABASE furniture_db
@@ -136,83 +149,56 @@ CREATE DATABASE furniture_db
   COLLATE utf8mb4_unicode_ci;
 ```
 
-> Không cần tạo bảng thủ công. Spring Boot sẽ tự tạo toàn bộ bảng khi chạy lần đầu (nhờ `spring.jpa.hibernate.ddl-auto=update`).
+> Spring Boot tự tạo bảng khi chạy lần đầu (`ddl-auto=update`). Không cần tạo thủ công.
 
-#### Bước 2 – Cấu hình kết nối database
+**Bước 2 — Cấu hình kết nối**
 
-Mở file `backend-api/src/main/resources/application.properties`, sửa các dòng sau:
+Mở `backend-api/src/main/resources/application.properties`:
 
 ```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/furniture_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
-spring.datasource.username=root          # ← sửa thành username MySQL của bạn
-spring.datasource.password=root          # ← sửa thành password MySQL của bạn
+spring.datasource.url=jdbc:mysql://localhost:3306/furniture_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+spring.datasource.username=root      # ← đổi thành username MySQL của bạn
+spring.datasource.password=root      # ← đổi thành password MySQL của bạn
 ```
 
-Các cấu hình khác (Cloudinary, Email, Google OAuth) là tùy chọn – **không cần** để chạy app cơ bản.
-
-#### Bước 3 – Build và chạy backend
-
-Mở terminal, vào thư mục `backend-api`:
+**Bước 3 — Chạy backend**
 
 ```bash
 cd backend-api
-
-# Build
-mvn clean package -DskipTests
-
-# Chạy
-java -jar target/furniture-api-1.0.0.jar
-```
-
-Hoặc chạy trực tiếp bằng Maven:
-
-```bash
 mvn spring-boot:run
 ```
 
-**Kết quả thành công:**
-
+Kết quả thành công:
 ```
-===========================================
 Furniture API is running!
 API Base URL: http://localhost:8080/api
-===========================================
 ```
 
-#### Bước 4 – Dữ liệu mẫu (tự động)
+**Bước 4 — Dữ liệu mẫu (tự động)**
 
-Khi backend khởi động lần đầu, `DataInitializer` sẽ tự động tạo:
+`DataInitializer` tự tạo khi khởi động lần đầu:
 
 | Loại | Nội dung |
 |------|----------|
 | Vai trò | CUSTOMER, VENDOR, ADMIN, SHIPPER |
-| Danh mục | 6 danh mục: Phòng khách, Phòng ngủ, Phòng ăn, Phòng làm việc, Ngoài trời, Trang trí |
-| Cửa hàng | "Nội Thất Gia Đình" (1 shop mẫu) |
+| Danh mục | Phòng khách, Phòng ngủ, Phòng ăn, Phòng làm việc, Ngoài trời, Trang trí |
+| Cửa hàng | "Nội Thất Gia Đình" |
 | Sản phẩm | 10 sản phẩm nội thất với ảnh và biến thể |
 
-**Tài khoản demo** (mật khẩu đều là `123456`):
+**Tài khoản demo** (mật khẩu: `123456`):
 
-| Email | Vai trò | Ghi chú |
-|-------|---------|---------|
-| `customer@furniture.com` | CUSTOMER | Dùng để test mua hàng |
-| `vendor@furniture.com` | VENDOR | Chủ shop "Nội Thất Gia Đình" |
-| `admin@furniture.com` | ADMIN | Tài khoản quản trị |
-
-> Dữ liệu chỉ được tạo **1 lần duy nhất** — các lần khởi động tiếp theo không bị trùng lặp.
+| Email | Vai trò |
+|-------|---------|
+| `customer@furniture.com` | CUSTOMER |
+| `admin@furniture.com` | ADMIN |
 
 ---
 
 ### Phần 2: Cài đặt Android App
 
-#### Bước 1 – Mở project trong Android Studio
+**Bước 1** — Mở `android-app` trong Android Studio, chờ Gradle sync.
 
-1. Mở **Android Studio**
-2. Chọn **Open** → chọn thư mục `android-app`
-3. Chờ Gradle sync hoàn tất
-
-#### Bước 2 – Kiểm tra URL backend
-
-Mở file `android-app/app/build.gradle`, kiểm tra:
+**Bước 2** — Kiểm tra URL backend trong `android-app/app/build.gradle`:
 
 ```groovy
 debug {
@@ -220,54 +206,73 @@ debug {
 }
 ```
 
-> `10.0.2.2` là địa chỉ đặc biệt của Android Emulator để trỏ đến `localhost` của máy tính.
-> Nếu dùng **thiết bị thật**, đổi thành địa chỉ IP LAN của máy tính (ví dụ: `http://192.168.1.x:8080/api/`).
+> `10.0.2.2` = `localhost` của máy tính khi dùng emulator Android.  
+> Nếu dùng **thiết bị thật**: đổi thành IP LAN của máy tính, ví dụ `http://192.168.1.x:8080/api/`.
 
-#### Bước 3 – Chạy app
-
-1. Tạo hoặc khởi động **Android Virtual Device (AVD)** – API 24+
-2. Nhấn **Run** (Shift+F10) hoặc nút ▶ trong Android Studio
-3. App sẽ build và cài lên emulator
+**Bước 3** — Tạo AVD API 24+ và nhấn Run (Shift+F10).
 
 ---
 
-## API Endpoints chính
+## API Endpoints
 
-> Base URL: `http://localhost:8080/api`
->
-> Các endpoint có 🔒 yêu cầu header: `Authorization: Bearer <token>`
+> Base URL: `http://localhost:8080/api` — Các endpoint 🔒 yêu cầu `Authorization: Bearer <token>`
 
 ### Auth
 | Method | Endpoint | Mô tả |
 |--------|----------|-------|
-| POST | `/auth/register` | Đăng ký tài khoản mới |
-| POST | `/auth/login` | Đăng nhập, nhận JWT token |
+| POST | `/auth/register` | Đăng ký |
+| POST | `/auth/login` | Đăng nhập, nhận JWT |
 
 ### Products
 | Method | Endpoint | Mô tả |
 |--------|----------|-------|
-| GET | `/products` | Lấy danh sách sản phẩm (phân trang) |
+| GET | `/products` | Danh sách sản phẩm (phân trang, sắp xếp) |
 | GET | `/products/{id}` | Chi tiết sản phẩm |
-| GET | `/products/search?keyword=...` | Tìm kiếm sản phẩm |
+| GET | `/products/search?keyword=` | Tìm kiếm |
+| GET | `/products/category/{id}` | Sản phẩm theo danh mục |
 | GET | `/products/featured` | Sản phẩm nổi bật |
+| GET | `/products/new-arrivals` | Sản phẩm mới |
 | GET | `/categories` | Danh sách danh mục |
 
 ### Cart 🔒
 | Method | Endpoint | Mô tả |
 |--------|----------|-------|
 | GET | `/cart` | Xem giỏ hàng |
-| POST | `/cart/add` | Thêm sản phẩm vào giỏ |
+| POST | `/cart/add` | Thêm sản phẩm |
 | PUT | `/cart/items/{id}` | Cập nhật số lượng |
 | DELETE | `/cart/items/{id}` | Xóa khỏi giỏ |
-| DELETE | `/cart/clear` | Xóa toàn bộ giỏ |
+| DELETE | `/cart/clear` | Xóa toàn bộ |
 
 ### Orders 🔒
 | Method | Endpoint | Mô tả |
 |--------|----------|-------|
-| POST | `/orders` | Tạo đơn hàng mới |
+| POST | `/orders` | Tạo đơn hàng |
 | GET | `/orders` | Lịch sử đơn hàng |
 | GET | `/orders/{id}` | Chi tiết đơn hàng |
 | PUT | `/orders/{id}/cancel` | Hủy đơn hàng |
+
+### Addresses 🔒
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| GET | `/addresses` | Danh sách địa chỉ |
+| POST | `/addresses` | Thêm địa chỉ |
+| PUT | `/addresses/{id}` | Sửa địa chỉ |
+| DELETE | `/addresses/{id}` | Xóa địa chỉ |
+
+### Reviews 🔒
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| POST | `/reviews` | Gửi đánh giá |
+| GET | `/reviews/product/{id}` | Đánh giá của sản phẩm |
+| GET | `/reviews/check/{productId}` | Kiểm tra đã đánh giá chưa 🔒 |
+
+### Wishlist 🔒
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| GET | `/wishlist` | Danh sách yêu thích |
+| POST | `/wishlist/{productId}` | Thêm vào yêu thích |
+| DELETE | `/wishlist/{productId}` | Xóa khỏi yêu thích |
+| GET | `/wishlist/check/{productId}` | Kiểm tra đã yêu thích chưa |
 
 ### User 🔒
 | Method | Endpoint | Mô tả |
@@ -275,102 +280,45 @@ debug {
 | GET | `/users/me` | Thông tin cá nhân |
 | PUT | `/users/me` | Cập nhật thông tin |
 
----
-
-## Ví dụ request/response
-
-### Đăng ký
-
-**Request:**
-```json
-POST /api/auth/register
-{
-  "firstName": "Nguyen",
-  "lastName": "Van A",
-  "username": "nguyenvana",
-  "email": "nguyenvana@gmail.com",
-  "phone": "0901234567",
-  "password": "123456"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "message": "User registered successfully",
-  "data": {
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refreshToken": "...",
-    "userId": 1,
-    "username": "nguyenvana",
-    "email": "nguyenvana@gmail.com"
-  }
-}
-```
-
-### Thêm vào giỏ hàng
-
-**Request:**
-```json
-POST /api/cart/add
-Authorization: Bearer <token>
-{
-  "productId": 1,
-  "variantId": 2,
-  "quantity": 1
-}
-```
+### Admin 🔒 (ROLE_ADMIN)
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| GET | `/admin/orders` | Tất cả đơn hàng (lọc + tìm kiếm) |
+| PUT | `/admin/orders/{id}/status` | Cập nhật trạng thái đơn |
+| GET | `/admin/products` | Quản lý sản phẩm |
+| POST | `/admin/products` | Thêm sản phẩm |
+| PUT | `/admin/products/{id}` | Sửa sản phẩm |
+| DELETE | `/admin/products/{id}` | Xóa sản phẩm |
+| GET | `/admin/categories` | Quản lý danh mục |
+| GET | `/admin/users` | Quản lý người dùng |
+| PUT | `/admin/users/{id}/status` | Khóa/mở khóa tài khoản |
 
 ---
 
-## Sơ đồ database (các bảng chính)
+## Sơ đồ quan hệ database (các bảng chính)
 
 ```
-Users ─────────── has many ──→ Orders
-Users ─────────── has one  ──→ Cart ──→ CartItems ──→ Products
+Users ────────── has many ──→ Orders ──→ OrderItems ──→ Products
+Users ────────── has one  ──→ Cart ────→ CartItems ───→ Products
+Users ────────── has many ──→ Addresses
+Users ────────── has many ──→ Wishlists ─→ Products
 Products ──────── belongs to ─→ Categories
 Products ──────── has many ──→ ProductVariants
-Orders ─────────── has many ──→ SubOrders ──→ OrderItems
-Orders ─────────── has one ──→ Address
+Products ──────── has many ──→ ProductReviews ←── Users
+Orders ──────────── has one ──→ Address (snapshot)
 ```
-
-**Các bảng trong database sau khi chạy:**
-- `Users`, `Roles`, `User_Roles`
-- `Categories`, `Products`, `Product_Variants`, `Product_Reviews`
-- `Shops`, `Shop_Reviews`
-- `Carts`, `Cart_Items`
-- `Orders`, `Sub_Orders`, `Order_Items`
-- `Addresses`, `Payments`
-- `Wishlists`, `Notifications`, `Chat_Messages`
-- `Coupons`, `User_Coupons`, `Shippers`, `Shipments`
 
 ---
 
-## Lưu ý khi phát triển
-
-### Phân chia công việc trong code
-
-- **Backend**: code trong `backend-api/src/main/java/com/furniture/api/`
-- **Android**: code trong `android-app/app/src/main/java/com/furniture/app/`
-- **Khi thêm API mới**: tạo Controller → Service interface → ServiceImpl → Repository (nếu cần)
-- **Khi thêm màn hình mới**: tạo layout XML → Activity/Fragment → ViewModel → Repository
-
-### Luồng xác thực JWT
+## Luồng xác thực JWT
 
 ```
 Android App ──POST /auth/login──→ Backend
-                  ←─── JWT Token ───
+                  ←── accessToken (JWT) ───
 App lưu token vào SharedPreferences (SessionManager)
-Mọi request sau đó gửi kèm: Authorization: Bearer <token>
-Backend đọc token qua JwtAuthenticationFilter
-```
-
-### Chạy song song (cần mở 2 cửa sổ)
-
-```
-Cửa sổ 1: cd backend-api && java -jar target/furniture-api-1.0.0.jar
-Cửa sổ 2: Mở Android Studio → Run app trên emulator
+Mọi request sau gửi kèm: Authorization: Bearer <token>
+Backend xác minh qua JwtAuthenticationFilter
+Khi token hết hạn → app tự chuyển về màn hình đăng nhập
 ```
 
 ---
@@ -379,28 +327,35 @@ Cửa sổ 2: Mở Android Studio → Run app trên emulator
 
 | Lỗi | Nguyên nhân | Cách sửa |
 |-----|-------------|----------|
-| `Connection refused` trên app | Backend chưa chạy | Chạy backend trước |
-| `Unable to resolve host "10.0.2.2"` | Thiếu INTERNET permission | Đã có trong Manifest, kiểm tra emulator |
-| `Access denied for user 'root'` | Sai password MySQL | Sửa lại trong `application.properties` |
+| `Connection refused` | Backend chưa chạy | Khởi động `mvn spring-boot:run` |
+| `Unable to resolve host 10.0.2.2` | Emulator không kết nối được localhost | Kiểm tra backend đang chạy, đúng port 8080 |
+| `Access denied for user 'root'` | Sai password MySQL | Sửa `application.properties` |
 | `Table doesn't exist` | JPA chưa tạo bảng | Chạy lại backend, kiểm tra `ddl-auto=update` |
-| Build fail `LazyInitializationException` | Thiếu `@Transactional` | Đã fix, rebuild lại |
-| App hiện "Giỏ hàng trống" sau khi thêm | Lỗi lazy loading (đã fix) | Pull code mới nhất |
+| App hiện 401 Unauthorized | Token hết hạn | Đăng xuất và đăng nhập lại |
+| `No static resource reviews` | Backend cũ đang chạy | Kill process port 8080, restart backend |
+| Không xóa được địa chỉ | FK constraint (địa chỉ đang dùng trong đơn) | Backend trả về thông báo lỗi rõ ràng |
 
 ---
 
 ## Trạng thái hoàn thiện
 
 | Chức năng | Backend | Android |
-|-----------|---------|---------|
-| Đăng ký / Đăng nhập | ✅ Xong | ✅ Xong |
-| Xem danh sách sản phẩm | ✅ Xong | ✅ Xong |
-| Tìm kiếm sản phẩm | ✅ Xong | ✅ Xong |
-| Xem chi tiết sản phẩm | ✅ Xong | ✅ Xong |
-| Giỏ hàng | ✅ Xong | ✅ Xong |
-| Đặt hàng | ✅ Xong | ✅ Xong |
-| Lịch sử đơn hàng | ✅ Xong | ✅ Xong |
-| Chỉnh sửa profile | ✅ Xong | ✅ Xong |
-| Danh mục sản phẩm | ✅ Xong | ⚙️ Đang làm |
-| Wishlist | ⚙️ Đang làm | ⚙️ Đang làm |
-| Chat | ⚙️ Đang làm | ⚙️ Đang làm |
-| Thông báo | ⚙️ Đang làm | ⚙️ Đang làm |
+|-----------|:-------:|:-------:|
+| Đăng ký / Đăng nhập | ✅ | ✅ |
+| Trang chủ (Home) | ✅ | ✅ |
+| Tìm kiếm + lọc + sắp xếp | ✅ | ✅ |
+| Chi tiết sản phẩm + đánh giá | ✅ | ✅ |
+| Giỏ hàng | ✅ | ✅ |
+| Đặt hàng + chọn địa chỉ | ✅ | ✅ |
+| Lịch sử đơn hàng | ✅ | ✅ |
+| Chi tiết đơn hàng + hủy đơn | ✅ | ✅ |
+| Đánh giá sản phẩm (sau giao) | ✅ | ✅ |
+| Danh sách yêu thích (Wishlist) | ✅ | ✅ |
+| Quản lý địa chỉ | ✅ | ✅ |
+| Chỉnh sửa profile | ✅ | ✅ |
+| Chat hỗ trợ | ✅ | ✅ |
+| Admin: quản lý sản phẩm | ✅ | ✅ |
+| Admin: quản lý danh mục | ✅ | ✅ |
+| Admin: quản lý đơn hàng + filter | ✅ | ✅ |
+| Admin: quản lý người dùng | ✅ | ✅ |
+| Admin: chat với khách | ✅ | ✅ |

@@ -36,10 +36,10 @@
     <string name="nav_profile">Profile</string>
 
     <!-- Bottom Navigation Menu -->
-    <string name="menu_home">Home</string>
-    <string name="menu_search">Search</string>
-    <string name="menu_cart">Cart</string>
-    <string name="menu_profile">Profile</string>
+    <string name="menu_home">Trang chủ</string>
+    <string name="menu_search">Tìm kiếm</string>
+    <string name="menu_cart">Giỏ hàng</string>
+    <string name="menu_profile">Hồ sơ</string>
 
     <!-- Product -->
     <string name="add_to_cart">Add to Cart</string>

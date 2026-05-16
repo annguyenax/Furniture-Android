@@ -23,11 +23,18 @@ public class CustomerMainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_customer_main);
 
+        // Re-init RetrofitClient với token đã lưu (quan trọng khi app restart sau khi bị kill)
+        SessionManager sessionManager = new SessionManager(this);
+        String savedToken = sessionManager.getToken();
+        if (savedToken != null && !savedToken.isEmpty()) {
+            RetrofitClient.getInstance(savedToken);
+        }
+
         // Khi token hết hạn (401), tự động đăng xuất và về màn login
         AuthInterceptor.setUnauthorizedHandler(() -> runOnUiThread(() -> {
-            new SessionManager(this).clearSession();
+            sessionManager.clearSession();
             RetrofitClient.resetInstance();
-            Intent intent = new Intent(this, LoginActivity.class);
+            Intent intent = new Intent(CustomerMainActivity.this, LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             intent.putExtra("message", "Phiên đăng nhập hết hạn, vui lòng đăng nhập lại");
             startActivity(intent);
@@ -40,8 +47,8 @@ public class CustomerMainActivity extends AppCompatActivity {
         viewPagerAdapter = new ViewPagerAdapter(this);
         viewPager.setAdapter(viewPagerAdapter);
 
-        // Disable swipe gesture (optional - remove this line if you want swipe navigation)
-        viewPager.setUserInputEnabled(false);
+        // Enable swipe between tabs
+        viewPager.setUserInputEnabled(true);
 
         // Sync ViewPager with BottomNavigation
         bottomNavigationView.setOnItemSelectedListener(item -> {
@@ -55,7 +62,7 @@ public class CustomerMainActivity extends AppCompatActivity {
             } else if (item.getItemId() == R.id.nav_profile) {
                 position = 3;
             }
-            viewPager.setCurrentItem(position, false);
+            viewPager.setCurrentItem(position, true);
             return true;
         });
 

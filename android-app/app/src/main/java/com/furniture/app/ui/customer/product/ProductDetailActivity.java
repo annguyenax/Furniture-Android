@@ -20,11 +20,18 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
 import com.furniture.app.R;
+import com.furniture.app.data.model.ApiResponse;
+import com.furniture.app.data.model.PageResponse;
 import com.furniture.app.data.model.Product;
 import com.furniture.app.data.model.ProductVariant;
+import com.furniture.app.data.model.ReviewModel;
+import com.furniture.app.data.remote.RetrofitClient;
+import com.furniture.app.data.remote.api.ReviewApi;
+import com.furniture.app.data.remote.api.WishlistApi;
 import com.furniture.app.data.repository.CartRepository;
 import com.furniture.app.data.repository.ProductRepository;
 import com.furniture.app.ui.adapter.ImageSliderAdapter;
+import com.furniture.app.ui.adapter.ReviewAdapter;
 import com.furniture.app.ui.adapter.VariantAdapter;
 import com.furniture.app.ui.customer.order.CheckoutActivity;
 import com.furniture.app.ui.viewmodel.CartViewModel;
@@ -41,6 +48,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class ProductDetailActivity extends AppCompatActivity {
 
     public static final String EXTRA_PRODUCT_ID = "product_id";
@@ -48,7 +59,10 @@ public class ProductDetailActivity extends AppCompatActivity {
 
     private ProductViewModel productViewModel;
     private CartViewModel cartViewModel;
+    private ReviewApi reviewApi;
+    private WishlistApi wishlistApi;
     private SessionManager sessionManager;
+    private boolean isWishlisted = false;
     private NumberFormat currencyFormat;
 
     // Views
@@ -59,8 +73,9 @@ public class ProductDetailActivity extends AppCompatActivity {
     private TextView tvDimensions, tvWeight, tvCategory, tvStock;
     private TextView tvDescription;
     private TextView tvQuantity;
+    private TextView tvReviewCount, tvNoReviews;
     private RatingBar ratingBar;
-    private RecyclerView rvVariants;
+    private RecyclerView rvVariants, rvReviews;
     private ProgressBar progressBar;
 
     private Product currentProduct;
@@ -75,6 +90,8 @@ public class ProductDetailActivity extends AppCompatActivity {
 
         sessionManager = new SessionManager(this);
         currencyFormat = NumberFormat.getInstance(new Locale("vi", "VN"));
+        reviewApi = RetrofitClient.getInstance(sessionManager.getToken()).create(ReviewApi.class);
+        wishlistApi = RetrofitClient.getInstance(sessionManager.getToken()).create(WishlistApi.class);
 
         initViews();
         setupToolbar();
@@ -112,11 +129,16 @@ public class ProductDetailActivity extends AppCompatActivity {
         tvStock = findViewById(R.id.tv_stock);
         tvDescription = findViewById(R.id.tv_description);
         tvQuantity = findViewById(R.id.tv_quantity);
+        tvReviewCount = findViewById(R.id.tv_review_count);
+        tvNoReviews = findViewById(R.id.tv_no_reviews);
         rvVariants = findViewById(R.id.rv_variants);
+        rvReviews = findViewById(R.id.rv_reviews);
         progressBar = findViewById(R.id.progress_bar);
 
         // Setup variants RecyclerView
         rvVariants.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        rvReviews.setLayoutManager(new LinearLayoutManager(this));
+        rvReviews.setNestedScrollingEnabled(false);
     }
 
     private void setupToolbar() {
@@ -185,6 +207,54 @@ public class ProductDetailActivity extends AppCompatActivity {
         findViewById(R.id.btn_buy_now).setOnClickListener(v -> buyNow());
     }
 
+    private void setupWishlistButton(int productId) {
+        ImageButton btnWishlist = findViewById(R.id.btn_wishlist);
+        if (btnWishlist == null) return;
+        wishlistApi.checkWishlist(productId).enqueue(new Callback<ApiResponse<Boolean>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Boolean>> call, Response<ApiResponse<Boolean>> response) {
+                if (response.isSuccessful() && response.body() != null
+                        && Boolean.TRUE.equals(response.body().getData())) {
+                    isWishlisted = true;
+                    btnWishlist.setImageResource(android.R.drawable.btn_star_big_on);
+                } else {
+                    isWishlisted = false;
+                    btnWishlist.setImageResource(android.R.drawable.btn_star_big_off);
+                }
+            }
+            @Override public void onFailure(Call<ApiResponse<Boolean>> call, Throwable t) {}
+        });
+        btnWishlist.setOnClickListener(v -> toggleWishlist(productId, btnWishlist));
+    }
+
+    private void toggleWishlist(int productId, ImageButton btn) {
+        if (isWishlisted) {
+            wishlistApi.removeFromWishlist(productId).enqueue(new Callback<ApiResponse<Void>>() {
+                @Override
+                public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                    isWishlisted = false;
+                    btn.setImageResource(android.R.drawable.btn_star_big_off);
+                    Toast.makeText(ProductDetailActivity.this, "Đã xóa khỏi yêu thích", Toast.LENGTH_SHORT).show();
+                }
+                @Override public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {}
+            });
+        } else {
+            wishlistApi.addToWishlist(productId).enqueue(new Callback<ApiResponse<Void>>() {
+                @Override
+                public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                        isWishlisted = true;
+                        btn.setImageResource(android.R.drawable.btn_star_big_on);
+                        Toast.makeText(ProductDetailActivity.this, "Đã thêm vào yêu thích", Toast.LENGTH_SHORT).show();
+                    } else if (response.body() != null) {
+                        Toast.makeText(ProductDetailActivity.this, response.body().getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+                @Override public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {}
+            });
+        }
+    }
+
     private void loadProduct(int productId) {
         progressBar.setVisibility(View.VISIBLE);
         ProductRepository productRepository = new ProductRepository(this);
@@ -247,6 +317,41 @@ public class ProductDetailActivity extends AppCompatActivity {
 
         // Variants
         setupVariants(product);
+
+        // Reviews
+        loadReviews(product.getProductId());
+
+        // Wishlist
+        setupWishlistButton(product.getProductId());
+    }
+
+    private void loadReviews(int productId) {
+        reviewApi.getProductReviews(productId, 0, 20).enqueue(new Callback<ApiResponse<PageResponse<ReviewModel>>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<PageResponse<ReviewModel>>> call,
+                                   Response<ApiResponse<PageResponse<ReviewModel>>> response) {
+                if (!response.isSuccessful() || response.body() == null || response.body().getData() == null) return;
+                PageResponse<ReviewModel> page = response.body().getData();
+                List<ReviewModel> reviews = page.getContent();
+                runOnUiThread(() -> {
+                    int total = (int) page.getTotalElements();
+                    tvReviewCount.setText(total > 0 ? total + " đánh giá" : "");
+                    if (reviews == null || reviews.isEmpty()) {
+                        tvNoReviews.setVisibility(View.VISIBLE);
+                        rvReviews.setVisibility(View.GONE);
+                    } else {
+                        tvNoReviews.setVisibility(View.GONE);
+                        rvReviews.setVisibility(View.VISIBLE);
+                        rvReviews.setAdapter(new ReviewAdapter(reviews));
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<PageResponse<ReviewModel>>> call, Throwable t) {
+                // silently fail — reviews are non-critical
+            }
+        });
     }
 
     private void updatePriceDisplay(BigDecimal price, BigDecimal originalPrice, BigDecimal discount) {

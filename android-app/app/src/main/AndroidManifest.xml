@@ -60,6 +60,11 @@
             android:theme="@style/Theme.FurnitureApp" />
 
         <activity
+            android:name=".ui.customer.order.OrderDetailActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+
+        <activity
             android:name=".ui.customer.order.OrderHistoryActivity"
             android:exported="false"
             android:theme="@style/Theme.FurnitureApp" />
@@ -96,6 +101,67 @@
             android:exported="false"
             android:theme="@style/Theme.FurnitureApp"
             android:windowSoftInputMode="adjustResize" />
+
+        <!-- Admin Activities -->
+        <activity
+            android:name=".ui.admin.AdminMainActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+
+        <activity
+            android:name=".ui.admin.AdminProductListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+
+        <activity
+            android:name=".ui.admin.AdminProductEditActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+
+        <activity
+            android:name=".ui.admin.AdminOrderListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+
+        <activity
+            android:name=".ui.admin.AdminCategoryListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+
+        <activity
+            android:name=".ui.admin.AdminChatListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+
+        <activity
+            android:name=".ui.customer.product.CategoryProductsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+
+        <activity
+            android:name=".ui.customer.profile.AddressListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+
+        <activity
+            android:name=".ui.customer.profile.AddAddressActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+
+        <activity
+            android:name=".ui.admin.AdminUserListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+
+        <activity
+            android:name=".ui.customer.order.WriteReviewActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+
+        <activity
+            android:name=".ui.customer.profile.WishlistActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
 
     </application>
 
