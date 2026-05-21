@@ -26,6 +26,7 @@ public class OrderResponse {
     private String paymentMethod;
     private String paymentStatus;
     private String orderStatus;
+    private String returnStatus;
     private String note;
     private LocalDateTime createdAt;
     private List<OrderItemResponse> items;

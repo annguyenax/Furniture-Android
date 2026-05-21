@@ -43,7 +43,6 @@ public class AuthInterceptor implements Interceptor {
 
         Request newRequest = originalRequest.newBuilder()
                 .header("Authorization", "Bearer " + authToken)
-                .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
                 .build();
 

@@ -72,7 +72,7 @@ public class ProductDetailActivity extends AppCompatActivity {
     private TextView tvProductName, tvRating, tvSold;
     private TextView tvDimensions, tvWeight, tvCategory, tvStock;
     private TextView tvDescription;
-    private TextView tvQuantity;
+    private android.widget.EditText tvQuantity;
     private TextView tvReviewCount, tvNoReviews;
     private RatingBar ratingBar;
     private RecyclerView rvVariants, rvReviews;
@@ -82,6 +82,7 @@ public class ProductDetailActivity extends AppCompatActivity {
     private ProductVariant selectedVariant;
     private int quantity = 1;
     private VariantAdapter variantAdapter;
+    private final List<Integer> variantImagePositions = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -176,6 +177,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         ImageButton btnIncrease = findViewById(R.id.btn_increase);
 
         btnDecrease.setOnClickListener(v -> {
+            syncQuantityFromInput();
             if (quantity > 1) {
                 quantity--;
                 tvQuantity.setText(String.valueOf(quantity));
@@ -183,6 +185,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         });
 
         btnIncrease.setOnClickListener(v -> {
+            syncQuantityFromInput();
             int maxStock = getMaxStock();
             if (quantity < maxStock) {
                 quantity++;
@@ -191,6 +194,33 @@ public class ProductDetailActivity extends AppCompatActivity {
                 Toast.makeText(this, "Số lượng tối đa: " + maxStock, Toast.LENGTH_SHORT).show();
             }
         });
+
+        // Allow typing a number directly; clamp to valid range on focus loss
+        tvQuantity.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) syncQuantityFromInput();
+        });
+        tvQuantity.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE) {
+                syncQuantityFromInput();
+                android.view.inputmethod.InputMethodManager imm =
+                        (android.view.inputmethod.InputMethodManager)
+                                getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+                if (imm != null) imm.hideSoftInputFromWindow(tvQuantity.getWindowToken(), 0);
+                return true;
+            }
+            return false;
+        });
+    }
+
+    private void syncQuantityFromInput() {
+        try {
+            int typed = Integer.parseInt(tvQuantity.getText().toString().trim());
+            int maxStock = getMaxStock();
+            quantity = Math.max(1, Math.min(typed, maxStock));
+        } catch (NumberFormatException e) {
+            quantity = 1;
+        }
+        tvQuantity.setText(String.valueOf(quantity));
     }
 
     private int getMaxStock() {
@@ -224,7 +254,7 @@ public class ProductDetailActivity extends AppCompatActivity {
             }
             @Override public void onFailure(Call<ApiResponse<Boolean>> call, Throwable t) {}
         });
-        btnWishlist.setOnClickListener(v -> toggleWishlist(productId, btnWishlist));
+        btnWishlist.setOnClickListener(v -> requireLogin(() -> toggleWishlist(productId, btnWishlist)));
     }
 
     private void toggleWishlist(int productId, ImageButton btn) {
@@ -374,25 +404,24 @@ public class ProductDetailActivity extends AppCompatActivity {
 
     private void setupImageSlider(Product product) {
         List<String> imageUrls = new ArrayList<>();
+        variantImagePositions.clear();
 
-        // Get images from variants
-        if (product.getVariants() != null && !product.getVariants().isEmpty()) {
+        if (product.getVariants() != null) {
             for (ProductVariant variant : product.getVariants()) {
                 if (variant.getImageUrl() != null && !variant.getImageUrl().isEmpty()) {
+                    variantImagePositions.add(imageUrls.size());
                     imageUrls.add(variant.getImageUrl());
+                } else {
+                    variantImagePositions.add(-1);
                 }
             }
         }
 
-        // If no images, add placeholder
-        if (imageUrls.isEmpty()) {
-            imageUrls.add("");
-        }
+        if (imageUrls.isEmpty()) imageUrls.add("");
 
         ImageSliderAdapter adapter = new ImageSliderAdapter(imageUrls);
         imageViewPager.setAdapter(adapter);
 
-        // Setup indicator
         if (imageUrls.size() > 1) {
             new TabLayoutMediator(imageIndicator, imageViewPager, (tab, position) -> {}).attach();
             imageIndicator.setVisibility(View.VISIBLE);
@@ -405,33 +434,74 @@ public class ProductDetailActivity extends AppCompatActivity {
         if (product.getVariants() != null && !product.getVariants().isEmpty()) {
             variantAdapter = new VariantAdapter(product.getVariants(), variant -> {
                 selectedVariant = variant;
+                // Reset quantity to 1 when switching variant
+                quantity = 1;
+                tvQuantity.setText("1");
                 updatePriceDisplay(variant.getPrice(), product.getBasePrice(), product.getDiscount());
-                tvStock.setText(String.format("%d sản phẩm", variant.getStock()));
+                int stock = variant.getStock();
+                tvStock.setText(stock > 0
+                        ? String.format("%d sản phẩm còn lại", stock)
+                        : "Hết hàng");
+                // Sync image slider to this variant's image
+                int variantIdx = product.getVariants().indexOf(variant);
+                if (variantIdx >= 0 && variantIdx < variantImagePositions.size()) {
+                    int imgPos = variantImagePositions.get(variantIdx);
+                    if (imgPos >= 0) imageViewPager.setCurrentItem(imgPos, true);
+                }
             });
             rvVariants.setAdapter(variantAdapter);
 
-            // Select first variant by default
             selectedVariant = product.getVariants().get(0);
+            tvStock.setText(selectedVariant.getStock() > 0
+                    ? String.format("%d sản phẩm còn lại", selectedVariant.getStock())
+                    : "Hết hàng");
             findViewById(R.id.variant_section).setVisibility(View.VISIBLE);
         } else {
+            tvStock.setText(String.format("%d sản phẩm còn lại", product.getStock()));
             findViewById(R.id.variant_section).setVisibility(View.GONE);
         }
     }
 
+    private void requireLogin(Runnable action) {
+        if (sessionManager.isLoggedIn()) {
+            action.run();
+        } else {
+            Toast.makeText(this, "Vui lòng đăng nhập để tiếp tục", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, com.furniture.app.ui.auth.LoginActivity.class));
+        }
+    }
+
+    private boolean isOutOfStock() {
+        int stock = getMaxStock();
+        return stock <= 0;
+    }
+
     private void addToCart() {
         if (currentProduct == null) return;
-
-        Integer variantId = selectedVariant != null ? selectedVariant.getVariantId() : null;
-        cartViewModel.addToCart(currentProduct.getProductId(), variantId, quantity);
+        if (isOutOfStock()) {
+            Toast.makeText(this, "Sản phẩm này đã hết hàng", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        syncQuantityFromInput();
+        requireLogin(() -> {
+            Integer variantId = selectedVariant != null ? selectedVariant.getVariantId() : null;
+            cartViewModel.addToCart(currentProduct.getProductId(), variantId, quantity);
+        });
     }
 
     private void buyNow() {
         if (currentProduct == null) return;
-
-        Intent intent = new Intent(this, CheckoutActivity.class);
-        intent.putExtra(CheckoutActivity.EXTRA_PRODUCT, currentProduct);
-        intent.putExtra(CheckoutActivity.EXTRA_VARIANT, selectedVariant);
-        intent.putExtra(CheckoutActivity.EXTRA_QUANTITY, quantity);
-        startActivity(intent);
+        if (isOutOfStock()) {
+            Toast.makeText(this, "Sản phẩm này đã hết hàng", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        syncQuantityFromInput();
+        requireLogin(() -> {
+            Intent intent = new Intent(this, CheckoutActivity.class);
+            intent.putExtra(CheckoutActivity.EXTRA_PRODUCT, currentProduct);
+            intent.putExtra(CheckoutActivity.EXTRA_VARIANT, selectedVariant);
+            intent.putExtra(CheckoutActivity.EXTRA_QUANTITY, quantity);
+            startActivity(intent);
+        });
     }
 }

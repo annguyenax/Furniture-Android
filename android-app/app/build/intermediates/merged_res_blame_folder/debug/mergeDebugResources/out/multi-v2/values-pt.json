@@ -4,7 +4,7 @@
             "outputFile": "com.furniture.app-mergeDebugResources-55:/values-pt/values-pt.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\ADMIN\\.gradle\\caches\\8.13\\transforms\\e2029c885d5045e04439f26777fa3592\\transformed\\navigation-ui-2.7.6\\res\\values-pt\\values-pt.xml",
+                    "source": "C:\\Users\\ADMIN\\.gradle\\caches\\8.13\\transforms\\60e569326bea228ecb41096d5bbc17a6\\transformed\\navigation-ui-2.7.6\\res\\values-pt\\values-pt.xml",
                     "from": {
                         "startLines": "2,3",
                         "startColumns": "4,4",
@@ -21,7 +21,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\ADMIN\\.gradle\\caches\\8.13\\transforms\\66d1be4edf262a9ae33144b3ab7dcad7\\transformed\\core-1.12.0\\res\\values-pt\\values-pt.xml",
+                    "source": "C:\\Users\\ADMIN\\.gradle\\caches\\8.13\\transforms\\e3d1d7163dc6a6a2d02133bed2965330\\transformed\\core-1.12.0\\res\\values-pt\\values-pt.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9",
                         "startColumns": "4,4,4,4,4,4,4,4",
@@ -38,7 +38,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\ADMIN\\.gradle\\caches\\8.13\\transforms\\9160612a21a554e99bfc90f70286ca9d\\transformed\\appcompat-1.6.1\\res\\values-pt\\values-pt.xml",
+                    "source": "C:\\Users\\ADMIN\\.gradle\\caches\\8.13\\transforms\\878905728e32d0cb49c28b5414738288\\transformed\\appcompat-1.6.1\\res\\values-pt\\values-pt.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",

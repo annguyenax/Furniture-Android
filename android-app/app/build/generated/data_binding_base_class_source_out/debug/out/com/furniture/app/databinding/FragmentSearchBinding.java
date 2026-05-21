@@ -25,19 +25,13 @@ public final class FragmentSearchBinding implements ViewBinding {
   private final LinearLayout rootView;
 
   @NonNull
-  public final Chip chipAll;
+  public final Chip chipSortDefault;
 
   @NonNull
-  public final Chip chipBedroom;
+  public final Chip chipSortPriceAsc;
 
   @NonNull
-  public final Chip chipKitchen;
-
-  @NonNull
-  public final Chip chipLivingRoom;
-
-  @NonNull
-  public final Chip chipOffice;
+  public final Chip chipSortPriceDesc;
 
   @NonNull
   public final ImageView clearSearch;
@@ -52,28 +46,35 @@ public final class FragmentSearchBinding implements ViewBinding {
   public final ProgressBar progressBar;
 
   @NonNull
+  public final RecyclerView rvSuggestions;
+
+  @NonNull
   public final EditText searchEditText;
 
   @NonNull
   public final RecyclerView searchResultsRecyclerView;
 
-  private FragmentSearchBinding(@NonNull LinearLayout rootView, @NonNull Chip chipAll,
-      @NonNull Chip chipBedroom, @NonNull Chip chipKitchen, @NonNull Chip chipLivingRoom,
-      @NonNull Chip chipOffice, @NonNull ImageView clearSearch, @NonNull LinearLayout emptyState,
+  @NonNull
+  public final ChipGroup sortChipGroup;
+
+  private FragmentSearchBinding(@NonNull LinearLayout rootView, @NonNull Chip chipSortDefault,
+      @NonNull Chip chipSortPriceAsc, @NonNull Chip chipSortPriceDesc,
+      @NonNull ImageView clearSearch, @NonNull LinearLayout emptyState,
       @NonNull ChipGroup filterChipGroup, @NonNull ProgressBar progressBar,
-      @NonNull EditText searchEditText, @NonNull RecyclerView searchResultsRecyclerView) {
+      @NonNull RecyclerView rvSuggestions, @NonNull EditText searchEditText,
+      @NonNull RecyclerView searchResultsRecyclerView, @NonNull ChipGroup sortChipGroup) {
     this.rootView = rootView;
-    this.chipAll = chipAll;
-    this.chipBedroom = chipBedroom;
-    this.chipKitchen = chipKitchen;
-    this.chipLivingRoom = chipLivingRoom;
-    this.chipOffice = chipOffice;
+    this.chipSortDefault = chipSortDefault;
+    this.chipSortPriceAsc = chipSortPriceAsc;
+    this.chipSortPriceDesc = chipSortPriceDesc;
     this.clearSearch = clearSearch;
     this.emptyState = emptyState;
     this.filterChipGroup = filterChipGroup;
     this.progressBar = progressBar;
+    this.rvSuggestions = rvSuggestions;
     this.searchEditText = searchEditText;
     this.searchResultsRecyclerView = searchResultsRecyclerView;
+    this.sortChipGroup = sortChipGroup;
   }
 
   @Override
@@ -103,33 +104,21 @@ public final class FragmentSearchBinding implements ViewBinding {
     // This is done to optimize the compiled bytecode for size and performance.
     int id;
     missingId: {
-      id = R.id.chip_all;
-      Chip chipAll = ViewBindings.findChildViewById(rootView, id);
-      if (chipAll == null) {
+      id = R.id.chip_sort_default;
+      Chip chipSortDefault = ViewBindings.findChildViewById(rootView, id);
+      if (chipSortDefault == null) {
         break missingId;
       }
 
-      id = R.id.chip_bedroom;
-      Chip chipBedroom = ViewBindings.findChildViewById(rootView, id);
-      if (chipBedroom == null) {
+      id = R.id.chip_sort_price_asc;
+      Chip chipSortPriceAsc = ViewBindings.findChildViewById(rootView, id);
+      if (chipSortPriceAsc == null) {
         break missingId;
       }
 
-      id = R.id.chip_kitchen;
-      Chip chipKitchen = ViewBindings.findChildViewById(rootView, id);
-      if (chipKitchen == null) {
-        break missingId;
-      }
-
-      id = R.id.chip_living_room;
-      Chip chipLivingRoom = ViewBindings.findChildViewById(rootView, id);
-      if (chipLivingRoom == null) {
-        break missingId;
-      }
-
-      id = R.id.chip_office;
-      Chip chipOffice = ViewBindings.findChildViewById(rootView, id);
-      if (chipOffice == null) {
+      id = R.id.chip_sort_price_desc;
+      Chip chipSortPriceDesc = ViewBindings.findChildViewById(rootView, id);
+      if (chipSortPriceDesc == null) {
         break missingId;
       }
 
@@ -157,6 +146,12 @@ public final class FragmentSearchBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.rv_suggestions;
+      RecyclerView rvSuggestions = ViewBindings.findChildViewById(rootView, id);
+      if (rvSuggestions == null) {
+        break missingId;
+      }
+
       id = R.id.search_edit_text;
       EditText searchEditText = ViewBindings.findChildViewById(rootView, id);
       if (searchEditText == null) {
@@ -169,9 +164,15 @@ public final class FragmentSearchBinding implements ViewBinding {
         break missingId;
       }
 
-      return new FragmentSearchBinding((LinearLayout) rootView, chipAll, chipBedroom, chipKitchen,
-          chipLivingRoom, chipOffice, clearSearch, emptyState, filterChipGroup, progressBar,
-          searchEditText, searchResultsRecyclerView);
+      id = R.id.sort_chip_group;
+      ChipGroup sortChipGroup = ViewBindings.findChildViewById(rootView, id);
+      if (sortChipGroup == null) {
+        break missingId;
+      }
+
+      return new FragmentSearchBinding((LinearLayout) rootView, chipSortDefault, chipSortPriceAsc,
+          chipSortPriceDesc, clearSearch, emptyState, filterChipGroup, progressBar, rvSuggestions,
+          searchEditText, searchResultsRecyclerView, sortChipGroup);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

@@ -2,8 +2,13 @@ package com.furniture.app.ui.admin;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -38,8 +43,11 @@ public class AdminProductListActivity extends AppCompatActivity implements Admin
     private View emptyState;
     private AdminProductAdapter adapter;
     private List<Product> products = new ArrayList<>();
+    private final List<Product> allProducts = new ArrayList<>();
     private ProductApi productApi;
     private AdminProductApi adminProductApi;
+    private EditText etSearchProduct;
+    private Spinner spinnerStatusFilter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +73,8 @@ public class AdminProductListActivity extends AppCompatActivity implements Admin
         rvProducts = findViewById(R.id.rv_products);
         progressBar = findViewById(R.id.progress_bar);
         emptyState = findViewById(R.id.empty_state);
+        etSearchProduct = findViewById(R.id.et_search_product);
+        spinnerStatusFilter = findViewById(R.id.spinner_status_filter);
 
         rvProducts.setLayoutManager(new LinearLayoutManager(this));
         adapter = new AdminProductAdapter(products, this);
@@ -73,6 +83,23 @@ public class AdminProductListActivity extends AppCompatActivity implements Admin
         FloatingActionButton fabAdd = findViewById(R.id.fab_add);
         fabAdd.setOnClickListener(v ->
                 startActivity(new Intent(this, AdminProductEditActivity.class)));
+
+        ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_dropdown_item,
+                new String[]{"Tat ca trang thai", "ACTIVE", "INACTIVE"});
+        spinnerStatusFilter.setAdapter(statusAdapter);
+        spinnerStatusFilter.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                applyFilters();
+            }
+            @Override public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+        });
+
+        etSearchProduct.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { applyFilters(); }
+            @Override public void afterTextChanged(Editable s) {}
+        });
     }
 
     private void loadProducts() {
@@ -86,10 +113,9 @@ public class AdminProductListActivity extends AppCompatActivity implements Admin
                         if (response.isSuccessful() && response.body() != null
                                 && response.body().getData() != null) {
                             products.clear();
-                            products.addAll(response.body().getData().getContent());
-                            adapter.notifyDataSetChanged();
-                            emptyState.setVisibility(products.isEmpty() ? View.VISIBLE : View.GONE);
-                            rvProducts.setVisibility(products.isEmpty() ? View.GONE : View.VISIBLE);
+                            allProducts.clear();
+                            allProducts.addAll(response.body().getData().getContent());
+                            applyFilters();
                         }
                     }
 
@@ -100,6 +126,28 @@ public class AdminProductListActivity extends AppCompatActivity implements Admin
                                 "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    private void applyFilters() {
+        String keyword = etSearchProduct != null && etSearchProduct.getText() != null
+                ? etSearchProduct.getText().toString().trim().toLowerCase()
+                : "";
+        String status = spinnerStatusFilter != null && spinnerStatusFilter.getSelectedItem() != null
+                ? spinnerStatusFilter.getSelectedItem().toString()
+                : "Tat ca trang thai";
+
+        products.clear();
+        for (Product product : allProducts) {
+            boolean matchText = keyword.isEmpty()
+                    || (product.getProductName() != null && product.getProductName().toLowerCase().contains(keyword))
+                    || (product.getCategoryName() != null && product.getCategoryName().toLowerCase().contains(keyword));
+            boolean matchStatus = "Tat ca trang thai".equals(status)
+                    || (product.getStatus() != null && product.getStatus().equalsIgnoreCase(status));
+            if (matchText && matchStatus) products.add(product);
+        }
+        adapter.notifyDataSetChanged();
+        emptyState.setVisibility(products.isEmpty() ? View.VISIBLE : View.GONE);
+        rvProducts.setVisibility(products.isEmpty() ? View.GONE : View.VISIBLE);
     }
 
     @Override

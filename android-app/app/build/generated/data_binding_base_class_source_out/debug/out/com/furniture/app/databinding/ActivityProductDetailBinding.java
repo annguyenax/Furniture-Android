@@ -4,6 +4,7 @@ package com.furniture.app.databinding;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -46,6 +47,9 @@ public final class ActivityProductDetailBinding implements ViewBinding {
   public final ImageButton btnIncrease;
 
   @NonNull
+  public final ImageButton btnWishlist;
+
+  @NonNull
   public final CollapsingToolbarLayout collapsingToolbar;
 
   @NonNull
@@ -62,6 +66,9 @@ public final class ActivityProductDetailBinding implements ViewBinding {
 
   @NonNull
   public final RatingBar ratingBar;
+
+  @NonNull
+  public final RecyclerView rvReviews;
 
   @NonNull
   public final RecyclerView rvVariants;
@@ -82,6 +89,9 @@ public final class ActivityProductDetailBinding implements ViewBinding {
   public final TextView tvDiscount;
 
   @NonNull
+  public final TextView tvNoReviews;
+
+  @NonNull
   public final TextView tvOriginalPrice;
 
   @NonNull
@@ -91,10 +101,13 @@ public final class ActivityProductDetailBinding implements ViewBinding {
   public final TextView tvProductName;
 
   @NonNull
-  public final TextView tvQuantity;
+  public final EditText tvQuantity;
 
   @NonNull
   public final TextView tvRating;
+
+  @NonNull
+  public final TextView tvReviewCount;
 
   @NonNull
   public final TextView tvSold;
@@ -114,13 +127,15 @@ public final class ActivityProductDetailBinding implements ViewBinding {
   private ActivityProductDetailBinding(@NonNull CoordinatorLayout rootView,
       @NonNull AppBarLayout appBarLayout, @NonNull MaterialButton btnAddToCart,
       @NonNull MaterialButton btnBuyNow, @NonNull ImageButton btnDecrease,
-      @NonNull ImageButton btnIncrease, @NonNull CollapsingToolbarLayout collapsingToolbar,
-      @NonNull LinearLayout dimensionsRow, @NonNull TabLayout imageIndicator,
-      @NonNull ViewPager2 imageViewPager, @NonNull ProgressBar progressBar,
-      @NonNull RatingBar ratingBar, @NonNull RecyclerView rvVariants, @NonNull Toolbar toolbar,
+      @NonNull ImageButton btnIncrease, @NonNull ImageButton btnWishlist,
+      @NonNull CollapsingToolbarLayout collapsingToolbar, @NonNull LinearLayout dimensionsRow,
+      @NonNull TabLayout imageIndicator, @NonNull ViewPager2 imageViewPager,
+      @NonNull ProgressBar progressBar, @NonNull RatingBar ratingBar,
+      @NonNull RecyclerView rvReviews, @NonNull RecyclerView rvVariants, @NonNull Toolbar toolbar,
       @NonNull TextView tvCategory, @NonNull TextView tvDescription, @NonNull TextView tvDimensions,
-      @NonNull TextView tvDiscount, @NonNull TextView tvOriginalPrice, @NonNull TextView tvPrice,
-      @NonNull TextView tvProductName, @NonNull TextView tvQuantity, @NonNull TextView tvRating,
+      @NonNull TextView tvDiscount, @NonNull TextView tvNoReviews,
+      @NonNull TextView tvOriginalPrice, @NonNull TextView tvPrice, @NonNull TextView tvProductName,
+      @NonNull EditText tvQuantity, @NonNull TextView tvRating, @NonNull TextView tvReviewCount,
       @NonNull TextView tvSold, @NonNull TextView tvStock, @NonNull TextView tvWeight,
       @NonNull LinearLayout variantSection, @NonNull LinearLayout weightRow) {
     this.rootView = rootView;
@@ -129,23 +144,27 @@ public final class ActivityProductDetailBinding implements ViewBinding {
     this.btnBuyNow = btnBuyNow;
     this.btnDecrease = btnDecrease;
     this.btnIncrease = btnIncrease;
+    this.btnWishlist = btnWishlist;
     this.collapsingToolbar = collapsingToolbar;
     this.dimensionsRow = dimensionsRow;
     this.imageIndicator = imageIndicator;
     this.imageViewPager = imageViewPager;
     this.progressBar = progressBar;
     this.ratingBar = ratingBar;
+    this.rvReviews = rvReviews;
     this.rvVariants = rvVariants;
     this.toolbar = toolbar;
     this.tvCategory = tvCategory;
     this.tvDescription = tvDescription;
     this.tvDimensions = tvDimensions;
     this.tvDiscount = tvDiscount;
+    this.tvNoReviews = tvNoReviews;
     this.tvOriginalPrice = tvOriginalPrice;
     this.tvPrice = tvPrice;
     this.tvProductName = tvProductName;
     this.tvQuantity = tvQuantity;
     this.tvRating = tvRating;
+    this.tvReviewCount = tvReviewCount;
     this.tvSold = tvSold;
     this.tvStock = tvStock;
     this.tvWeight = tvWeight;
@@ -210,6 +229,12 @@ public final class ActivityProductDetailBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.btn_wishlist;
+      ImageButton btnWishlist = ViewBindings.findChildViewById(rootView, id);
+      if (btnWishlist == null) {
+        break missingId;
+      }
+
       id = R.id.collapsing_toolbar;
       CollapsingToolbarLayout collapsingToolbar = ViewBindings.findChildViewById(rootView, id);
       if (collapsingToolbar == null) {
@@ -243,6 +268,12 @@ public final class ActivityProductDetailBinding implements ViewBinding {
       id = R.id.rating_bar;
       RatingBar ratingBar = ViewBindings.findChildViewById(rootView, id);
       if (ratingBar == null) {
+        break missingId;
+      }
+
+      id = R.id.rv_reviews;
+      RecyclerView rvReviews = ViewBindings.findChildViewById(rootView, id);
+      if (rvReviews == null) {
         break missingId;
       }
 
@@ -282,6 +313,12 @@ public final class ActivityProductDetailBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.tv_no_reviews;
+      TextView tvNoReviews = ViewBindings.findChildViewById(rootView, id);
+      if (tvNoReviews == null) {
+        break missingId;
+      }
+
       id = R.id.tv_original_price;
       TextView tvOriginalPrice = ViewBindings.findChildViewById(rootView, id);
       if (tvOriginalPrice == null) {
@@ -301,7 +338,7 @@ public final class ActivityProductDetailBinding implements ViewBinding {
       }
 
       id = R.id.tv_quantity;
-      TextView tvQuantity = ViewBindings.findChildViewById(rootView, id);
+      EditText tvQuantity = ViewBindings.findChildViewById(rootView, id);
       if (tvQuantity == null) {
         break missingId;
       }
@@ -309,6 +346,12 @@ public final class ActivityProductDetailBinding implements ViewBinding {
       id = R.id.tv_rating;
       TextView tvRating = ViewBindings.findChildViewById(rootView, id);
       if (tvRating == null) {
+        break missingId;
+      }
+
+      id = R.id.tv_review_count;
+      TextView tvReviewCount = ViewBindings.findChildViewById(rootView, id);
+      if (tvReviewCount == null) {
         break missingId;
       }
 
@@ -343,10 +386,11 @@ public final class ActivityProductDetailBinding implements ViewBinding {
       }
 
       return new ActivityProductDetailBinding((CoordinatorLayout) rootView, appBarLayout,
-          btnAddToCart, btnBuyNow, btnDecrease, btnIncrease, collapsingToolbar, dimensionsRow,
-          imageIndicator, imageViewPager, progressBar, ratingBar, rvVariants, toolbar, tvCategory,
-          tvDescription, tvDimensions, tvDiscount, tvOriginalPrice, tvPrice, tvProductName,
-          tvQuantity, tvRating, tvSold, tvStock, tvWeight, variantSection, weightRow);
+          btnAddToCart, btnBuyNow, btnDecrease, btnIncrease, btnWishlist, collapsingToolbar,
+          dimensionsRow, imageIndicator, imageViewPager, progressBar, ratingBar, rvReviews,
+          rvVariants, toolbar, tvCategory, tvDescription, tvDimensions, tvDiscount, tvNoReviews,
+          tvOriginalPrice, tvPrice, tvProductName, tvQuantity, tvRating, tvReviewCount, tvSold,
+          tvStock, tvWeight, variantSection, weightRow);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

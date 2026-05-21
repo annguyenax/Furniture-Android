@@ -78,7 +78,17 @@
 
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Filter Chips -->
+    <!-- Suggestions dropdown -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_suggestions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="200dp"
+        android:background="@android:color/white"
+        android:visibility="gone"
+        android:elevation="4dp" />
+
+    <!-- Filter Chips (dynamic — populated from API) -->
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -90,45 +100,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingHorizontal="12dp"
-            app:singleSelection="true">
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_all"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="Tất cả" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_living_room"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Phòng khách" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_bedroom"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Phòng ngủ" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_kitchen"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Phòng ăn" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_office"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Văn phòng" />
-
-        </com.google.android.material.chip.ChipGroup>
+            app:singleSelection="true" />
 
     </HorizontalScrollView>
 
@@ -152,7 +124,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="true"
-                android:text="Liên quan" />
+                android:text="Mặc định" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_sort_price_asc"

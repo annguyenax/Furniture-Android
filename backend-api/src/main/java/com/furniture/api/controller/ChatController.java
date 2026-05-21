@@ -7,11 +7,14 @@ import com.furniture.api.model.ChatMessage;
 import com.furniture.api.model.User;
 import com.furniture.api.repository.ChatMessageRepository;
 import com.furniture.api.repository.UserRepository;
+import com.furniture.api.service.CloudinaryService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,6 +28,7 @@ public class ChatController {
 
     private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
+    private final CloudinaryService cloudinaryService;
 
     private User getCurrentUser(Authentication auth) {
         Integer userId = Integer.parseInt(auth.getName());
@@ -36,8 +40,6 @@ public class ChatController {
         return auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
     }
-
-    // ─── Send message ─────────────────────────────────────────────────────────
 
     @PostMapping("/send")
     @Transactional
@@ -57,25 +59,25 @@ public class ChatController {
             if (request.getRecipientUserId() == null) {
                 return ResponseEntity.badRequest().body(ApiResponse.error("Thiếu recipientUserId"));
             }
-            String chatId = ChatMessage.createChatId(request.getRecipientUserId(), SHOP_ID);
             msg = ChatMessage.builder()
-                    .chatId(chatId)
+                    .chatId(ChatMessage.createChatId(request.getRecipientUserId(), SHOP_ID))
                     .senderId(SHOP_ID)
                     .senderType(ChatMessage.SenderType.SHOP)
                     .receiverId(request.getRecipientUserId())
                     .receiverType(ChatMessage.SenderType.USER)
                     .message(request.getMessage().trim())
+                    .messageType(ChatMessage.MessageType.TEXT)
                     .isRead(false)
                     .build();
         } else {
-            String chatId = ChatMessage.createChatId(me.getUserId(), SHOP_ID);
             msg = ChatMessage.builder()
-                    .chatId(chatId)
+                    .chatId(ChatMessage.createChatId(me.getUserId(), SHOP_ID))
                     .senderId(me.getUserId())
                     .senderType(ChatMessage.SenderType.USER)
                     .receiverId(SHOP_ID)
                     .receiverType(ChatMessage.SenderType.SHOP)
                     .message(request.getMessage().trim())
+                    .messageType(ChatMessage.MessageType.TEXT)
                     .isRead(false)
                     .build();
         }
@@ -84,7 +86,50 @@ public class ChatController {
         return ResponseEntity.ok(ApiResponse.success("Đã gửi", ChatMessageResponse.fromEntity(msg, adminMode)));
     }
 
-    // ─── Get messages ─────────────────────────────────────────────────────────
+    @PostMapping(value = "/send-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Transactional
+    public ResponseEntity<ApiResponse<ChatMessageResponse>> sendImage(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(required = false) String caption,
+            @RequestParam(required = false) Integer recipientUserId,
+            Authentication authentication) {
+
+        CloudinaryService.UploadResult upload = cloudinaryService.uploadChatImage(file);
+        User me = getCurrentUser(authentication);
+        boolean adminMode = isAdmin(authentication);
+
+        ChatMessage.ChatMessageBuilder builder = ChatMessage.builder()
+                .message(caption != null ? caption.trim() : "")
+                .messageType(ChatMessage.MessageType.IMAGE)
+                .mediaUrl(upload.url())
+                .mediaPublicId(upload.publicId())
+                .isRead(false);
+
+        ChatMessage msg;
+        if (adminMode) {
+            if (recipientUserId == null) {
+                return ResponseEntity.badRequest().body(ApiResponse.error("Thiếu recipientUserId"));
+            }
+            msg = builder
+                    .chatId(ChatMessage.createChatId(recipientUserId, SHOP_ID))
+                    .senderId(SHOP_ID)
+                    .senderType(ChatMessage.SenderType.SHOP)
+                    .receiverId(recipientUserId)
+                    .receiverType(ChatMessage.SenderType.USER)
+                    .build();
+        } else {
+            msg = builder
+                    .chatId(ChatMessage.createChatId(me.getUserId(), SHOP_ID))
+                    .senderId(me.getUserId())
+                    .senderType(ChatMessage.SenderType.USER)
+                    .receiverId(SHOP_ID)
+                    .receiverType(ChatMessage.SenderType.SHOP)
+                    .build();
+        }
+
+        msg = chatMessageRepository.save(msg);
+        return ResponseEntity.ok(ApiResponse.success("Đã gửi ảnh", ChatMessageResponse.fromEntity(msg, adminMode)));
+    }
 
     @GetMapping("/messages/{chatId}")
     @Transactional
@@ -95,7 +140,6 @@ public class ChatController {
         boolean adminMode = isAdmin(authentication);
         User me = adminMode ? null : getCurrentUser(authentication);
 
-        // Mark as read
         int receiverId = adminMode ? SHOP_ID : me.getUserId();
         chatMessageRepository.markAsRead(chatId, receiverId);
 
@@ -107,12 +151,8 @@ public class ChatController {
         return ResponseEntity.ok(ApiResponse.success(responses));
     }
 
-    // ─── List chat rooms ──────────────────────────────────────────────────────
-
     @GetMapping("/rooms")
-    public ResponseEntity<ApiResponse<List<ChatRoomResponse>>> getChatRooms(
-            Authentication authentication) {
-
+    public ResponseEntity<ApiResponse<List<ChatRoomResponse>>> getChatRooms(Authentication authentication) {
         boolean adminMode = isAdmin(authentication);
         User me = adminMode ? null : getCurrentUser(authentication);
 
@@ -134,7 +174,6 @@ public class ChatController {
 
         ChatMessage last = msgs.get(msgs.size() - 1);
 
-        // chatId format: "userId-shopId"
         String[] parts = chatId.split("-");
         Integer userId;
         try {
@@ -147,8 +186,8 @@ public class ChatController {
         User user = userRepository.findById(userId).orElse(null);
         if (user != null) {
             String first = user.getFirstName() != null ? user.getFirstName() : "";
-            String last2 = user.getLastName() != null ? user.getLastName() : "";
-            String fullName = (first + " " + last2).trim();
+            String lastName = user.getLastName() != null ? user.getLastName() : "";
+            String fullName = (first + " " + lastName).trim();
             userName = !fullName.isEmpty() ? fullName : user.getUsername();
         }
 
@@ -165,13 +204,11 @@ public class ChatController {
                 .chatId(chatId)
                 .userId(userId)
                 .userName(userName)
-                .lastMessage(last.getMessage())
+                .lastMessage(last.getMessageType() == ChatMessage.MessageType.IMAGE ? "[Hình ảnh]" : last.getMessage())
                 .lastMessageTime(last.getCreatedAt())
                 .unreadCount(unread)
                 .build();
     }
-
-    // ─── Inner request class ──────────────────────────────────────────────────
 
     public static class SendMessageRequest {
         private String message;

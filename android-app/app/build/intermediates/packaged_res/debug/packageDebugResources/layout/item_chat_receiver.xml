@@ -3,34 +3,74 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="start"
-    android:padding="4dp">
+    android:orientation="horizontal"
+    android:paddingHorizontal="12dp"
+    android:paddingVertical="4dp">
 
+    <!-- Avatar with initial letter -->
+    <TextView
+        android:id="@+id/tv_avatar"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="2dp"
+        android:background="@drawable/bg_avatar"
+        android:gravity="center"
+        android:text="A"
+        android:textColor="@android:color/white"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <!-- Bubble + time, max ~70% width -->
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="48dp"
-        android:background="@drawable/bg_chat_receiver"
-        android:orientation="vertical"
-        android:padding="12dp">
+        android:layout_weight="1"
+        android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tv_message"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Message"
-            android:textColor="#212121"
-            android:textSize="14sp" />
+            android:background="@drawable/bg_chat_receiver"
+            android:orientation="vertical"
+            android:paddingBottom="8dp"
+            android:paddingEnd="12dp"
+            android:paddingStart="12dp"
+            android:paddingTop="8dp">
 
-        <TextView
-            android:id="@+id/tv_time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:layout_marginTop="4dp"
-            android:text="12:00"
-            android:textColor="#757575"
-            android:textSize="10sp" />
+            <TextView
+                android:id="@+id/tv_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:lineSpacingExtra="2dp"
+                android:textColor="#2D2D2D"
+                android:textSize="14sp" />
+
+            <ImageView
+                android:id="@+id/iv_message_image"
+                android:layout_width="220dp"
+                android:layout_height="160dp"
+                android:adjustViewBounds="true"
+                android:scaleType="centerCrop"
+                android:visibility="gone"
+                android:contentDescription="Hình ảnh chat" />
+
+            <TextView
+                android:id="@+id/tv_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginTop="3dp"
+                android:textColor="#9E9E9E"
+                android:textSize="10sp" />
+
+        </LinearLayout>
 
     </LinearLayout>
+
+    <!-- Right spacer to cap bubble at ~70% screen width -->
+    <View
+        android:layout_width="56dp"
+        android:layout_height="1dp" />
 
 </LinearLayout>

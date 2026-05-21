@@ -19,6 +19,7 @@ import com.furniture.app.data.model.User;
 import com.furniture.app.data.remote.RetrofitClient;
 import com.furniture.app.data.remote.api.UserApi;
 import com.furniture.app.ui.auth.LoginActivity;
+import com.furniture.app.ui.auth.RegisterActivity;
 import com.furniture.app.ui.customer.chat.ChatActivity;
 import com.furniture.app.ui.customer.order.OrderHistoryActivity;
 import com.furniture.app.ui.customer.profile.AddressListActivity;
@@ -41,6 +42,11 @@ public class ProfileFragment extends Fragment {
     private View menuAddresses;
     private View menuChat;
     private MaterialButton btnLogout;
+    private MaterialButton btnEditProfile;
+    private View layoutGuest;
+    private View layoutLoggedIn;
+    private MaterialButton btnLogin;
+    private MaterialButton btnRegister;
     private SessionManager sessionManager;
 
     @Nullable
@@ -57,6 +63,7 @@ public class ProfileFragment extends Fragment {
         sessionManager = new SessionManager(requireContext());
 
         initViews(view);
+        updateVisibility();
         loadUserProfile();
         setupListeners();
     }
@@ -70,16 +77,31 @@ public class ProfileFragment extends Fragment {
         menuAddresses = view.findViewById(R.id.menu_addresses);
         menuChat = view.findViewById(R.id.menu_chat);
         btnLogout = view.findViewById(R.id.btn_logout);
+        btnEditProfile = view.findViewById(R.id.btn_edit_profile);
+        layoutGuest = view.findViewById(R.id.layout_guest);
+        layoutLoggedIn = view.findViewById(R.id.layout_logged_in);
+        btnLogin = view.findViewById(R.id.btn_login);
+        btnRegister = view.findViewById(R.id.btn_register);
+    }
+
+    private void updateVisibility() {
+        boolean loggedIn = sessionManager.isLoggedIn();
+        layoutGuest.setVisibility(loggedIn ? View.GONE : View.VISIBLE);
+        layoutLoggedIn.setVisibility(loggedIn ? View.VISIBLE : View.GONE);
+        if (btnEditProfile != null) btnEditProfile.setVisibility(loggedIn ? View.VISIBLE : View.GONE);
+
+        if (loggedIn) {
+            String name = sessionManager.getUserName();
+            String email = sessionManager.getUserEmail();
+            userName.setText(name != null && !name.isEmpty() ? name : "Người dùng");
+            userEmail.setText(email != null && !email.isEmpty() ? email : "");
+        } else {
+            userName.setText("Khách");
+            userEmail.setText("Đăng nhập để trải nghiệm đầy đủ");
+        }
     }
 
     private void loadUserProfile() {
-        // Show session data first (fast)
-        String name = sessionManager.getUserName();
-        String email = sessionManager.getUserEmail();
-        userName.setText(name != null && !name.isEmpty() ? name : "User");
-        userEmail.setText(email != null && !email.isEmpty() ? email : "user@example.com");
-
-        // Refresh from server
         String token = sessionManager.getToken();
         if (token == null) return;
         UserApi userApi = RetrofitClient.getInstance(token).create(UserApi.class);
@@ -106,28 +128,45 @@ public class ProfileFragment extends Fragment {
         });
     }
 
+    private void requireLogin(Runnable action) {
+        if (sessionManager.isLoggedIn()) {
+            action.run();
+        } else {
+            startActivity(new Intent(requireContext(), LoginActivity.class));
+        }
+    }
+
     private void setupListeners() {
-        // Click on profile header to edit profile
-        profileImage.setOnClickListener(v -> {
-            startActivity(new Intent(requireContext(), EditProfileActivity.class));
-        });
+        btnLogin.setOnClickListener(v ->
+                startActivity(new Intent(requireContext(), LoginActivity.class)));
+
+        btnRegister.setOnClickListener(v ->
+                startActivity(new Intent(requireContext(), RegisterActivity.class)));
+
+        profileImage.setOnClickListener(v ->
+                requireLogin(() -> startActivity(new Intent(requireContext(), EditProfileActivity.class))));
+
+        if (btnEditProfile != null) {
+            btnEditProfile.setOnClickListener(v ->
+                    requireLogin(() -> startActivity(new Intent(requireContext(), EditProfileActivity.class))));
+        }
 
         menuOrders.setOnClickListener(v ->
-                startActivity(new Intent(requireContext(), OrderHistoryActivity.class)));
+                requireLogin(() -> startActivity(new Intent(requireContext(), OrderHistoryActivity.class))));
 
         menuWishlist.setOnClickListener(v ->
-                startActivity(new Intent(requireContext(), WishlistActivity.class)));
+                requireLogin(() -> startActivity(new Intent(requireContext(), WishlistActivity.class))));
 
         menuAddresses.setOnClickListener(v ->
-                startActivity(new Intent(requireContext(), AddressListActivity.class)));
+                requireLogin(() -> startActivity(new Intent(requireContext(), AddressListActivity.class))));
 
-        menuChat.setOnClickListener(v -> {
+        menuChat.setOnClickListener(v -> requireLogin(() -> {
             Intent intent = new Intent(requireContext(), ChatActivity.class);
             intent.putExtra(ChatActivity.EXTRA_SHOP_ID, 1);
             intent.putExtra(ChatActivity.EXTRA_SHOP_NAME, "Hỗ trợ Shop");
             intent.putExtra(ChatActivity.EXTRA_IS_ADMIN, false);
             startActivity(intent);
-        });
+        }));
 
         btnLogout.setOnClickListener(v -> handleLogout());
     }
@@ -135,6 +174,7 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        updateVisibility();
         loadUserProfile();
     }
 

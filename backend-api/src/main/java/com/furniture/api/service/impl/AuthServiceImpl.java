@@ -13,13 +13,19 @@ import com.furniture.api.repository.RoleRepository;
 import com.furniture.api.repository.UserRepository;
 import com.furniture.api.security.JwtTokenProvider;
 import com.furniture.api.service.AuthService;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -32,6 +38,9 @@ public class AuthServiceImpl implements AuthService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+
+    @Value("${google.client-id}")
+    private String googleClientId;
 
     private static final int MAX_LOGIN_ATTEMPTS = 5;
     private static final int LOCK_TIME_MINUTES = 15;
@@ -144,8 +153,91 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AuthResponse googleLogin(String googleIdToken) {
-        // TODO: Implement Google OAuth verification
-        throw new UnsupportedOperationException("Google login not implemented yet");
+        try {
+            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
+                    new NetHttpTransport(), GsonFactory.getDefaultInstance())
+                    .setAudience(Collections.singletonList(googleClientId))
+                    .build();
+
+            GoogleIdToken idToken = verifier.verify(googleIdToken.trim());
+            if (idToken == null) {
+                throw new UnauthorizedException("Invalid Google token");
+            }
+
+            GoogleIdToken.Payload payload = idToken.getPayload();
+            String googleId = payload.getSubject();
+            String email = payload.getEmail();
+            String firstName = (String) payload.get("given_name");
+            String lastName = (String) payload.get("family_name");
+            String pictureUrl = (String) payload.get("picture");
+
+            User user = userRepository.findByGoogleId(googleId)
+                    .orElseGet(() -> userRepository.findByEmail(email)
+                            .map(existing -> {
+                                existing.setGoogleId(googleId);
+                                existing.setAuthProvider(User.AuthProvider.GOOGLE);
+                                if (pictureUrl != null && existing.getProfilePicture() == null) {
+                                    existing.setProfilePicture(pictureUrl);
+                                }
+                                return userRepository.save(existing);
+                            })
+                            .orElseGet(() -> createGoogleUser(googleId, email, firstName, lastName, pictureUrl)));
+
+            String accessToken = jwtTokenProvider.generateAccessToken(user);
+            String refreshToken = jwtTokenProvider.generateRefreshToken(user);
+            user.setRefreshToken(refreshToken);
+            userRepository.save(user);
+
+            log.info("Google login successful: {}", email);
+
+            return AuthResponse.builder()
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
+                    .tokenType("Bearer")
+                    .user(UserResponse.fromEntity(user))
+                    .build();
+
+        } catch (UnauthorizedException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Google login failed", e);
+            throw new UnauthorizedException("Google authentication failed");
+        }
+    }
+
+    private User createGoogleUser(String googleId, String email, String firstName, String lastName, String pictureUrl) {
+        Role customerRole = roleRepository.findByRoleName("CUSTOMER")
+                .orElseGet(() -> roleRepository.save(new Role("CUSTOMER")));
+
+        String username = generateUniqueUsername(email);
+        Set<Role> roles = new HashSet<>();
+        roles.add(customerRole);
+
+        User newUser = User.builder()
+                .googleId(googleId)
+                .email(email)
+                .username(username)
+                .firstName(firstName)
+                .lastName(lastName)
+                .profilePicture(pictureUrl)
+                .authProvider(User.AuthProvider.GOOGLE)
+                .status(User.UserStatus.ACTIVE)
+                .isVerified(true)
+                .roles(roles)
+                .build();
+
+        return userRepository.save(newUser);
+    }
+
+    private String generateUniqueUsername(String email) {
+        String base = email.split("@")[0].replaceAll("[^a-zA-Z0-9]", "");
+        if (base.isEmpty()) base = "user";
+        String username = base;
+        int suffix = 1;
+        while (userRepository.existsByUsername(username)) {
+            username = base + suffix++;
+        }
+        return username;
     }
 
     @Override

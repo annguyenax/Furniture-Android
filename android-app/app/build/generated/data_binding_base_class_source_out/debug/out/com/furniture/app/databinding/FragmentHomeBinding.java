@@ -16,19 +16,26 @@ import androidx.viewbinding.ViewBinding;
 import androidx.viewbinding.ViewBindings;
 import androidx.viewpager2.widget.ViewPager2;
 import com.furniture.app.R;
+import com.google.android.material.button.MaterialButton;
 import java.lang.NullPointerException;
 import java.lang.Override;
 import java.lang.String;
 
 public final class FragmentHomeBinding implements ViewBinding {
   @NonNull
-  private final SwipeRefreshLayout rootView;
+  private final LinearLayout rootView;
 
   @NonNull
   public final ViewPager2 bannerViewpager;
 
   @NonNull
-  public final ImageView btnCartHome;
+  public final ImageView btnChatHome;
+
+  @NonNull
+  public final ImageView btnNotificationHome;
+
+  @NonNull
+  public final MaterialButton btnRetry;
 
   @NonNull
   public final RecyclerView categoriesRecyclerView;
@@ -46,36 +53,39 @@ public final class FragmentHomeBinding implements ViewBinding {
   public final TextView searchBar;
 
   @NonNull
-  public final TextView seeAllCategories;
-
-  @NonNull
   public final TextView seeAllFeatured;
 
   @NonNull
   public final SwipeRefreshLayout swipeRefreshLayout;
 
-  private FragmentHomeBinding(@NonNull SwipeRefreshLayout rootView,
-      @NonNull ViewPager2 bannerViewpager, @NonNull ImageView btnCartHome,
-      @NonNull RecyclerView categoriesRecyclerView, @NonNull LinearLayout emptyState,
-      @NonNull RecyclerView featuredProductsRecyclerView, @NonNull ProgressBar progressBar,
-      @NonNull TextView searchBar, @NonNull TextView seeAllCategories,
-      @NonNull TextView seeAllFeatured, @NonNull SwipeRefreshLayout swipeRefreshLayout) {
+  @NonNull
+  public final TextView tvEmptyMessage;
+
+  private FragmentHomeBinding(@NonNull LinearLayout rootView, @NonNull ViewPager2 bannerViewpager,
+      @NonNull ImageView btnChatHome, @NonNull ImageView btnNotificationHome,
+      @NonNull MaterialButton btnRetry, @NonNull RecyclerView categoriesRecyclerView,
+      @NonNull LinearLayout emptyState, @NonNull RecyclerView featuredProductsRecyclerView,
+      @NonNull ProgressBar progressBar, @NonNull TextView searchBar,
+      @NonNull TextView seeAllFeatured, @NonNull SwipeRefreshLayout swipeRefreshLayout,
+      @NonNull TextView tvEmptyMessage) {
     this.rootView = rootView;
     this.bannerViewpager = bannerViewpager;
-    this.btnCartHome = btnCartHome;
+    this.btnChatHome = btnChatHome;
+    this.btnNotificationHome = btnNotificationHome;
+    this.btnRetry = btnRetry;
     this.categoriesRecyclerView = categoriesRecyclerView;
     this.emptyState = emptyState;
     this.featuredProductsRecyclerView = featuredProductsRecyclerView;
     this.progressBar = progressBar;
     this.searchBar = searchBar;
-    this.seeAllCategories = seeAllCategories;
     this.seeAllFeatured = seeAllFeatured;
     this.swipeRefreshLayout = swipeRefreshLayout;
+    this.tvEmptyMessage = tvEmptyMessage;
   }
 
   @Override
   @NonNull
-  public SwipeRefreshLayout getRoot() {
+  public LinearLayout getRoot() {
     return rootView;
   }
 
@@ -106,9 +116,21 @@ public final class FragmentHomeBinding implements ViewBinding {
         break missingId;
       }
 
-      id = R.id.btn_cart_home;
-      ImageView btnCartHome = ViewBindings.findChildViewById(rootView, id);
-      if (btnCartHome == null) {
+      id = R.id.btn_chat_home;
+      ImageView btnChatHome = ViewBindings.findChildViewById(rootView, id);
+      if (btnChatHome == null) {
+        break missingId;
+      }
+
+      id = R.id.btn_notification_home;
+      ImageView btnNotificationHome = ViewBindings.findChildViewById(rootView, id);
+      if (btnNotificationHome == null) {
+        break missingId;
+      }
+
+      id = R.id.btn_retry;
+      MaterialButton btnRetry = ViewBindings.findChildViewById(rootView, id);
+      if (btnRetry == null) {
         break missingId;
       }
 
@@ -142,23 +164,28 @@ public final class FragmentHomeBinding implements ViewBinding {
         break missingId;
       }
 
-      id = R.id.see_all_categories;
-      TextView seeAllCategories = ViewBindings.findChildViewById(rootView, id);
-      if (seeAllCategories == null) {
-        break missingId;
-      }
-
       id = R.id.see_all_featured;
       TextView seeAllFeatured = ViewBindings.findChildViewById(rootView, id);
       if (seeAllFeatured == null) {
         break missingId;
       }
 
-      SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) rootView;
+      id = R.id.swipe_refresh_layout;
+      SwipeRefreshLayout swipeRefreshLayout = ViewBindings.findChildViewById(rootView, id);
+      if (swipeRefreshLayout == null) {
+        break missingId;
+      }
 
-      return new FragmentHomeBinding((SwipeRefreshLayout) rootView, bannerViewpager, btnCartHome,
-          categoriesRecyclerView, emptyState, featuredProductsRecyclerView, progressBar, searchBar,
-          seeAllCategories, seeAllFeatured, swipeRefreshLayout);
+      id = R.id.tv_empty_message;
+      TextView tvEmptyMessage = ViewBindings.findChildViewById(rootView, id);
+      if (tvEmptyMessage == null) {
+        break missingId;
+      }
+
+      return new FragmentHomeBinding((LinearLayout) rootView, bannerViewpager, btnChatHome,
+          btnNotificationHome, btnRetry, categoriesRecyclerView, emptyState,
+          featuredProductsRecyclerView, progressBar, searchBar, seeAllFeatured, swipeRefreshLayout,
+          tvEmptyMessage);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

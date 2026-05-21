@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.furniture.app.R;
 import com.furniture.app.data.remote.RetrofitClient;
 import com.furniture.app.ui.auth.LoginActivity;
+import com.furniture.app.ui.customer.profile.EditProfileActivity;
 import com.furniture.app.util.SessionManager;
 import com.google.android.material.button.MaterialButton;
 
@@ -57,6 +58,22 @@ public class AdminMainActivity extends AppCompatActivity {
 
         findViewById(R.id.card_chat).setOnClickListener(v -> {
             startActivity(new Intent(this, AdminChatListActivity.class));
+        });
+
+        findViewById(R.id.card_reviews).setOnClickListener(v -> {
+            startActivity(new Intent(this, AdminReviewListActivity.class));
+        });
+
+        findViewById(R.id.card_stats).setOnClickListener(v -> {
+            startActivity(new Intent(this, AdminStatsActivity.class));
+        });
+
+        findViewById(R.id.card_returns).setOnClickListener(v -> {
+            startActivity(new Intent(this, AdminReturnListActivity.class));
+        });
+
+        findViewById(R.id.card_profile).setOnClickListener(v -> {
+            startActivity(new Intent(this, EditProfileActivity.class));
         });
     }
 

@@ -21,6 +21,16 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
 
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <!-- Splash Screen / Main Entry -->
         <activity
             android:name=".ui.main.MainActivity"
@@ -89,6 +99,11 @@
             android:exported="false"
             android:theme="@style/Theme.FurnitureApp" />
 
+        <activity
+            android:name=".ui.customer.profile.ChangePasswordActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+
         <!-- Shop Activities -->
         <activity
             android:name=".ui.customer.shop.ShopDetailActivity"
@@ -130,6 +145,26 @@
 
         <activity
             android:name=".ui.admin.AdminChatListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+
+        <activity
+            android:name=".ui.admin.AdminReviewListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+
+        <activity
+            android:name=".ui.admin.AdminStatsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+
+        <activity
+            android:name=".ui.admin.AdminReturnListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+
+        <activity
+            android:name=".ui.customer.order.ReturnRequestActivity"
             android:exported="false"
             android:theme="@style/Theme.FurnitureApp" />
 

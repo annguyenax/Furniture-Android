@@ -8,15 +8,13 @@ import android.os.Looper;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.furniture.app.R;
-import com.furniture.app.ui.auth.LoginActivity;
+import com.furniture.app.ui.admin.AdminMainActivity;
+import com.furniture.app.ui.customer.CustomerMainActivity;
 import com.furniture.app.util.SessionManager;
 
-/**
- * Splash/Entry Activity - Redirects to appropriate screen based on login status
- */
 public class MainActivity extends AppCompatActivity {
 
-    private static final int SPLASH_DELAY = 1000; // 1 second splash delay
+    private static final int SPLASH_DELAY = 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,11 +22,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_splash);
 
         SessionManager sessionManager = new SessionManager(this);
-        sessionManager.clearSession();
 
-        // Delay for splash effect then navigate
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            startActivity(new Intent(this, LoginActivity.class));
+            Intent intent;
+            if (sessionManager.isLoggedIn() && sessionManager.isAdmin()) {
+                intent = new Intent(this, AdminMainActivity.class);
+            } else {
+                intent = new Intent(this, CustomerMainActivity.class);
+            }
+            startActivity(intent);
             finish();
         }, SPLASH_DELAY);
     }

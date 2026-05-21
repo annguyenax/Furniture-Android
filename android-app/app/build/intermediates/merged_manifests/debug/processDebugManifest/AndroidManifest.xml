@@ -39,6 +39,15 @@
         android:testOnly="true"
         android:theme="@style/Theme.FurnitureApp"
         android:usesCleartextTraffic="true" >
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.furniture.app.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true" >
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
         <!-- Splash Screen / Main Entry -->
         <activity
@@ -76,6 +85,10 @@
             android:exported="false"
             android:theme="@style/Theme.FurnitureApp" />
         <activity
+            android:name="com.furniture.app.ui.customer.order.OrderDetailActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+        <activity
             android:name="com.furniture.app.ui.customer.order.OrderHistoryActivity"
             android:exported="false"
             android:theme="@style/Theme.FurnitureApp" />
@@ -101,6 +114,10 @@
             android:name="com.furniture.app.ui.customer.profile.EditProfileActivity"
             android:exported="false"
             android:theme="@style/Theme.FurnitureApp" />
+        <activity
+            android:name="com.furniture.app.ui.customer.profile.ChangePasswordActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
 
         <!-- Shop Activities -->
         <activity
@@ -114,6 +131,72 @@
             android:exported="false"
             android:theme="@style/Theme.FurnitureApp"
             android:windowSoftInputMode="adjustResize" />
+
+        <!-- Admin Activities -->
+        <activity
+            android:name="com.furniture.app.ui.admin.AdminMainActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+        <activity
+            android:name="com.furniture.app.ui.admin.AdminProductListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+        <activity
+            android:name="com.furniture.app.ui.admin.AdminProductEditActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+        <activity
+            android:name="com.furniture.app.ui.admin.AdminOrderListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+        <activity
+            android:name="com.furniture.app.ui.admin.AdminCategoryListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+        <activity
+            android:name="com.furniture.app.ui.admin.AdminChatListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+        <activity
+            android:name="com.furniture.app.ui.admin.AdminReviewListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+        <activity
+            android:name="com.furniture.app.ui.admin.AdminStatsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+        <activity
+            android:name="com.furniture.app.ui.admin.AdminReturnListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+        <activity
+            android:name="com.furniture.app.ui.customer.order.ReturnRequestActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+        <activity
+            android:name="com.furniture.app.ui.customer.product.CategoryProductsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+        <activity
+            android:name="com.furniture.app.ui.customer.profile.AddressListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+        <activity
+            android:name="com.furniture.app.ui.customer.profile.AddAddressActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+        <activity
+            android:name="com.furniture.app.ui.admin.AdminUserListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+        <activity
+            android:name="com.furniture.app.ui.customer.order.WriteReviewActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+        <activity
+            android:name="com.furniture.app.ui.customer.profile.WishlistActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
 
         <provider
             android:name="androidx.startup.InitializationProvider"

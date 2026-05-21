@@ -18,6 +18,7 @@ public class OrderViewModel extends ViewModel {
     private final MutableLiveData<List<Order>> orders = new MutableLiveData<>();
     private final MutableLiveData<Order> orderDetail = new MutableLiveData<>();
     private final MutableLiveData<ApiResponse<Order>> createOrderResult = new MutableLiveData<>();
+    private final MutableLiveData<ApiResponse<Order>> cancelOrderResult = new MutableLiveData<>();
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
 
     public OrderViewModel(OrderRepository orderRepository) {
@@ -46,6 +47,10 @@ public class OrderViewModel extends ViewModel {
 
     public LiveData<ApiResponse<Order>> getCreateOrderResult() {
         return createOrderResult;
+    }
+
+    public LiveData<ApiResponse<Order>> getCancelOrderResult() {
+        return cancelOrderResult;
     }
 
     public LiveData<Boolean> getIsLoading() {
@@ -85,8 +90,8 @@ public class OrderViewModel extends ViewModel {
         LiveData<ApiResponse<Order>> source = orderRepository.cancelOrder(orderId);
         result.addSource(source, response -> {
             isLoading.setValue(false);
+            cancelOrderResult.setValue(response);
             if (response != null && response.isSuccess()) {
-                // Reload orders after cancellation
                 loadOrders(0, 20);
             }
             result.removeSource(source);

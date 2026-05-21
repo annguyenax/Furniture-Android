@@ -1,5 +1,7 @@
 package com.furniture.app.ui.customer.chat;
 
+import android.app.AlertDialog;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -8,14 +10,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.furniture.app.R;
 import com.furniture.app.data.model.ApiResponse;
 import com.furniture.app.data.model.ChatMessage;
@@ -23,12 +30,18 @@ import com.furniture.app.data.remote.RetrofitClient;
 import com.furniture.app.data.remote.api.ChatApi;
 import com.furniture.app.util.SessionManager;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -46,9 +59,9 @@ public class ChatActivity extends AppCompatActivity {
 
     private RecyclerView rvMessages;
     private EditText etMessage;
-    private ImageButton btnSend;
+    private ImageButton btnSend, btnAttach;
     private ChatAdapter chatAdapter;
-    private List<ChatMessage> messages = new ArrayList<>();
+    private final List<ChatMessage> messages = new ArrayList<>();
 
     private SessionManager sessionManager;
     private ChatApi chatApi;
@@ -56,6 +69,17 @@ public class ChatActivity extends AppCompatActivity {
     private boolean isAdmin;
     private Integer recipientUserId;
     private String titleName;
+    private Uri cameraImageUri;
+
+    private final ActivityResultLauncher<String> pickImageLauncher =
+            registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
+                if (uri != null) sendImage(uri);
+            });
+
+    private final ActivityResultLauncher<Uri> takePictureLauncher =
+            registerForActivityResult(new ActivityResultContracts.TakePicture(), success -> {
+                if (success && cameraImageUri != null) sendImage(cameraImageUri);
+            });
 
     private final Handler pollHandler = new Handler(Looper.getMainLooper());
     private final Runnable pollRunnable = new Runnable() {
@@ -112,6 +136,7 @@ public class ChatActivity extends AppCompatActivity {
         rvMessages = findViewById(R.id.rv_messages);
         etMessage = findViewById(R.id.et_message);
         btnSend = findViewById(R.id.btn_send);
+        btnAttach = findViewById(R.id.btn_attach);
     }
 
     private void setupHeader() {
@@ -136,6 +161,30 @@ public class ChatActivity extends AppCompatActivity {
 
     private void setupListeners() {
         btnSend.setOnClickListener(v -> sendMessage());
+        btnAttach.setOnClickListener(v -> showImageSourceDialog());
+    }
+
+    private void showImageSourceDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Gửi hình ảnh")
+                .setItems(new String[]{"Chụp ảnh", "Chọn từ thư viện"}, (dialog, which) -> {
+                    if (which == 0) openCamera();
+                    else pickImageLauncher.launch("image/*");
+                })
+                .show();
+    }
+
+    private void openCamera() {
+        try {
+            File dir = new File(getCacheDir(), "chat_images");
+            if (!dir.exists()) dir.mkdirs();
+            File file = File.createTempFile("chat_", ".jpg", dir);
+            cameraImageUri = FileProvider.getUriForFile(this,
+                    getPackageName() + ".fileprovider", file);
+            takePictureLauncher.launch(cameraImageUri);
+        } catch (Exception e) {
+            Toast.makeText(this, "Không thể mở camera", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void loadMessages(boolean scrollToBottom) {
@@ -191,7 +240,57 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
-    // ─── Adapter ──────────────────────────────────────────────────────────────
+    private void sendImage(Uri imageUri) {
+        try {
+            File file = copyUriToCache(imageUri);
+            RequestBody fileBody = RequestBody.create(file, MediaType.parse("image/*"));
+            MultipartBody.Part part = MultipartBody.Part.createFormData("file", file.getName(), fileBody);
+            RequestBody caption = RequestBody.create(etMessage.getText().toString().trim(), MediaType.parse("text/plain"));
+            RequestBody recUserId = isAdmin && recipientUserId != null
+                    ? RequestBody.create(String.valueOf(recipientUserId), MediaType.parse("text/plain"))
+                    : null;
+
+            btnAttach.setEnabled(false);
+            chatApi.sendImage(part, caption, recUserId).enqueue(new Callback<ApiResponse<ChatMessage>>() {
+                @Override
+                public void onResponse(Call<ApiResponse<ChatMessage>> call,
+                                       Response<ApiResponse<ChatMessage>> response) {
+                    btnAttach.setEnabled(true);
+                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                        etMessage.setText("");
+                        loadMessages(true);
+                    } else {
+                        Toast.makeText(ChatActivity.this,
+                                "Chưa gửi được ảnh. Kiểm tra cấu hình Cloudinary.", Toast.LENGTH_LONG).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ApiResponse<ChatMessage>> call, Throwable t) {
+                    btnAttach.setEnabled(true);
+                    Toast.makeText(ChatActivity.this, "Lỗi kết nối khi gửi ảnh", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } catch (Exception e) {
+            Toast.makeText(this, "Không thể đọc ảnh đã chọn", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private File copyUriToCache(Uri uri) throws Exception {
+        File dir = new File(getCacheDir(), "chat_images");
+        if (!dir.exists()) dir.mkdirs();
+        File file = File.createTempFile("chat_upload_", ".jpg", dir);
+        try (InputStream in = getContentResolver().openInputStream(uri);
+             FileOutputStream out = new FileOutputStream(file)) {
+            if (in == null) throw new IllegalStateException("Cannot open image");
+            byte[] buffer = new byte[8192];
+            int len;
+            while ((len = in.read(buffer)) != -1) {
+                out.write(buffer, 0, len);
+            }
+        }
+        return file;
+    }
 
     static class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder> {
         private static final int VIEW_SENDER = 1;
@@ -224,7 +323,24 @@ public class ChatActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(@NonNull ChatViewHolder holder, int position) {
             ChatMessage msg = messages.get(position);
-            holder.tvMessage.setText(msg.getMessage());
+
+            if (msg.isImage()) {
+                holder.ivMessageImage.setVisibility(View.VISIBLE);
+                Glide.with(holder.ivMessageImage.getContext())
+                        .load(msg.getMediaUrl())
+                        .centerCrop()
+                        .into(holder.ivMessageImage);
+                if (msg.getMessage() != null && !msg.getMessage().isEmpty()) {
+                    holder.tvMessage.setVisibility(View.VISIBLE);
+                    holder.tvMessage.setText(msg.getMessage());
+                } else {
+                    holder.tvMessage.setVisibility(View.GONE);
+                }
+            } else {
+                holder.ivMessageImage.setVisibility(View.GONE);
+                holder.tvMessage.setVisibility(View.VISIBLE);
+                holder.tvMessage.setText(msg.getMessage());
+            }
 
             if (msg.getCreatedAt() != null) {
                 try {
@@ -245,11 +361,13 @@ public class ChatActivity extends AppCompatActivity {
 
         static class ChatViewHolder extends RecyclerView.ViewHolder {
             TextView tvMessage, tvTime, tvAvatar;
+            ImageView ivMessageImage;
 
             ChatViewHolder(@NonNull View v, boolean isReceiver) {
                 super(v);
                 tvMessage = v.findViewById(R.id.tv_message);
                 tvTime = v.findViewById(R.id.tv_time);
+                ivMessageImage = v.findViewById(R.id.iv_message_image);
                 tvAvatar = isReceiver ? v.findViewById(R.id.tv_avatar) : null;
             }
         }

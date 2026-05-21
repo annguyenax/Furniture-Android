@@ -4,6 +4,7 @@ package com.furniture.app.databinding;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -31,6 +32,9 @@ public final class ItemCartBinding implements ViewBinding {
   public final ImageButton btnRemove;
 
   @NonNull
+  public final CheckBox cbSelect;
+
+  @NonNull
   public final TextView priceText;
 
   @NonNull
@@ -46,13 +50,14 @@ public final class ItemCartBinding implements ViewBinding {
   public final TextView variantName;
 
   private ItemCartBinding(@NonNull MaterialCardView rootView, @NonNull ImageButton btnDecrease,
-      @NonNull ImageButton btnIncrease, @NonNull ImageButton btnRemove, @NonNull TextView priceText,
-      @NonNull ImageView productImage, @NonNull TextView productName,
+      @NonNull ImageButton btnIncrease, @NonNull ImageButton btnRemove, @NonNull CheckBox cbSelect,
+      @NonNull TextView priceText, @NonNull ImageView productImage, @NonNull TextView productName,
       @NonNull TextView quantityText, @NonNull TextView variantName) {
     this.rootView = rootView;
     this.btnDecrease = btnDecrease;
     this.btnIncrease = btnIncrease;
     this.btnRemove = btnRemove;
+    this.cbSelect = cbSelect;
     this.priceText = priceText;
     this.productImage = productImage;
     this.productName = productName;
@@ -105,6 +110,12 @@ public final class ItemCartBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.cb_select;
+      CheckBox cbSelect = ViewBindings.findChildViewById(rootView, id);
+      if (cbSelect == null) {
+        break missingId;
+      }
+
       id = R.id.price_text;
       TextView priceText = ViewBindings.findChildViewById(rootView, id);
       if (priceText == null) {
@@ -136,7 +147,7 @@ public final class ItemCartBinding implements ViewBinding {
       }
 
       return new ItemCartBinding((MaterialCardView) rootView, btnDecrease, btnIncrease, btnRemove,
-          priceText, productImage, productName, quantityText, variantName);
+          cbSelect, priceText, productImage, productName, quantityText, variantName);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

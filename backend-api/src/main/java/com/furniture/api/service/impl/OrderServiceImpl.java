@@ -3,6 +3,7 @@ package com.furniture.api.service.impl;
 import com.furniture.api.dto.request.CreateOrderRequest;
 import com.furniture.api.dto.response.OrderResponse;
 import com.furniture.api.model.*;
+import com.furniture.api.model.ReturnRequest;
 import com.furniture.api.repository.*;
 import com.furniture.api.service.CartService;
 import com.furniture.api.service.OrderService;
@@ -30,8 +31,9 @@ public class OrderServiceImpl implements OrderService {
     private final ProductRepository productRepository;
     private final ProductVariantRepository productVariantRepository;
     private final CartService cartService;
+    private final ReturnRequestRepository returnRequestRepository;
 
-    private static final BigDecimal DEFAULT_SHIPPING_FEE = new BigDecimal("30000");
+    private static final BigDecimal DEFAULT_SHIPPING_FEE = BigDecimal.ZERO;
 
     @Override
     @Transactional
@@ -97,7 +99,7 @@ public class OrderServiceImpl implements OrderService {
 
             subOrder = subOrderRepository.save(subOrder);
 
-            // Create order items
+            // Create order items and reduce stock
             for (CartItem cartItem : shopItems) {
                 OrderItem orderItem = OrderItem.builder()
                         .subOrderId(subOrder.getSubOrderId())
@@ -112,6 +114,18 @@ public class OrderServiceImpl implements OrderService {
 
                 orderItem = orderItemRepository.save(orderItem);
                 allOrderItems.add(orderItem);
+
+                // Reduce stock on variant first, then on product
+                if (cartItem.getProductVariantId() != null) {
+                    productVariantRepository.findById(cartItem.getProductVariantId()).ifPresent(v -> {
+                        v.setStock(Math.max(0, v.getStock() - cartItem.getQuantity()));
+                        productVariantRepository.save(v);
+                    });
+                }
+                productRepository.findById(cartItem.getProductId()).ifPresent(p -> {
+                    p.setStock(Math.max(0, p.getStock() - cartItem.getQuantity()));
+                    productRepository.save(p);
+                });
             }
         }
 
@@ -196,15 +210,28 @@ public class OrderServiceImpl implements OrderService {
         order.setPaymentStatus(Order.PaymentStatus.CANCELLED);
         order = orderRepository.save(order);
 
-        // Cancel sub-orders
+        // Cancel sub-orders and restore stock
         List<SubOrder> subOrders = subOrderRepository.findByOrderId(orderId);
         for (SubOrder subOrder : subOrders) {
             subOrder.setStatus(SubOrder.SubOrderStatus.CANCELLED);
             subOrderRepository.save(subOrder);
         }
 
-        Address address = addressRepository.findById(order.getShippingAddressId()).orElse(null);
         List<OrderItem> items = getOrderItems(orderId);
+        for (OrderItem item : items) {
+            if (item.getVariantId() != null) {
+                productVariantRepository.findById(item.getVariantId()).ifPresent(v -> {
+                    v.setStock(v.getStock() + item.getQuantity());
+                    productVariantRepository.save(v);
+                });
+            }
+            productRepository.findById(item.getProductId()).ifPresent(p -> {
+                p.setStock(p.getStock() + item.getQuantity());
+                productRepository.save(p);
+            });
+        }
+
+        Address address = addressRepository.findById(order.getShippingAddressId()).orElse(null);
 
         return mapToOrderResponse(order, address, items);
     }
@@ -309,6 +336,14 @@ public class OrderServiceImpl implements OrderService {
         BigDecimal subtotal = items.stream()
                 .map(OrderItem::getTotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal shippingFee = order.getShippingFee() != null ? order.getShippingFee() : BigDecimal.ZERO;
+
+        String returnStatus = null;
+        if (returnRequestRepository.existsByOrderIdAndStatus(order.getOrderId(), ReturnRequest.ReturnStatus.APPROVED)) {
+            returnStatus = "APPROVED";
+        } else if (returnRequestRepository.existsByOrderIdAndStatus(order.getOrderId(), ReturnRequest.ReturnStatus.PENDING)) {
+            returnStatus = "PENDING";
+        }
 
         return OrderResponse.builder()
                 .orderId(order.getOrderId())
@@ -318,11 +353,12 @@ public class OrderServiceImpl implements OrderService {
                 .recipientPhone(address != null ? address.getPhone() : null)
                 .shippingAddress(address != null ? address.getFullAddress() : null)
                 .subtotal(subtotal)
-                .shippingFee(order.getShippingFee())
-                .totalAmount(order.getTotalPrice())
+                .shippingFee(shippingFee)
+                .totalAmount(subtotal.add(shippingFee))
                 .paymentMethod(order.getPaymentMethod().name())
                 .paymentStatus(order.getPaymentStatus().name())
                 .orderStatus(order.getStatus().name())
+                .returnStatus(returnStatus)
                 .note(order.getNote())
                 .createdAt(order.getCreatedAt())
                 .items(itemResponses)

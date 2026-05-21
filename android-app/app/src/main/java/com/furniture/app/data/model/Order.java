@@ -25,6 +25,9 @@ public class Order implements Serializable {
     @SerializedName("orderStatus")
     private String status;
 
+    @SerializedName("returnStatus")
+    private String returnStatus;
+
     private BigDecimal subtotal;
     private BigDecimal shippingFee;
     private BigDecimal totalAmount;
@@ -151,7 +154,17 @@ public class Order implements Serializable {
         this.createdAt = createdAt;
     }
 
+    public String getReturnStatus() {
+        return returnStatus;
+    }
+
+    public void setReturnStatus(String returnStatus) {
+        this.returnStatus = returnStatus;
+    }
+
     public String getStatusDisplay() {
+        if ("APPROVED".equals(returnStatus)) return "Đã hoàn hàng";
+        if ("PENDING".equals(returnStatus)) return "Chờ duyệt hoàn hàng";
         if (status == null) return "Không xác định";
         switch (status) {
             case "PENDING": return "Chờ xác nhận";

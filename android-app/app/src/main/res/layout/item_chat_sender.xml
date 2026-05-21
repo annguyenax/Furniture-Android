@@ -38,6 +38,15 @@
                 android:textColor="@android:color/white"
                 android:textSize="14sp" />
 
+            <ImageView
+                android:id="@+id/iv_message_image"
+                android:layout_width="220dp"
+                android:layout_height="160dp"
+                android:adjustViewBounds="true"
+                android:scaleType="centerCrop"
+                android:visibility="gone"
+                android:contentDescription="Hình ảnh chat" />
+
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

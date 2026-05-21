@@ -23,7 +23,8 @@ android {
             buildConfigField "String", "BASE_URL", '"https://your-production-api.com/api/"'
         }
         debug {
-            buildConfigField "String", "BASE_URL", '"http://10.0.2.2:8080/api/"'
+            // 10.0.2.2 = emulator loopback; replace with your PC's LAN IP when testing on real device
+            buildConfigField "String", "BASE_URL", '"http://10.238.143.21:8080/api/"'
         }
     }
 
@@ -93,8 +94,12 @@ dependencies {
     // Google Sign-In
     implementation 'com.google.android.gms:play-services-auth:20.7.0'
 
+
     // CircleImageView
     implementation 'de.hdodenhof:circleimageview:3.1.0'
+
+    // MPAndroidChart
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
 
     // Lottie (animations)
     implementation 'com.airbnb.android:lottie:6.2.0'

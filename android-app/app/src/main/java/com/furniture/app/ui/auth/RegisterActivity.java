@@ -21,8 +21,9 @@ import com.furniture.app.util.SessionManager;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    private EditText usernameEditText, emailEditText, passwordEditText, firstNameEditText, lastNameEditText, phoneEditText;
-    private Button registerButton;
+    private EditText usernameEditText, emailEditText, passwordEditText;
+    private EditText firstNameEditText, lastNameEditText, phoneEditText;
+    private Button registerButton, btnGoogleRegister, btnFacebookRegister;
     private TextView loginButton;
     private ProgressBar progressBar;
     private TextView errorTextView;
@@ -45,6 +46,8 @@ public class RegisterActivity extends AppCompatActivity {
 
         registerButton.setOnClickListener(v -> handleRegister());
         loginButton.setOnClickListener(v -> navigateToLogin());
+        btnGoogleRegister.setOnClickListener(v -> showSocialTodo("Google"));
+        btnFacebookRegister.setOnClickListener(v -> showSocialTodo("Facebook"));
     }
 
     private void initViews() {
@@ -55,6 +58,8 @@ public class RegisterActivity extends AppCompatActivity {
         lastNameEditText = findViewById(R.id.last_name_edit_text);
         phoneEditText = findViewById(R.id.phone_edit_text);
         registerButton = findViewById(R.id.register_button);
+        btnGoogleRegister = findViewById(R.id.btn_google_register);
+        btnFacebookRegister = findViewById(R.id.btn_facebook_register);
         loginButton = findViewById(R.id.login_button);
         progressBar = findViewById(R.id.progress_bar);
         errorTextView = findViewById(R.id.error_text_view);
@@ -68,15 +73,13 @@ public class RegisterActivity extends AppCompatActivity {
 
         authViewModel.getError().observe(this, error -> {
             if (error != null) {
-                // Xử lý hiển thị lỗi chi tiết
                 errorTextView.setText(error);
                 errorTextView.setVisibility(View.VISIBLE);
-                
-                // Rung nhẹ hoặc focus vào trường lỗi nếu là lỗi duplicate
-                if (error.contains("Số điện thoại") || error.contains("0334074016")) {
+
+                if (error.toLowerCase().contains("phone") || error.contains("điện thoại")) {
                     phoneEditText.setError("Số điện thoại đã tồn tại trong hệ thống");
                     phoneEditText.requestFocus();
-                } else if (error.contains("email") || error.contains("Email")) {
+                } else if (error.toLowerCase().contains("email")) {
                     emailEditText.setError("Email đã được sử dụng");
                     emailEditText.requestFocus();
                 }
@@ -99,20 +102,50 @@ public class RegisterActivity extends AppCompatActivity {
         String lastName = lastNameEditText.getText().toString().trim();
         String phone = phoneEditText.getText().toString().trim();
 
-        if (validateInput(username, email, password, phone)) {
+        if (validateInput(username, email, password, firstName, lastName, phone)) {
             errorTextView.setVisibility(View.GONE);
             authViewModel.register(username, email, password, firstName, lastName, phone);
         }
     }
 
-    private boolean validateInput(String username, String email, String password, String phone) {
-        if (username.isEmpty()) { usernameEditText.setError("Yêu cầu nhập tên đăng nhập"); return false; }
-        if (email.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) { 
-            emailEditText.setError("Email không hợp lệ"); return false; 
+    private boolean validateInput(String username, String email, String password,
+                                  String firstName, String lastName, String phone) {
+        if (firstName.isEmpty()) {
+            firstNameEditText.setError("Vui lòng nhập họ");
+            firstNameEditText.requestFocus();
+            return false;
         }
-        if (password.length() < 6) { passwordEditText.setError("Mật khẩu phải từ 6 ký tự"); return false; }
-        if (phone.isEmpty() || phone.length() < 10) { phoneEditText.setError("Số điện thoại không hợp lệ"); return false; }
+        if (lastName.isEmpty()) {
+            lastNameEditText.setError("Vui lòng nhập tên");
+            lastNameEditText.requestFocus();
+            return false;
+        }
+        if (username.length() < 3) {
+            usernameEditText.setError("Tên đăng nhập phải từ 3 ký tự");
+            usernameEditText.requestFocus();
+            return false;
+        }
+        if (email.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            emailEditText.setError("Email không hợp lệ");
+            emailEditText.requestFocus();
+            return false;
+        }
+        if (phone.isEmpty() || !phone.matches("^(0|\\+84)[0-9]{9,10}$")) {
+            phoneEditText.setError("Số điện thoại không hợp lệ");
+            phoneEditText.requestFocus();
+            return false;
+        }
+        if (password.length() < 6) {
+            passwordEditText.setError("Mật khẩu phải từ 6 ký tự");
+            passwordEditText.requestFocus();
+            return false;
+        }
         return true;
+    }
+
+    private void showSocialTodo(String provider) {
+        Toast.makeText(this,
+                provider + " login chưa được cấu hình OAuth ở backend", Toast.LENGTH_SHORT).show();
     }
 
     private void navigateToLogin() {

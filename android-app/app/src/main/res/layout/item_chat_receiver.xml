@@ -46,6 +46,15 @@
                 android:textColor="#2D2D2D"
                 android:textSize="14sp" />
 
+            <ImageView
+                android:id="@+id/iv_message_image"
+                android:layout_width="220dp"
+                android:layout_height="160dp"
+                android:adjustViewBounds="true"
+                android:scaleType="centerCrop"
+                android:visibility="gone"
+                android:contentDescription="Hình ảnh chat" />
+
             <TextView
                 android:id="@+id/tv_time"
                 android:layout_width="wrap_content"

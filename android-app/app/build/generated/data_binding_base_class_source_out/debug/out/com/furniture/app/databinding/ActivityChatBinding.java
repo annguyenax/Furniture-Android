@@ -6,15 +6,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewbinding.ViewBinding;
 import androidx.viewbinding.ViewBindings;
 import com.furniture.app.R;
-import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.textfield.TextInputEditText;
 import java.lang.NullPointerException;
 import java.lang.Override;
@@ -25,7 +24,13 @@ public final class ActivityChatBinding implements ViewBinding {
   private final ConstraintLayout rootView;
 
   @NonNull
-  public final AppBarLayout appBar;
+  public final LinearLayout appBar;
+
+  @NonNull
+  public final ImageButton btnAttach;
+
+  @NonNull
+  public final ImageButton btnBack;
 
   @NonNull
   public final ImageButton btnSend;
@@ -40,19 +45,26 @@ public final class ActivityChatBinding implements ViewBinding {
   public final RecyclerView rvMessages;
 
   @NonNull
-  public final Toolbar toolbar;
+  public final TextView tvToolbarAvatar;
 
-  private ActivityChatBinding(@NonNull ConstraintLayout rootView, @NonNull AppBarLayout appBar,
-      @NonNull ImageButton btnSend, @NonNull TextInputEditText etMessage,
-      @NonNull LinearLayout inputLayout, @NonNull RecyclerView rvMessages,
-      @NonNull Toolbar toolbar) {
+  @NonNull
+  public final TextView tvToolbarName;
+
+  private ActivityChatBinding(@NonNull ConstraintLayout rootView, @NonNull LinearLayout appBar,
+      @NonNull ImageButton btnAttach, @NonNull ImageButton btnBack, @NonNull ImageButton btnSend,
+      @NonNull TextInputEditText etMessage, @NonNull LinearLayout inputLayout,
+      @NonNull RecyclerView rvMessages, @NonNull TextView tvToolbarAvatar,
+      @NonNull TextView tvToolbarName) {
     this.rootView = rootView;
     this.appBar = appBar;
+    this.btnAttach = btnAttach;
+    this.btnBack = btnBack;
     this.btnSend = btnSend;
     this.etMessage = etMessage;
     this.inputLayout = inputLayout;
     this.rvMessages = rvMessages;
-    this.toolbar = toolbar;
+    this.tvToolbarAvatar = tvToolbarAvatar;
+    this.tvToolbarName = tvToolbarName;
   }
 
   @Override
@@ -83,8 +95,20 @@ public final class ActivityChatBinding implements ViewBinding {
     int id;
     missingId: {
       id = R.id.app_bar;
-      AppBarLayout appBar = ViewBindings.findChildViewById(rootView, id);
+      LinearLayout appBar = ViewBindings.findChildViewById(rootView, id);
       if (appBar == null) {
+        break missingId;
+      }
+
+      id = R.id.btn_attach;
+      ImageButton btnAttach = ViewBindings.findChildViewById(rootView, id);
+      if (btnAttach == null) {
+        break missingId;
+      }
+
+      id = R.id.btn_back;
+      ImageButton btnBack = ViewBindings.findChildViewById(rootView, id);
+      if (btnBack == null) {
         break missingId;
       }
 
@@ -112,14 +136,20 @@ public final class ActivityChatBinding implements ViewBinding {
         break missingId;
       }
 
-      id = R.id.toolbar;
-      Toolbar toolbar = ViewBindings.findChildViewById(rootView, id);
-      if (toolbar == null) {
+      id = R.id.tv_toolbar_avatar;
+      TextView tvToolbarAvatar = ViewBindings.findChildViewById(rootView, id);
+      if (tvToolbarAvatar == null) {
         break missingId;
       }
 
-      return new ActivityChatBinding((ConstraintLayout) rootView, appBar, btnSend, etMessage,
-          inputLayout, rvMessages, toolbar);
+      id = R.id.tv_toolbar_name;
+      TextView tvToolbarName = ViewBindings.findChildViewById(rootView, id);
+      if (tvToolbarName == null) {
+        break missingId;
+      }
+
+      return new ActivityChatBinding((ConstraintLayout) rootView, appBar, btnAttach, btnBack,
+          btnSend, etMessage, inputLayout, rvMessages, tvToolbarAvatar, tvToolbarName);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

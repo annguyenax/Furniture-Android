@@ -26,6 +26,8 @@
     <string name="dont_have_account">Don\'t have an account?</string>
     <string name="already_have_account">Already have an account?</string>
     <string name="sign_in_with_google">Sign in with Google</string>
+    <!-- TODO: Replace with your Web Client ID from Google Cloud Console -->
+    <string name="google_web_client_id">YOUR_WEB_CLIENT_ID.apps.googleusercontent.com</string>
     <string name="remember_me">Remember me</string>
 
     <!-- Navigation -->

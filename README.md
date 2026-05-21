@@ -26,7 +26,8 @@
 - Giỏ hàng: thêm, cập nhật số lượng, xóa, thanh toán
 - Đặt hàng: chọn địa chỉ đã lưu / thêm mới, thanh toán COD hoặc chuyển khoản
 - Theo dõi đơn hàng, hủy đơn (khi còn đang xử lý), xem chi tiết
-- Đánh giá sản phẩm sau khi đơn hàng được giao (1–5 sao + bình luận + ảnh)
+- Đánh giá sản phẩm sau khi đơn hàng được giao (1–5 sao + bình luận + ảnh), mỗi đơn hàng được đánh giá 1 lần
+- Yêu cầu hoàn trả đơn hàng đã giao (kèm lý do và ảnh/video minh chứng)
 - Quản lý địa chỉ giao hàng (thêm / sửa / xóa)
 - Chỉnh sửa thông tin cá nhân
 - Chat với hỗ trợ shop
@@ -180,7 +181,7 @@ API Base URL: http://localhost:8080/api
 
 | Loại | Nội dung |
 |------|----------|
-| Vai trò | CUSTOMER, VENDOR, ADMIN, SHIPPER |
+| Vai trò | CUSTOMER, ADMIN |
 | Danh mục | Phòng khách, Phòng ngủ, Phòng ăn, Phòng làm việc, Ngoài trời, Trang trí |
 | Cửa hàng | "Nội Thất Gia Đình" |
 | Sản phẩm | 10 sản phẩm nội thất với ảnh và biến thể |
@@ -263,6 +264,7 @@ debug {
 | Method | Endpoint | Mô tả |
 |--------|----------|-------|
 | POST | `/reviews` | Gửi đánh giá |
+| POST | `/reviews/upload-image` | Upload anh danh gia len Cloudinary |
 | GET | `/reviews/product/{id}` | Đánh giá của sản phẩm |
 | GET | `/reviews/check/{productId}` | Kiểm tra đã đánh giá chưa 🔒 |
 
@@ -274,11 +276,33 @@ debug {
 | DELETE | `/wishlist/{productId}` | Xóa khỏi yêu thích |
 | GET | `/wishlist/check/{productId}` | Kiểm tra đã yêu thích chưa |
 
+### Chat 🔒
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| POST | `/chat/send` | Gửi tin nhắn text |
+| POST | `/chat/send-image` | Gửi hình ảnh chat bằng multipart file |
+| GET | `/chat/messages/{chatId}` | Lấy nội dung phòng chat |
+| GET | `/chat/rooms` | Danh sách phòng chat |
+
+### Returns / Refund Requests
+| Method | Endpoint | Mo ta |
+|--------|----------|-------|
+| POST | `/returns` | Customer tao yeu cau hoan tra bang multipart: `orderId`, `orderItemId`, `reason`, `file` |
+| GET | `/returns/my` | Customer xem cac yeu cau hoan tra cua minh |
+| GET | `/admin/returns` | Admin xem danh sach yeu cau hoan tra, co the loc `status` |
+| PUT | `/admin/returns/{id}/status` | Admin cap nhat `APPROVED` / `REJECTED`, tuy chon `adminNote` |
+
 ### User 🔒
 | Method | Endpoint | Mô tả |
 |--------|----------|-------|
 | GET | `/users/me` | Thông tin cá nhân |
 | PUT | `/users/me` | Cập nhật thông tin |
+| POST | `/users/me/avatar` | Upload ảnh đại diện lên Cloudinary |
+
+### Media Upload
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| POST | `/media/upload-image` | Admin upload ảnh dùng chung, query `folder`, multipart `file` |
 
 ### Admin 🔒 (ROLE_ADMIN)
 | Method | Endpoint | Mô tả |
@@ -292,6 +316,9 @@ debug {
 | GET | `/admin/categories` | Quản lý danh mục |
 | GET | `/admin/users` | Quản lý người dùng |
 | PUT | `/admin/users/{id}/status` | Khóa/mở khóa tài khoản |
+| GET | `/admin/reviews` | Quản lý đánh giá của user |
+| DELETE | `/admin/reviews/{id}` | Xóa đánh giá không phù hợp |
+| GET | `/admin/stats?period=day|month|year` | Thống kê doanh thu theo ngày/tháng/năm, sản phẩm, danh mục |
 
 ---
 
@@ -359,3 +386,245 @@ Khi token hết hạn → app tự chuyển về màn hình đăng nhập
 | Admin: quản lý đơn hàng + filter | ✅ | ✅ |
 | Admin: quản lý người dùng | ✅ | ✅ |
 | Admin: chat với khách | ✅ | ✅ |
+| Admin: quản lý đánh giá user | ✅ | ✅ |
+| Admin: biểu đồ doanh thu ngày/tháng/năm | ✅ | ✅ |
+
+---
+
+## Tiến độ phát triển
+
+### Phase 1 — Guest mode & Auth guards ✅
+
+| Hạng mục | Trạng thái |
+|----------|:----------:|
+| App khởi động vào Home (không ép đăng nhập) | ✅ |
+| Splash → CustomerMainActivity (khách) hoặc AdminMainActivity (admin) | ✅ |
+| ProfileFragment: hiển thị nút Đăng nhập / Đăng ký khi chưa login | ✅ |
+| ProfileFragment: hiển thị thông tin user khi đã login | ✅ |
+| Cart tab: hiển thị giao diện khách khi chưa login | ✅ |
+| Auth guard: Đơn hàng, Wishlist, Địa chỉ, Chat, Edit Profile → yêu cầu đăng nhập | ✅ |
+| Auth guard: Thêm vào giỏ hàng, Mua ngay, Yêu thích → yêu cầu đăng nhập | ✅ |
+| Nút Back trên các Activity con | ✅ |
+| Xử lý lỗi mạng ở màn Home: thông báo + nút Thử lại | ✅ |
+| Build `assembleDebug` thành công | ✅ |
+
+### Phase 3 — Product Detail, Variant, Wishlist ✅
+
+| Hạng mục | Trạng thái |
+|----------|:----------:|
+| Chọn variant → ảnh slider đổi theo variant tương ứng | ✅ |
+| Chọn variant → giá, tồn kho cập nhật đúng | ✅ |
+| Chọn variant → số lượng reset về 1 | ✅ |
+| Hiển thị "X sản phẩm còn lại" / "Hết hàng" rõ ràng | ✅ |
+| Không cho thêm giỏ / mua ngay khi hết hàng | ✅ |
+| Wishlist: thêm nút "Mua ngay" trên mỗi sản phẩm | ✅ |
+| Build `assembleDebug` thành công | ✅ |
+
+### Phase 2 — Home, Search, Banner, Header ✅
+
+| Hạng mục | Trạng thái |
+|----------|:----------:|
+| Banner tự động chạy ở Home (4 ảnh Unsplash, 3.5s/slide) | ✅ |
+| Header Home: xóa icon giỏ hàng, thêm icon Chat + Thông báo | ✅ |
+| Auth guard: Chat/Thông báo trên header → yêu cầu đăng nhập | ✅ |
+| Bỏ nút "Xem tất cả" ở khu vực danh mục | ✅ |
+| Search: danh mục filter động từ API (không hardcode) | ✅ |
+| Search: gợi ý tên sản phẩm khi gõ (≥2 ký tự) | ✅ |
+| Search: đổi "Liên quan" → "Mặc định" | ✅ |
+| Build `assembleDebug` thành công | ✅ |
+
+### Phase 4 — Cart selection, Checkout flow, Order detail ✅
+
+| Hạng mục | Trạng thái |
+|----------|:----------:|
+| Cart: checkbox chọn từng sản phẩm (`cb_select` trên `item_cart.xml`) | ✅ |
+| Cart: hàng "Chọn tất cả" (`layout_select_all`, `cb_select_all`) | ✅ |
+| Cart: tổng tiền chỉ tính các sản phẩm đã tick | ✅ |
+| Cart: hiển thị số lượng đã chọn ("Đã chọn X/Y") | ✅ |
+| Cart: nút Đặt hàng bị tắt khi không có sản phẩm nào được tick | ✅ |
+| Cart: chỉ truyền sản phẩm đã tick sang CheckoutActivity (EXTRA_CART_ITEMS) | ✅ |
+| Checkout: sắp xếp nhận EXTRA_CART_ITEMS, hiển thị đúng sản phẩm được chọn | ✅ |
+| Checkout: sau đặt hàng thành công → xóa các sản phẩm đã mua khỏi giỏ | ✅ |
+| Checkout: sau đặt hàng thành công → chuyển thẳng sang OrderDetailActivity | ✅ |
+| Order detail: ẩn hàng "Phí vận chuyển" | ✅ |
+| Order detail: nút Đánh giá chỉ hiện khi đơn DELIVERED | ✅ |
+| Order detail: không cho đánh giá lại sản phẩm đã đánh giá (checkReviewedStatus) | ✅ |
+| Build `assembleDebug` thành công | ✅ |
+### Phase 5 — Address, Profile, Auth Customer ✅
+
+| Hạng mục | Trạng thái |
+|----------|:----------:|
+| Address: validate tên người nhận, số điện thoại Việt Nam, địa chỉ cụ thể | ✅ |
+| Address: giữ ProvinceService dùng `provinces.open-api.vn` miễn phí, có xử lý lỗi mạng | ✅ |
+| Profile: validate họ, tên, số điện thoại trước khi lưu | ✅ |
+| Profile: thêm nút Đổi mật khẩu trong màn chỉnh sửa hồ sơ | ✅ |
+| Đổi mật khẩu: gọi API `POST /users/me/change-password` | ✅ |
+| Đổi mật khẩu xong: clear session và chuyển về LoginActivity | ✅ |
+| Avatar: thêm thông báo TODO, chờ cấu hình upload cloud ở phase upload media | ✅ |
+| Register: validate họ/tên, username, email, phone, password rõ hơn | ✅ |
+| Login/Register: thêm nút Google/Facebook UI, không fake OAuth khi backend chưa cấu hình | ✅ |
+| Forgot password: hiển thị TODO cấu hình email thay vì fake thành công | ✅ |
+| Build `assembleDebug` thành công | ✅ |
+
+### Phase 6 — Chat gửi hình ảnh ✅
+
+| Hạng mục | Trạng thái |
+|----------|:----------:|
+| Backend: mở rộng `ChatMessage` với `messageType`, `mediaUrl`, `mediaPublicId` | ✅ |
+| Backend: thêm API `POST /chat/send-image` nhận multipart image | ✅ |
+| Backend: upload ảnh qua Cloudinary, đọc cấu hình từ env `CLOUDINARY_*` | ✅ |
+| Backend: nếu Cloudinary chưa cấu hình thì trả lỗi rõ ràng, không hardcode secret | ✅ |
+| Android: thêm nút gửi hình ảnh trong màn chat | ✅ |
+| Android: chọn ảnh từ thư viện bằng `GetContent` | ✅ |
+| Android: chụp ảnh bằng camera qua `FileProvider` | ✅ |
+| Android: gửi ảnh lên API bằng multipart Retrofit | ✅ |
+| Android: bubble chat hiển thị ảnh bằng Glide | ✅ |
+| Cấu hình: thêm `res/xml/file_paths.xml` cho ảnh camera tạm | ✅ |
+| `mvn test` backend thành công | ✅ |
+| Build `assembleDebug` thành công | ✅ |
+
+### Phase 7 - Hoan tra san pham
+**Trang thai:** Da hoan thanh
+
+**Da lam:**
+- Customer tao yeu cau hoan tra cho don hang da giao thanh cong.
+- Form hoan tra co ly do va file minh chung anh/video.
+- Admin co man hinh quan ly yeu cau hoan tra, xac nhan hoac tu choi.
+
+**Backend thay doi:**
+- Them entity `ReturnRequest` va repository `ReturnRequestRepository`.
+- Mo rong `CloudinaryService` de upload minh chung hoan tra vao folder `furniture/returns`.
+- Them `ReturnRequestController` cho customer/admin.
+
+**API thay doi:**
+- `POST /returns`
+- `GET /returns/my`
+- `GET /admin/returns`
+- `PUT /admin/returns/{id}/status`
+
+**Android thay doi:**
+- Them `ReturnRequestActivity` cho customer.
+- Them nut `Yeu cau hoan tra` trong `OrderDetailActivity` khi don hang `DELIVERED`.
+- Them `AdminReturnListActivity` va card `Hoan tra` trong admin dashboard.
+
+**Kiem thu:**
+- `mvn test`: PASS
+- `.\gradlew.bat assembleDebug`: PASS
+
+**TODO con lai:**
+- Co the bo sung ly do tu choi chi tiet va preview media minh chung trong admin.
+
+### Phase 8 - Admin dashboard, product, category, user, review
+**Trang thai:** Da hoan thanh
+
+**Da lam:**
+- Admin thong ke co nut xuat file CSV tu du lieu doanh thu hien tai.
+- Quan ly san pham co thanh tim kiem va bo loc trang thai.
+- Quan ly danh muc co thanh tim kiem.
+- Them/sua danh muc cho phep nhap URL hinh anh danh muc.
+- Quan ly nguoi dung da co badge trang thai nam sat ten tai khoan.
+- Admin dashboard co them trang ho so admin, dung man hinh chinh sua thong tin/doi mat khau hien co.
+- Quan ly danh gia hien thi email nguoi danh gia, trang thai verified va anh danh gia neu review co `images`.
+
+**Backend thay doi:**
+- Mo rong DTO `GET /admin/reviews` de tra them `userEmail`, `images`, `isVerified`.
+
+**API thay doi:**
+- `GET /admin/reviews`: bo sung field `userEmail`, `images`, `isVerified`.
+
+**Android thay doi:**
+- `AdminStatsActivity`: xuat CSV bang `ACTION_CREATE_DOCUMENT`.
+- `activity_admin_stats.xml`: them nut `Xuat file CSV`.
+- `AdminProductListActivity`: them filter client-side theo ten/danh muc/trang thai.
+- `activity_admin_product_list.xml`: them input tim kiem va spinner loc trang thai.
+- `AdminCategoryListActivity`: them tim kiem, form them/sua co truong URL hinh anh.
+- `activity_admin_category_list.xml`: them input tim kiem danh muc.
+- `AdminMainActivity`: them card `Ho so admin`.
+- `AdminReviewListActivity`: hien thi email, anh danh gia va verified badge.
+
+**Kiem thu:**
+- `mvn test`: PASS
+- `.\gradlew.bat assembleDebug`: PASS
+
+**TODO con lai:**
+- Admin review co the bo sung thong tin don hang lien quan neu sau nay backend luu `orderId`/`orderItemId` trong review.
+
+### Phase 9 - Upload Cloud va database hinh anh hop ly
+**Trang thai:** Da hoan thanh
+
+**Da lam:**
+- Chuan hoa upload anh qua `CloudinaryService.uploadImage(file, folder)`.
+- Hoan thien upload avatar user, luu URL vao `Users.profilePicture`.
+- Them API upload anh dung chung cho admin: `/media/upload-image`.
+- Admin category co the chon anh tu may, upload len Cloudinary va tu dong dien URL vao form them/sua.
+- Admin product co the chon anh tu may, upload len Cloudinary va luu vao variant mac dinh cua san pham.
+- Admin product edit co the them/sua/xoa nhieu variant, moi variant co size/color/material/price/stock/imageUrl rieng.
+- Man hinh profile customer/admin co the doi anh dai dien bang anh tu may.
+- Review customer upload anh len Cloudinary truoc khi gui danh gia, DB luu URL cloud thay vi `content://` local URI.
+
+**Backend thay doi:**
+- `CloudinaryService`: them ham upload image dung chung theo folder.
+- `UserServiceImpl.uploadAvatar`: upload avatar len Cloudinary va cap nhat user.
+- Them `MediaController` cho upload image admin.
+- `AdminController`: create/update product nhan `imageUrl` va ghi vao `ProductVariant.imageUrl`.
+- `AdminController`: them API create/update/delete variant cho san pham.
+- `ReviewController`: them API upload anh review vao folder `furniture/reviews`.
+- `ProductReview.images`: dung kieu `TEXT` de luu nhieu URL anh.
+
+**API thay doi:**
+- `POST /users/me/avatar`
+- `POST /media/upload-image?folder=categories`
+- `POST /media/upload-image?folder=products`
+- `POST /admin/products`: bo sung `imageUrl`
+- `PUT /admin/products/{id}`: bo sung `imageUrl`
+- `POST /admin/products/{productId}/variants`
+- `PUT /admin/variants/{variantId}`
+- `DELETE /admin/variants/{variantId}`
+- `POST /reviews/upload-image`
+
+**Android thay doi:**
+- `UserApi`: them multipart `uploadAvatar`.
+- Them `MediaApi`.
+- `EditProfileActivity`: chon anh, upload avatar, hien thi avatar bang Glide.
+- `AdminCategoryListActivity`: chon anh tu may, upload Cloudinary, gan URL vao category image.
+- `AdminProductEditActivity`: chon anh tu may, upload Cloudinary, gan URL vao anh variant mac dinh.
+- `AdminProductEditActivity`: quan ly danh sach variant trong man sua san pham, co upload anh rieng cho variant.
+- `AdminProductApi`: request create/update product co them `imageUrl`.
+- `ReviewApi`: them multipart `uploadReviewImage`.
+- `WriteReviewActivity`: upload tung anh da chon len Cloudinary, gom URL roi moi tao review.
+
+**Kiem thu:**
+- `mvn test`: PASS
+- `.\gradlew.bat assembleDebug`: PASS
+
+**TODO con lai:**
+- Can cau hinh env Cloudinary that: `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`.
+- Neu muon ho tro video/reuse media nang cao, co the tach them bang `Media` dung chung cho product/review/return/chat.
+
+### Phase 10 - Tong ra soat va polish
+**Trang thai:** Da hoan thanh
+
+**Da lam:**
+- Ra soat README bo sung endpoint moi cho chat image, return request, avatar, media upload, admin reviews/stats va review image upload.
+- Ra soat role: project chi con `CUSTOMER`, `ADMIN`; khong con role du `VENDOR`, `SHIPPER`, `SELLER`, `MODERATOR`, `STAFF` trong source/README.
+- Ra soat upload cloud: anh avatar/category/product/variant/chat/review/return deu di qua Cloudinary hoac endpoint upload phu hop.
+- Ra soat secret: Cloudinary doc tu env, khong commit secret that vao source.
+- Ghi ro TODO con lai: OAuth Google/Facebook, forgot/reset password bang email that, cau hinh Cloudinary env khi deploy.
+
+**Backend thay doi:**
+- Khong them API moi trong Phase 10, chi ra soat va xac nhan cac API phase truoc.
+
+**API thay doi:**
+- Khong thay doi them.
+
+**Android thay doi:**
+- Khong thay doi them ngoai polish review upload da hoan thien o Phase 9.
+
+**Kiem thu:**
+- `mvn test`: PASS
+- `.\gradlew.bat assembleDebug`: PASS
+
+**TODO con lai:**
+- Cau hinh Cloudinary env that tren may/deploy server.
+- Neu can social login that: hoan thien Google/Facebook OAuth backend, khong fake login.
+- Neu can quen mat khau that: cau hinh email service va reset token.

@@ -19,6 +19,9 @@ public class ChatMessageResponse {
     private Integer senderId;
     private String senderType;
     private String message;
+    private String messageType;
+    private String mediaUrl;
+    private String mediaPublicId;
     private Boolean isRead;
     private LocalDateTime createdAt;
     private boolean mine;
@@ -34,6 +37,9 @@ public class ChatMessageResponse {
                 .senderId(msg.getSenderId())
                 .senderType(msg.getSenderType() != null ? msg.getSenderType().name() : null)
                 .message(msg.getMessage())
+                .messageType(msg.getMessageType() != null ? msg.getMessageType().name() : ChatMessage.MessageType.TEXT.name())
+                .mediaUrl(msg.getMediaUrl())
+                .mediaPublicId(msg.getMediaPublicId())
                 .isRead(msg.getIsRead())
                 .createdAt(msg.getCreatedAt())
                 .mine(isMine)

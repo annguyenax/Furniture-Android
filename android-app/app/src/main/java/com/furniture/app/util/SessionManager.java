@@ -89,6 +89,11 @@ public class SessionManager {
         return sharedPreferences.getString(KEY_PROFILE_PIC, null);
     }
 
+    public void saveAvatarUrl(String url) {
+        editor.putString(KEY_PROFILE_PIC, url);
+        editor.apply();
+    }
+
     public boolean isLoggedIn() {
         return sharedPreferences.getBoolean(KEY_IS_LOGGED_IN, false);
     }
@@ -154,10 +159,6 @@ public class SessionManager {
 
     public boolean isAdmin() {
         return "ADMIN".equals(getUserRole());
-    }
-
-    public boolean isVendor() {
-        return "VENDOR".equals(getUserRole());
     }
 
     public void updateUserInfo(String firstName, String lastName, String phone) {

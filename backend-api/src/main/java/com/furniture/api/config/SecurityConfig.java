@@ -63,8 +63,6 @@ public class SecurityConfig {
                 .requestMatchers("/chat/**").authenticated()
 
                 // Role-specific endpoints
-                .requestMatchers("/vendor/**").hasAnyRole("VENDOR", "ADMIN")
-                .requestMatchers("/shipper/**").hasAnyRole("SHIPPER", "ADMIN")
                 .requestMatchers("/admin/**").hasRole("ADMIN")
 
                 // All other requests require authentication

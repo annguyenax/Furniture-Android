@@ -23,22 +23,34 @@ public final class FragmentProfileBinding implements ViewBinding {
   private final ScrollView rootView;
 
   @NonNull
+  public final MaterialButton btnEditProfile;
+
+  @NonNull
+  public final MaterialButton btnLogin;
+
+  @NonNull
   public final MaterialButton btnLogout;
+
+  @NonNull
+  public final MaterialButton btnRegister;
+
+  @NonNull
+  public final LinearLayout layoutGuest;
+
+  @NonNull
+  public final LinearLayout layoutLoggedIn;
 
   @NonNull
   public final LinearLayout menuAddresses;
 
   @NonNull
-  public final LinearLayout menuHelp;
+  public final LinearLayout menuChat;
 
   @NonNull
   public final LinearLayout menuOrders;
 
   @NonNull
-  public final LinearLayout menuPayment;
-
-  @NonNull
-  public final LinearLayout menuSettings;
+  public final LinearLayout menuWishlist;
 
   @NonNull
   public final CircleImageView profileImage;
@@ -49,18 +61,25 @@ public final class FragmentProfileBinding implements ViewBinding {
   @NonNull
   public final TextView userName;
 
-  private FragmentProfileBinding(@NonNull ScrollView rootView, @NonNull MaterialButton btnLogout,
-      @NonNull LinearLayout menuAddresses, @NonNull LinearLayout menuHelp,
-      @NonNull LinearLayout menuOrders, @NonNull LinearLayout menuPayment,
-      @NonNull LinearLayout menuSettings, @NonNull CircleImageView profileImage,
-      @NonNull TextView userEmail, @NonNull TextView userName) {
+  private FragmentProfileBinding(@NonNull ScrollView rootView,
+      @NonNull MaterialButton btnEditProfile, @NonNull MaterialButton btnLogin,
+      @NonNull MaterialButton btnLogout, @NonNull MaterialButton btnRegister,
+      @NonNull LinearLayout layoutGuest, @NonNull LinearLayout layoutLoggedIn,
+      @NonNull LinearLayout menuAddresses, @NonNull LinearLayout menuChat,
+      @NonNull LinearLayout menuOrders, @NonNull LinearLayout menuWishlist,
+      @NonNull CircleImageView profileImage, @NonNull TextView userEmail,
+      @NonNull TextView userName) {
     this.rootView = rootView;
+    this.btnEditProfile = btnEditProfile;
+    this.btnLogin = btnLogin;
     this.btnLogout = btnLogout;
+    this.btnRegister = btnRegister;
+    this.layoutGuest = layoutGuest;
+    this.layoutLoggedIn = layoutLoggedIn;
     this.menuAddresses = menuAddresses;
-    this.menuHelp = menuHelp;
+    this.menuChat = menuChat;
     this.menuOrders = menuOrders;
-    this.menuPayment = menuPayment;
-    this.menuSettings = menuSettings;
+    this.menuWishlist = menuWishlist;
     this.profileImage = profileImage;
     this.userEmail = userEmail;
     this.userName = userName;
@@ -93,9 +112,39 @@ public final class FragmentProfileBinding implements ViewBinding {
     // This is done to optimize the compiled bytecode for size and performance.
     int id;
     missingId: {
+      id = R.id.btn_edit_profile;
+      MaterialButton btnEditProfile = ViewBindings.findChildViewById(rootView, id);
+      if (btnEditProfile == null) {
+        break missingId;
+      }
+
+      id = R.id.btn_login;
+      MaterialButton btnLogin = ViewBindings.findChildViewById(rootView, id);
+      if (btnLogin == null) {
+        break missingId;
+      }
+
       id = R.id.btn_logout;
       MaterialButton btnLogout = ViewBindings.findChildViewById(rootView, id);
       if (btnLogout == null) {
+        break missingId;
+      }
+
+      id = R.id.btn_register;
+      MaterialButton btnRegister = ViewBindings.findChildViewById(rootView, id);
+      if (btnRegister == null) {
+        break missingId;
+      }
+
+      id = R.id.layout_guest;
+      LinearLayout layoutGuest = ViewBindings.findChildViewById(rootView, id);
+      if (layoutGuest == null) {
+        break missingId;
+      }
+
+      id = R.id.layout_logged_in;
+      LinearLayout layoutLoggedIn = ViewBindings.findChildViewById(rootView, id);
+      if (layoutLoggedIn == null) {
         break missingId;
       }
 
@@ -105,9 +154,9 @@ public final class FragmentProfileBinding implements ViewBinding {
         break missingId;
       }
 
-      id = R.id.menu_help;
-      LinearLayout menuHelp = ViewBindings.findChildViewById(rootView, id);
-      if (menuHelp == null) {
+      id = R.id.menu_chat;
+      LinearLayout menuChat = ViewBindings.findChildViewById(rootView, id);
+      if (menuChat == null) {
         break missingId;
       }
 
@@ -117,15 +166,9 @@ public final class FragmentProfileBinding implements ViewBinding {
         break missingId;
       }
 
-      id = R.id.menu_payment;
-      LinearLayout menuPayment = ViewBindings.findChildViewById(rootView, id);
-      if (menuPayment == null) {
-        break missingId;
-      }
-
-      id = R.id.menu_settings;
-      LinearLayout menuSettings = ViewBindings.findChildViewById(rootView, id);
-      if (menuSettings == null) {
+      id = R.id.menu_wishlist;
+      LinearLayout menuWishlist = ViewBindings.findChildViewById(rootView, id);
+      if (menuWishlist == null) {
         break missingId;
       }
 
@@ -147,8 +190,9 @@ public final class FragmentProfileBinding implements ViewBinding {
         break missingId;
       }
 
-      return new FragmentProfileBinding((ScrollView) rootView, btnLogout, menuAddresses, menuHelp,
-          menuOrders, menuPayment, menuSettings, profileImage, userEmail, userName);
+      return new FragmentProfileBinding((ScrollView) rootView, btnEditProfile, btnLogin, btnLogout,
+          btnRegister, layoutGuest, layoutLoggedIn, menuAddresses, menuChat, menuOrders,
+          menuWishlist, profileImage, userEmail, userName);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

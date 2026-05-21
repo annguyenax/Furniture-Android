@@ -40,7 +40,7 @@ public class DataInitializer implements ApplicationRunner {
     }
 
     private void seedRoles() {
-        for (String name : List.of("CUSTOMER", "VENDOR", "ADMIN", "SHIPPER")) {
+        for (String name : List.of("CUSTOMER", "ADMIN")) {
             if (!roleRepository.existsByRoleName(name)) {
                 roleRepository.save(new Role(name));
             }
@@ -70,38 +70,37 @@ public class DataInitializer implements ApplicationRunner {
     private void seedVendorAndShop() {
         if (shopRepository.count() > 0) return;
 
-        Role vendorRole = roleRepository.findByRoleName("VENDOR")
-            .orElseThrow(() -> new RuntimeException("VENDOR role not found"));
         Role customerRole = roleRepository.findByRoleName("CUSTOMER")
             .orElseThrow(() -> new RuntimeException("CUSTOMER role not found"));
 
-        // Vendor account
-        if (!userRepository.existsByEmail("vendor@furniture.com")) {
-            User vendor = User.builder()
+        User shopOwner;
+        if (!userRepository.existsByEmail("shop@furniture.com")) {
+            shopOwner = User.builder()
                 .firstName("Minh").lastName("Tuấn")
-                .username("vendor1")
-                .email("vendor@furniture.com")
+                .username("shopowner1")
+                .email("shop@furniture.com")
                 .password(passwordEncoder.encode("123456"))
                 .status(User.UserStatus.ACTIVE)
                 .authProvider(User.AuthProvider.LOCAL)
                 .isVerified(true)
-                .roles(Set.of(vendorRole))
+                .roles(Set.of(customerRole))
                 .build();
-            vendor = userRepository.save(vendor);
-
-            Shop shop = Shop.builder()
-                .ownerId(vendor.getUserId())
-                .shopName("Nội Thất Gia Đình")
-                .description("Chuyên cung cấp nội thất cao cấp cho mọi không gian sống")
-                .logo("https://picsum.photos/seed/shop1/200/200")
-                .banner("https://picsum.photos/seed/shopbanner1/800/300")
-                .rating(new BigDecimal("4.5"))
-                .status(Shop.ShopStatus.ACTIVE)
-                .address("123 Nguyễn Văn Linh, Quận 7, TP.HCM")
-                .build();
-            shopRepository.save(shop);
+            shopOwner = userRepository.save(shopOwner);
+        } else {
+            shopOwner = userRepository.findByEmail("shop@furniture.com").orElseThrow();
         }
 
+        Shop shop = Shop.builder()
+            .ownerId(shopOwner.getUserId())
+            .shopName("Nội Thất Gia Đình")
+            .description("Chuyên cung cấp nội thất cao cấp cho mọi không gian sống")
+            .logo("https://picsum.photos/seed/shop1/200/200")
+            .banner("https://picsum.photos/seed/shopbanner1/800/300")
+            .rating(new BigDecimal("4.5"))
+            .status(Shop.ShopStatus.ACTIVE)
+            .address("123 Nguyễn Văn Linh, Quận 7, TP.HCM")
+            .build();
+        shopRepository.save(shop);
     }
 
     private void seedDemoAccounts() {

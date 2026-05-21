@@ -60,6 +60,9 @@ public final class ActivityCheckoutBinding implements ViewBinding {
   public final TextView tvBottomTotal;
 
   @NonNull
+  public final TextView tvNoAddress;
+
+  @NonNull
   public final TextView tvPhone;
 
   @NonNull
@@ -79,8 +82,9 @@ public final class ActivityCheckoutBinding implements ViewBinding {
       @NonNull TextInputEditText etNote, @NonNull ProgressBar progressBar,
       @NonNull RadioButton rbBank, @NonNull RadioButton rbCod, @NonNull RadioGroup rgPaymentMethod,
       @NonNull RecyclerView rvOrderItems, @NonNull Toolbar toolbar, @NonNull TextView tvAddress,
-      @NonNull TextView tvBottomTotal, @NonNull TextView tvPhone, @NonNull TextView tvRecipientName,
-      @NonNull TextView tvShipping, @NonNull TextView tvSubtotal, @NonNull TextView tvTotal) {
+      @NonNull TextView tvBottomTotal, @NonNull TextView tvNoAddress, @NonNull TextView tvPhone,
+      @NonNull TextView tvRecipientName, @NonNull TextView tvShipping, @NonNull TextView tvSubtotal,
+      @NonNull TextView tvTotal) {
     this.rootView = rootView;
     this.btnChangeAddress = btnChangeAddress;
     this.btnPlaceOrder = btnPlaceOrder;
@@ -93,6 +97,7 @@ public final class ActivityCheckoutBinding implements ViewBinding {
     this.toolbar = toolbar;
     this.tvAddress = tvAddress;
     this.tvBottomTotal = tvBottomTotal;
+    this.tvNoAddress = tvNoAddress;
     this.tvPhone = tvPhone;
     this.tvRecipientName = tvRecipientName;
     this.tvShipping = tvShipping;
@@ -193,6 +198,12 @@ public final class ActivityCheckoutBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.tv_no_address;
+      TextView tvNoAddress = ViewBindings.findChildViewById(rootView, id);
+      if (tvNoAddress == null) {
+        break missingId;
+      }
+
       id = R.id.tv_phone;
       TextView tvPhone = ViewBindings.findChildViewById(rootView, id);
       if (tvPhone == null) {
@@ -225,7 +236,8 @@ public final class ActivityCheckoutBinding implements ViewBinding {
 
       return new ActivityCheckoutBinding((CoordinatorLayout) rootView, btnChangeAddress,
           btnPlaceOrder, etNote, progressBar, rbBank, rbCod, rgPaymentMethod, rvOrderItems, toolbar,
-          tvAddress, tvBottomTotal, tvPhone, tvRecipientName, tvShipping, tvSubtotal, tvTotal);
+          tvAddress, tvBottomTotal, tvNoAddress, tvPhone, tvRecipientName, tvShipping, tvSubtotal,
+          tvTotal);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

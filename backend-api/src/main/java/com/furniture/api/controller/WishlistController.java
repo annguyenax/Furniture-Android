@@ -24,6 +24,7 @@ public class WishlistController {
     private final ProductRepository productRepository;
 
     @GetMapping
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<ApiResponse<List<WishlistItem>>> getWishlist(Authentication auth) {
         Integer userId = Integer.parseInt(auth.getName());
         List<Wishlist> items = wishlistRepository.findByUserId(userId);

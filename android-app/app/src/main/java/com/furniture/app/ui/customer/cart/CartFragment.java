@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,13 +46,19 @@ public class CartFragment extends Fragment implements CartItemAdapter.OnCartItem
     private RecyclerView cartRecyclerView;
     private ProgressBar progressBar;
     private View emptyCartState;
+    private View layoutGuest;
+    private LinearLayout layoutSelectAll;
+    private CheckBox cbSelectAll;
+    private TextView tvSelectedCount;
     private MaterialCardView checkoutCard;
     private TextView totalText;
     private MaterialButton btnCheckout;
     private MaterialButton btnStartShopping;
+    private MaterialButton btnLoginCart;
 
     private CartItemAdapter cartItemAdapter;
-    private List<CartItem> cartItems = new ArrayList<>();
+    private final List<CartItem> cartItems = new ArrayList<>();
+    private boolean isUpdatingSelectAll = false;
 
     @Nullable
     @Override
@@ -81,13 +89,19 @@ public class CartFragment extends Fragment implements CartItemAdapter.OnCartItem
         cartRecyclerView = view.findViewById(R.id.cart_recycler_view);
         progressBar = view.findViewById(R.id.progress_bar);
         emptyCartState = view.findViewById(R.id.empty_cart_state);
+        layoutGuest = view.findViewById(R.id.layout_guest);
+        layoutSelectAll = view.findViewById(R.id.layout_select_all);
+        cbSelectAll = view.findViewById(R.id.cb_select_all);
+        tvSelectedCount = view.findViewById(R.id.tv_selected_count);
         checkoutCard = view.findViewById(R.id.checkout_card);
         totalText = view.findViewById(R.id.total_text);
         btnCheckout = view.findViewById(R.id.btn_checkout);
         btnStartShopping = view.findViewById(R.id.btn_start_shopping);
+        btnLoginCart = view.findViewById(R.id.btn_login_cart);
 
         cartRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         cartItemAdapter = new CartItemAdapter(cartItems, this, currencyFormat);
+        cartItemAdapter.setOnSelectionChangedListener(this::onSelectionChanged);
         cartRecyclerView.setAdapter(cartItemAdapter);
     }
 
@@ -98,31 +112,52 @@ public class CartFragment extends Fragment implements CartItemAdapter.OnCartItem
                 new CartViewModelFactory(cartRepository)).get(CartViewModel.class);
 
         cartViewModel.getCart().observe(getViewLifecycleOwner(), this::updateCartUI);
-        cartViewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
-            progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
-        });
+        cartViewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading ->
+                progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE));
     }
 
     private void setupListeners() {
+        btnLoginCart.setOnClickListener(v ->
+                startActivity(new Intent(requireContext(), com.furniture.app.ui.auth.LoginActivity.class)));
+
         btnStartShopping.setOnClickListener(v -> {
             if (getActivity() instanceof CustomerMainActivity) {
                 ((CustomerMainActivity) getActivity()).navigateToTab(0);
             }
         });
 
+        cbSelectAll.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isUpdatingSelectAll) return;
+            cartItemAdapter.selectAll(isChecked);
+        });
+
         btnCheckout.setOnClickListener(v -> {
-            if (cartItems != null && !cartItems.isEmpty()) {
-                Intent intent = new Intent(requireContext(), CheckoutActivity.class);
-                intent.putExtra(CheckoutActivity.EXTRA_FROM_CART, true);
-                startActivity(intent);
-            } else {
-                Toast.makeText(getContext(), "Giỏ hàng của bạn đang trống", Toast.LENGTH_SHORT).show();
+            List<CartItem> selected = cartItemAdapter.getSelectedItems();
+            if (selected.isEmpty()) {
+                Toast.makeText(getContext(), "Vui lòng chọn ít nhất một sản phẩm", Toast.LENGTH_SHORT).show();
+                return;
             }
+            Intent intent = new Intent(requireContext(), CheckoutActivity.class);
+            intent.putExtra(CheckoutActivity.EXTRA_CART_ITEMS, new ArrayList<>(selected));
+            startActivity(intent);
         });
     }
 
     private void loadCart() {
+        if (!sessionManager.isLoggedIn()) {
+            showGuestState();
+            return;
+        }
         cartViewModel.loadCart();
+    }
+
+    private void showGuestState() {
+        layoutGuest.setVisibility(View.VISIBLE);
+        emptyCartState.setVisibility(View.GONE);
+        cartRecyclerView.setVisibility(View.GONE);
+        layoutSelectAll.setVisibility(View.GONE);
+        checkoutCard.setVisibility(View.GONE);
+        progressBar.setVisibility(View.GONE);
     }
 
     private void updateCartUI(Cart cart) {
@@ -130,28 +165,57 @@ public class CartFragment extends Fragment implements CartItemAdapter.OnCartItem
             showEmptyCart();
         } else {
             cartItems.clear();
-            cartItems.addAll(cart.getItems());
+            List<CartItem> incoming = cart.getItems();
+            // Preserve selection state across reloads; default to selected=true for new items
+            for (CartItem item : incoming) {
+                item.setSelected(true);
+            }
+            cartItems.addAll(incoming);
             cartItemAdapter.notifyDataSetChanged();
             showCartItems();
-            updateTotals(cart);
+            onSelectionChanged();
         }
     }
 
     private void showEmptyCart() {
+        layoutGuest.setVisibility(View.GONE);
         emptyCartState.setVisibility(View.VISIBLE);
         cartRecyclerView.setVisibility(View.GONE);
+        layoutSelectAll.setVisibility(View.GONE);
         checkoutCard.setVisibility(View.GONE);
     }
 
     private void showCartItems() {
+        layoutGuest.setVisibility(View.GONE);
         emptyCartState.setVisibility(View.GONE);
         cartRecyclerView.setVisibility(View.VISIBLE);
+        layoutSelectAll.setVisibility(View.VISIBLE);
         checkoutCard.setVisibility(View.VISIBLE);
     }
 
-    private void updateTotals(Cart cart) {
-        BigDecimal total = cart.getTotalAmount() != null ? cart.getTotalAmount() : BigDecimal.ZERO;
-        totalText.setText(String.format("₫%s", currencyFormat.format(total)));
+    private void onSelectionChanged() {
+        List<CartItem> selected = cartItemAdapter.getSelectedItems();
+        int selectedCount = selected.size();
+        int total = cartItems.size();
+
+        // Update count label
+        tvSelectedCount.setText(String.format("Đã chọn %d/%d", selectedCount, total));
+
+        // Sync select-all checkbox without triggering listener
+        isUpdatingSelectAll = true;
+        cbSelectAll.setChecked(selectedCount == total && total > 0);
+        isUpdatingSelectAll = false;
+
+        // Recalculate total from selected items only
+        BigDecimal sum = BigDecimal.ZERO;
+        for (CartItem item : selected) {
+            if (item.getPrice() != null) {
+                sum = sum.add(item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+            }
+        }
+        totalText.setText(String.format("₫%s", currencyFormat.format(sum)));
+
+        btnCheckout.setEnabled(selectedCount > 0);
     }
 
     @Override

@@ -54,6 +54,7 @@ import retrofit2.Response;
 public class CheckoutActivity extends AppCompatActivity {
 
     public static final String EXTRA_FROM_CART = "from_cart";
+    public static final String EXTRA_CART_ITEMS = "cart_items";
     public static final String EXTRA_PRODUCT = "product";
     public static final String EXTRA_VARIANT = "variant";
     public static final String EXTRA_QUANTITY = "quantity";
@@ -76,6 +77,7 @@ public class CheckoutActivity extends AppCompatActivity {
     private ProgressBar progressBar;
 
     private List<CartItem> orderItems = new ArrayList<>();
+    private List<CartItem> cartItemsToRemove = null;
     private BigDecimal subtotal = BigDecimal.ZERO;
     private BigDecimal shippingFee = BigDecimal.ZERO;
     private boolean isFromCart = false;
@@ -160,7 +162,19 @@ public class CheckoutActivity extends AppCompatActivity {
         });
     }
 
+    @SuppressWarnings("unchecked")
     private void loadOrderData() {
+        // Selected cart items passed from CartFragment
+        ArrayList<CartItem> passedCartItems =
+                (ArrayList<CartItem>) getIntent().getSerializableExtra(EXTRA_CART_ITEMS);
+
+        if (passedCartItems != null && !passedCartItems.isEmpty()) {
+            orderItems.addAll(passedCartItems);
+            cartItemsToRemove = new ArrayList<>(passedCartItems);
+            updateItemsUI();
+            return;
+        }
+
         isFromCart = getIntent().getBooleanExtra(EXTRA_FROM_CART, false);
 
         if (isFromCart) {
@@ -364,8 +378,24 @@ public class CheckoutActivity extends AppCompatActivity {
                 .setTitle("Đặt hàng thành công!")
                 .setMessage("Mã đơn hàng: " + (order != null ? order.getOrderCode() : "N/A") +
                         "\n\nCảm ơn bạn đã đặt hàng. Chúng tôi sẽ liên hệ với bạn sớm nhất.")
-                .setPositiveButton("OK", (dialog, which) -> {
-                    if (isFromCart) cartViewModel.clearCart();
+                .setPositiveButton("Xem đơn hàng", (dialog, which) -> {
+                    // Remove ordered items from cart (fire-and-forget)
+                    if (cartItemsToRemove != null && !cartItemsToRemove.isEmpty()) {
+                        for (CartItem item : cartItemsToRemove) {
+                            if (item.getCartItemId() != null) {
+                                cartViewModel.removeCartItem(item.getCartItemId());
+                            }
+                        }
+                    } else if (isFromCart) {
+                        cartViewModel.clearCart();
+                    }
+                    // Navigate to order detail
+                    if (order != null && order.getOrderId() != null) {
+                        Intent intent = new Intent(this, OrderDetailActivity.class);
+                        intent.putExtra(OrderDetailActivity.EXTRA_ORDER_ID, order.getOrderId());
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                        startActivity(intent);
+                    }
                     finish();
                 })
                 .setCancelable(false)

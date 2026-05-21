@@ -36,7 +36,7 @@ public class SubOrder {
 
     @Column(name = "shipping_fee", precision = 10, scale = 2)
     @Builder.Default
-    private BigDecimal shippingFee = new BigDecimal("10000");
+    private BigDecimal shippingFee = BigDecimal.ZERO;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)

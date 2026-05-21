@@ -39,8 +39,19 @@ public class ChatMessage {
     @Column(name = "receiver_type", nullable = false, length = 10)
     private SenderType receiverType;
 
-    @Column(name = "message", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "message", columnDefinition = "TEXT")
     private String message;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "message_type", nullable = false, length = 20)
+    @Builder.Default
+    private MessageType messageType = MessageType.TEXT;
+
+    @Column(name = "media_url", length = 1000)
+    private String mediaUrl;
+
+    @Column(name = "media_public_id", length = 255)
+    private String mediaPublicId;
 
     @Column(name = "is_read")
     @Builder.Default
@@ -56,6 +67,10 @@ public class ChatMessage {
 
     public enum SenderType {
         USER, SHOP
+    }
+
+    public enum MessageType {
+        TEXT, IMAGE
     }
 
     // Helper method to create chat_id

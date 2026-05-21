@@ -78,7 +78,17 @@
 
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Filter Chips -->
+    <!-- Suggestions dropdown -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_suggestions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="200dp"
+        android:background="@android:color/white"
+        android:visibility="gone"
+        android:elevation="4dp" />
+
+    <!-- Filter Chips (dynamic — populated from API) -->
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -90,43 +100,45 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingHorizontal="12dp"
+            app:singleSelection="true" />
+
+    </HorizontalScrollView>
+
+    <!-- Sort Chips -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:scrollbars="none">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/sort_chip_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="12dp"
             app:singleSelection="true">
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/chip_all"
+                android:id="@+id/chip_sort_default"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="true"
-                android:text="Tất cả" />
+                android:text="Mặc định" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/chip_living_room"
+                android:id="@+id/chip_sort_price_asc"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Phòng khách" />
+                android:text="Giá tăng dần" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/chip_bedroom"
+                android:id="@+id/chip_sort_price_desc"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Phòng ngủ" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_kitchen"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Nhà bếp" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_office"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Văn phòng" />
+                android:text="Giá giảm dần" />
 
         </com.google.android.material.chip.ChipGroup>
 
@@ -163,9 +175,9 @@
             android:visibility="gone">
 
             <ImageView
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:src="@android:drawable/ic_menu_search"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:src="@drawable/ic_search"
                 android:tint="@color/text_hint"
                 android:contentDescription="Tìm kiếm" />
 
@@ -173,9 +185,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Tìm kiếm nội thất"
+                android:text="Không tìm thấy sản phẩm"
                 android:textColor="@color/text_primary"
-                android:textSize="18sp"
+                android:textSize="16sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -183,9 +195,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:gravity="center"
-                android:text="Nhập từ khóa để tìm sản phẩm phù hợp"
+                android:text="Thử tìm với từ khóa khác hoặc chọn danh mục khác"
                 android:textColor="@color/text_secondary"
-                android:textSize="14sp" />
+                android:textSize="13sp" />
 
         </LinearLayout>
 

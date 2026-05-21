@@ -31,6 +31,9 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
            countQuery = "SELECT COUNT(p) FROM Product p WHERE p.status = 'ACTIVE' AND (p.productName LIKE %:keyword% OR p.description LIKE %:keyword%)")
     Page<Product> searchByKeywordFetch(@Param("keyword") String keyword, Pageable pageable);
 
+    @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.variants LEFT JOIN FETCH p.category WHERE p.status = 'ACTIVE'")
+    List<Product> findAllActiveFetch(Pageable pageable);
+
     @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.variants LEFT JOIN FETCH p.category WHERE p.status = 'ACTIVE' ORDER BY p.sold DESC")
     List<Product> findFeaturedProducts(Pageable pageable);
 
@@ -43,4 +46,6 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     List<Product> findByCategoryIdAndStatusAndProductIdNot(Integer categoryId, Product.ProductStatus status, Integer productId, Pageable pageable);
 
     Long countByShopId(Integer shopId);
+
+    boolean existsByCategoryId(Integer categoryId);
 }

@@ -24,6 +24,12 @@ public final class ActivityLoginBinding implements ViewBinding {
   private final RelativeLayout rootView;
 
   @NonNull
+  public final MaterialButton btnFacebookLogin;
+
+  @NonNull
+  public final MaterialButton btnGoogleLogin;
+
+  @NonNull
   public final TextInputEditText emailEditText;
 
   @NonNull
@@ -48,11 +54,14 @@ public final class ActivityLoginBinding implements ViewBinding {
   public final TextView tvForgotPassword;
 
   private ActivityLoginBinding(@NonNull RelativeLayout rootView,
+      @NonNull MaterialButton btnFacebookLogin, @NonNull MaterialButton btnGoogleLogin,
       @NonNull TextInputEditText emailEditText, @NonNull TextView errorTextView,
       @NonNull LinearLayout headerSection, @NonNull MaterialButton loginButton,
       @NonNull TextInputEditText passwordEditText, @NonNull ProgressBar progressBar,
       @NonNull TextView signupButton, @NonNull TextView tvForgotPassword) {
     this.rootView = rootView;
+    this.btnFacebookLogin = btnFacebookLogin;
+    this.btnGoogleLogin = btnGoogleLogin;
     this.emailEditText = emailEditText;
     this.errorTextView = errorTextView;
     this.headerSection = headerSection;
@@ -90,6 +99,18 @@ public final class ActivityLoginBinding implements ViewBinding {
     // This is done to optimize the compiled bytecode for size and performance.
     int id;
     missingId: {
+      id = R.id.btn_facebook_login;
+      MaterialButton btnFacebookLogin = ViewBindings.findChildViewById(rootView, id);
+      if (btnFacebookLogin == null) {
+        break missingId;
+      }
+
+      id = R.id.btn_google_login;
+      MaterialButton btnGoogleLogin = ViewBindings.findChildViewById(rootView, id);
+      if (btnGoogleLogin == null) {
+        break missingId;
+      }
+
       id = R.id.email_edit_text;
       TextInputEditText emailEditText = ViewBindings.findChildViewById(rootView, id);
       if (emailEditText == null) {
@@ -138,9 +159,9 @@ public final class ActivityLoginBinding implements ViewBinding {
         break missingId;
       }
 
-      return new ActivityLoginBinding((RelativeLayout) rootView, emailEditText, errorTextView,
-          headerSection, loginButton, passwordEditText, progressBar, signupButton,
-          tvForgotPassword);
+      return new ActivityLoginBinding((RelativeLayout) rootView, btnFacebookLogin, btnGoogleLogin,
+          emailEditText, errorTextView, headerSection, loginButton, passwordEditText, progressBar,
+          signupButton, tvForgotPassword);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

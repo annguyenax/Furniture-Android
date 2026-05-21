@@ -1,230 +1,414 @@
 [
     {
-        "merged": "com.furniture.app-debug-57:/mipmap-hdpi_ic_launcher_round.xml.flat",
-        "source": "com.furniture.app-main-59:/mipmap-hdpi/ic_launcher_round.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\mipmap-xhdpi_ic_launcher.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\mipmap-xhdpi\\ic_launcher.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/drawable_ic_home.xml.flat",
-        "source": "com.furniture.app-main-59:/drawable/ic_home.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\mipmap-anydpi-v33_ic_launcher.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\mipmap-anydpi-v33\\ic_launcher.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/layout_item_cart.xml.flat",
-        "source": "com.furniture.app-main-59:/layout/item_cart.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_activity_add_address.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\activity_add_address.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/menu_bottom_nav_menu.xml.flat",
-        "source": "com.furniture.app-main-59:/menu/bottom_nav_menu.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_ic_person.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\ic_person.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/drawable_tab_selector.xml.flat",
-        "source": "com.furniture.app-main-59:/drawable/tab_selector.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_bg_chat_receiver.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\bg_chat_receiver.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/layout_item_chat_receiver.xml.flat",
-        "source": "com.furniture.app-main-59:/layout/item_chat_receiver.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_activity_address_list.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\activity_address_list.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/drawable_ic_plus.xml.flat",
-        "source": "com.furniture.app-main-59:/drawable/ic_plus.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_bg_avatar.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\bg_avatar.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/drawable_ic_search.xml.flat",
-        "source": "com.furniture.app-main-59:/drawable/ic_search.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_activity_shop_detail.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\activity_shop_detail.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/drawable_ic_back.xml.flat",
-        "source": "com.furniture.app-main-59:/drawable/ic_back.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_activity_admin_chat_list.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\activity_admin_chat_list.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/drawable_placeholder_product.xml.flat",
-        "source": "com.furniture.app-main-59:/drawable/placeholder_product.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\mipmap-xhdpi_ic_launcher_round.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\mipmap-xhdpi\\ic_launcher_round.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/layout_dialog_edit_address.xml.flat",
-        "source": "com.furniture.app-main-59:/layout/dialog_edit_address.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_bg_chat_input.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\bg_chat_input.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/layout_fragment_profile.xml.flat",
-        "source": "com.furniture.app-main-59:/layout/fragment_profile.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_activity_register.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\activity_register.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/drawable_bg_variant_selected.xml.flat",
-        "source": "com.furniture.app-main-59:/drawable/bg_variant_selected.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_activity_customer_main.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\activity_customer_main.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/layout_activity_main.xml.flat",
-        "source": "com.furniture.app-main-59:/layout/activity_main.xml"
-    },
-    {
-        "merged": "com.furniture.app-debug-57:/mipmap-mdpi_ic_launcher_round.xml.flat",
-        "source": "com.furniture.app-main-59:/mipmap-mdpi/ic_launcher_round.xml"
-    },
-    {
-        "merged": "com.furniture.app-debug-57:/drawable_ic_location.xml.flat",
-        "source": "com.furniture.app-main-59:/drawable/ic_location.xml"
-    },
-    {
-        "merged": "com.furniture.app-debug-57:/layout_activity_login.xml.flat",
-        "source": "com.furniture.app-main-59:/layout/activity_login.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_bg_status_badge.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\bg_status_badge.xml"
     },
     {
         "merged": "com.furniture.app-debug-57:/layout_activity_edit_profile.xml.flat",
         "source": "com.furniture.app-main-59:/layout/activity_edit_profile.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/drawable_ic_cart.xml.flat",
-        "source": "com.furniture.app-main-59:/drawable/ic_cart.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_bg_avatar_light.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\bg_avatar_light.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/mipmap-hdpi_ic_launcher.xml.flat",
-        "source": "com.furniture.app-main-59:/mipmap-hdpi/ic_launcher.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_item_checkout_product.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\item_checkout_product.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/layout_fragment_cart.xml.flat",
-        "source": "com.furniture.app-main-59:/layout/fragment_cart.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_bg_send_button.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\bg_send_button.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/layout_item_chat_sender.xml.flat",
-        "source": "com.furniture.app-main-59:/layout/item_chat_sender.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_ic_location.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\ic_location.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/drawable_bg_chat_input.xml.flat",
-        "source": "com.furniture.app-main-59:/drawable/bg_chat_input.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_item_admin_review.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\item_admin_review.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/mipmap-xhdpi_ic_launcher_round.xml.flat",
-        "source": "com.furniture.app-main-59:/mipmap-xhdpi/ic_launcher_round.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_bg_status_active.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\bg_status_active.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/mipmap-anydpi-v33_ic_launcher.xml.flat",
-        "source": "com.furniture.app-main-59:/mipmap-anydpi-v33/ic_launcher.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_activity_admin_order_list.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\activity_admin_order_list.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/drawable_bg_chat_receiver.xml.flat",
-        "source": "com.furniture.app-main-59:/drawable/bg_chat_receiver.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\mipmap-hdpi_ic_launcher_round.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\mipmap-hdpi\\ic_launcher_round.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/layout_activity_product_detail.xml.flat",
-        "source": "com.furniture.app-main-59:/layout/activity_product_detail.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_item_chip_choice.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\item_chip_choice.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/layout_activity_chat.xml.flat",
-        "source": "com.furniture.app-main-59:/layout/activity_chat.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_ic_back.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\ic_back.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/drawable_ic_launcher_foreground.xml.flat",
-        "source": "com.furniture.app-main-59:/drawable/ic_launcher_foreground.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_activity_chat.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\activity_chat.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/mipmap-mdpi_ic_launcher.xml.flat",
-        "source": "com.furniture.app-main-59:/mipmap-mdpi/ic_launcher.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_item_address_picker.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\item_address_picker.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/layout_item_variant.xml.flat",
-        "source": "com.furniture.app-main-59:/layout/item_variant.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_item_image_slider.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\item_image_slider.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/layout_activity_shop_detail.xml.flat",
-        "source": "com.furniture.app-main-59:/layout/activity_shop_detail.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_activity_checkout.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\activity_checkout.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/layout_fragment_home.xml.flat",
-        "source": "com.furniture.app-main-59:/layout/fragment_home.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_ic_launcher_foreground.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\ic_launcher_foreground.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/drawable_ic_person.xml.flat",
-        "source": "com.furniture.app-main-59:/drawable/ic_person.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_activity_order_history.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\activity_order_history.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/drawable_ic_minus.xml.flat",
-        "source": "com.furniture.app-main-59:/drawable/ic_minus.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_item_variant.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\item_variant.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/drawable_ic_profile.xml.flat",
-        "source": "com.furniture.app-main-59:/drawable/ic_profile.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_ic_home.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\ic_home.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/layout_activity_customer_main.xml.flat",
-        "source": "com.furniture.app-main-59:/layout/activity_customer_main.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_item_banner.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\item_banner.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/drawable_ic_delete.xml.flat",
-        "source": "com.furniture.app-main-59:/drawable/ic_delete.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_activity_admin_product_edit.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\activity_admin_product_edit.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/mipmap-xxxhdpi_ic_launcher_round.xml.flat",
-        "source": "com.furniture.app-main-59:/mipmap-xxxhdpi/ic_launcher_round.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\mipmap-xxxhdpi_ic_launcher.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\mipmap-xxxhdpi\\ic_launcher.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/layout_item_product.xml.flat",
-        "source": "com.furniture.app-main-59:/layout/item_product.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_dialog_address_picker.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\dialog_address_picker.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/mipmap-xhdpi_ic_launcher.xml.flat",
-        "source": "com.furniture.app-main-59:/mipmap-xhdpi/ic_launcher.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_item_admin_product.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\item_admin_product.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/mipmap-xxhdpi_ic_launcher.xml.flat",
-        "source": "com.furniture.app-main-59:/mipmap-xxhdpi/ic_launcher.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_ic_profile.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\ic_profile.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/drawable_bg_chat_sender.xml.flat",
-        "source": "com.furniture.app-main-59:/drawable/bg_chat_sender.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_item_category.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\item_category.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/layout_item_order.xml.flat",
-        "source": "com.furniture.app-main-59:/layout/item_order.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_activity_admin_user_list.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\activity_admin_user_list.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/layout_activity_checkout.xml.flat",
-        "source": "com.furniture.app-main-59:/layout/activity_checkout.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_activity_admin_product_list.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\activity_admin_product_list.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/layout_activity_splash.xml.flat",
-        "source": "com.furniture.app-main-59:/layout/activity_splash.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_activity_admin_main.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\activity_admin_main.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/mipmap-xxhdpi_ic_launcher_round.xml.flat",
-        "source": "com.furniture.app-main-59:/mipmap-xxhdpi/ic_launcher_round.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_item_order.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\item_order.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/drawable_ic_launcher_background.xml.flat",
-        "source": "com.furniture.app-main-59:/drawable/ic_launcher_background.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_item_address.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\item_address.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/layout_item_image_slider.xml.flat",
-        "source": "com.furniture.app-main-59:/layout/item_image_slider.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_item_chat_sender.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\item_chat_sender.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/layout_fragment_search.xml.flat",
-        "source": "com.furniture.app-main-59:/layout/fragment_search.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_activity_category_products.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\activity_category_products.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/mipmap-anydpi-v26_ic_launcher.xml.flat",
-        "source": "com.furniture.app-main-59:/mipmap-anydpi-v26/ic_launcher.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_item_cart.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\item_cart.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/layout_activity_order_history.xml.flat",
-        "source": "com.furniture.app-main-59:/layout/activity_order_history.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_item_admin_order.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\item_admin_order.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/drawable_bg_quantity_button.xml.flat",
-        "source": "com.furniture.app-main-59:/drawable/bg_quantity_button.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_fragment_search.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\fragment_search.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/drawable_bg_variant_normal.xml.flat",
-        "source": "com.furniture.app-main-59:/drawable/bg_variant_normal.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_bg_chat_sender.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\bg_chat_sender.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/layout_activity_register.xml.flat",
-        "source": "com.furniture.app-main-59:/layout/activity_register.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_activity_change_password.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\activity_change_password.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/mipmap-xxxhdpi_ic_launcher.xml.flat",
-        "source": "com.furniture.app-main-59:/mipmap-xxxhdpi/ic_launcher.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\mipmap-hdpi_ic_launcher.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\mipmap-hdpi\\ic_launcher.xml"
     },
     {
-        "merged": "com.furniture.app-debug-57:/layout_item_checkout_product.xml.flat",
-        "source": "com.furniture.app-main-59:/layout/item_checkout_product.xml"
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_activity_admin_review_list.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\activity_admin_review_list.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\mipmap-xxhdpi_ic_launcher_round.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\mipmap-xxhdpi\\ic_launcher_round.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_bg_status_banned.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\bg_status_banned.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_ic_delete.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\ic_delete.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_ic_launcher_background.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\ic_launcher_background.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\mipmap-xxxhdpi_ic_launcher_round.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\mipmap-xxxhdpi\\ic_launcher_round.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_ic_minus.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\ic_minus.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_item_product_review.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\item_product_review.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_activity_order_detail.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\activity_order_detail.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\xml_file_paths.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\xml\\file_paths.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_item_wishlist.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\item_wishlist.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\mipmap-xxhdpi_ic_launcher.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\mipmap-xxhdpi\\ic_launcher.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_activity_admin_stats.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\activity_admin_stats.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\mipmap-anydpi-v26\\ic_launcher.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_fragment_cart.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\fragment_cart.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_placeholder_product.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\placeholder_product.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_item_admin_category.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\item_admin_category.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_activity_wishlist.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\activity_wishlist.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_bg_quantity_button.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\bg_quantity_button.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_bg_badge.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\bg_badge.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\menu_bottom_nav_menu.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\menu\\bottom_nav_menu.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_activity_return_request.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\activity_return_request.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_item_suggestion.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\item_suggestion.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_activity_admin_return_list.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\activity_admin_return_list.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_bg_variant_normal.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\bg_variant_normal.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_bg_variant_selected.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\bg_variant_selected.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_activity_admin_category_list.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\activity_admin_category_list.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_item_admin_return.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\item_admin_return.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_tab_selector.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\tab_selector.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_ic_search.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\ic_search.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_activity_write_review.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\activity_write_review.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_item_chat_receiver.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\item_chat_receiver.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_fragment_home.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\fragment_home.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_activity_splash.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\activity_splash.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_item_product.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\item_product.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_item_admin_user.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\item_admin_user.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\mipmap-mdpi_ic_launcher_round.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\mipmap-mdpi\\ic_launcher_round.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_activity_edit_profile.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\activity_edit_profile.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_activity_login.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\activity_login.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_bg_search.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\bg_search.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_dialog_edit_address.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\dialog_edit_address.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_ic_chat.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\ic_chat.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_activity_product_detail.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\activity_product_detail.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_fragment_profile.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\fragment_profile.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_bg_online_dot.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\bg_online_dot.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_activity_main.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\activity_main.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_ic_plus.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\ic_plus.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\mipmap-mdpi_ic_launcher.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\mipmap-mdpi\\ic_launcher.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\drawable_ic_cart.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\drawable\\ic_cart.xml"
+    },
+    {
+        "merged": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-debug-57:\\layout_item_chat_room.xml.flat",
+        "source": "C:\\Users\\ADMIN\\.gradle\\daemon\\8.13\\com.furniture.app-main-59:\\layout\\item_chat_room.xml"
     }
 ]

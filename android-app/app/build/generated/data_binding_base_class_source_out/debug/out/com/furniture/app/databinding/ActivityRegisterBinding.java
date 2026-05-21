@@ -24,6 +24,12 @@ public final class ActivityRegisterBinding implements ViewBinding {
   private final RelativeLayout rootView;
 
   @NonNull
+  public final MaterialButton btnFacebookRegister;
+
+  @NonNull
+  public final MaterialButton btnGoogleRegister;
+
+  @NonNull
   public final TextInputEditText emailEditText;
 
   @NonNull
@@ -57,6 +63,7 @@ public final class ActivityRegisterBinding implements ViewBinding {
   public final TextInputEditText usernameEditText;
 
   private ActivityRegisterBinding(@NonNull RelativeLayout rootView,
+      @NonNull MaterialButton btnFacebookRegister, @NonNull MaterialButton btnGoogleRegister,
       @NonNull TextInputEditText emailEditText, @NonNull TextView errorTextView,
       @NonNull TextInputEditText firstNameEditText, @NonNull LinearLayout headerSection,
       @NonNull TextInputEditText lastNameEditText, @NonNull TextView loginButton,
@@ -64,6 +71,8 @@ public final class ActivityRegisterBinding implements ViewBinding {
       @NonNull ProgressBar progressBar, @NonNull MaterialButton registerButton,
       @NonNull TextInputEditText usernameEditText) {
     this.rootView = rootView;
+    this.btnFacebookRegister = btnFacebookRegister;
+    this.btnGoogleRegister = btnGoogleRegister;
     this.emailEditText = emailEditText;
     this.errorTextView = errorTextView;
     this.firstNameEditText = firstNameEditText;
@@ -104,6 +113,18 @@ public final class ActivityRegisterBinding implements ViewBinding {
     // This is done to optimize the compiled bytecode for size and performance.
     int id;
     missingId: {
+      id = R.id.btn_facebook_register;
+      MaterialButton btnFacebookRegister = ViewBindings.findChildViewById(rootView, id);
+      if (btnFacebookRegister == null) {
+        break missingId;
+      }
+
+      id = R.id.btn_google_register;
+      MaterialButton btnGoogleRegister = ViewBindings.findChildViewById(rootView, id);
+      if (btnGoogleRegister == null) {
+        break missingId;
+      }
+
       id = R.id.email_edit_text;
       TextInputEditText emailEditText = ViewBindings.findChildViewById(rootView, id);
       if (emailEditText == null) {
@@ -170,9 +191,10 @@ public final class ActivityRegisterBinding implements ViewBinding {
         break missingId;
       }
 
-      return new ActivityRegisterBinding((RelativeLayout) rootView, emailEditText, errorTextView,
-          firstNameEditText, headerSection, lastNameEditText, loginButton, passwordEditText,
-          phoneEditText, progressBar, registerButton, usernameEditText);
+      return new ActivityRegisterBinding((RelativeLayout) rootView, btnFacebookRegister,
+          btnGoogleRegister, emailEditText, errorTextView, firstNameEditText, headerSection,
+          lastNameEditText, loginButton, passwordEditText, phoneEditText, progressBar,
+          registerButton, usernameEditText);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

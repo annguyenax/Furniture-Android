@@ -28,13 +28,16 @@ public class ProductReview {
     @Column(name = "user_id", nullable = false)
     private Integer userId;
 
+    @Column(name = "order_id")
+    private Integer orderId;
+
     @Column(name = "rating", nullable = false)
     private Integer rating;
 
     @Column(name = "comment", columnDefinition = "TEXT")
     private String comment;
 
-    @Column(name = "images", length = 255)
+    @Column(name = "images", columnDefinition = "TEXT")
     private String images;
 
     @Column(name = "is_verified")

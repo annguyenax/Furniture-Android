@@ -156,6 +156,7 @@ public class WishlistActivity extends AppCompatActivity {
             }
             h.itemView.setOnClickListener(v -> clickListener.onClick(item));
             h.ivRemove.setOnClickListener(v -> removeListener.onRemove(item, h.getAdapterPosition()));
+            h.btnBuyNow.setOnClickListener(v -> clickListener.onClick(item));
         }
 
         @Override public int getItemCount() { return list.size(); }
@@ -163,12 +164,14 @@ public class WishlistActivity extends AppCompatActivity {
         class VH extends RecyclerView.ViewHolder {
             ImageView ivImage, ivRemove;
             TextView tvName, tvPrice;
+            com.google.android.material.button.MaterialButton btnBuyNow;
             VH(View v) {
                 super(v);
                 ivImage = v.findViewById(R.id.iv_product_image);
                 ivRemove = v.findViewById(R.id.iv_remove);
                 tvName = v.findViewById(R.id.tv_product_name);
                 tvPrice = v.findViewById(R.id.tv_price);
+                btnBuyNow = v.findViewById(R.id.btn_buy_now);
             }
         }
     }

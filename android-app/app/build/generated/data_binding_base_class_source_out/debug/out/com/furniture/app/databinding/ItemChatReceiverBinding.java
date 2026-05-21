@@ -4,6 +4,7 @@ package com.furniture.app.databinding;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -20,14 +21,22 @@ public final class ItemChatReceiverBinding implements ViewBinding {
   private final LinearLayout rootView;
 
   @NonNull
+  public final ImageView ivMessageImage;
+
+  @NonNull
+  public final TextView tvAvatar;
+
+  @NonNull
   public final TextView tvMessage;
 
   @NonNull
   public final TextView tvTime;
 
-  private ItemChatReceiverBinding(@NonNull LinearLayout rootView, @NonNull TextView tvMessage,
-      @NonNull TextView tvTime) {
+  private ItemChatReceiverBinding(@NonNull LinearLayout rootView, @NonNull ImageView ivMessageImage,
+      @NonNull TextView tvAvatar, @NonNull TextView tvMessage, @NonNull TextView tvTime) {
     this.rootView = rootView;
+    this.ivMessageImage = ivMessageImage;
+    this.tvAvatar = tvAvatar;
     this.tvMessage = tvMessage;
     this.tvTime = tvTime;
   }
@@ -59,6 +68,18 @@ public final class ItemChatReceiverBinding implements ViewBinding {
     // This is done to optimize the compiled bytecode for size and performance.
     int id;
     missingId: {
+      id = R.id.iv_message_image;
+      ImageView ivMessageImage = ViewBindings.findChildViewById(rootView, id);
+      if (ivMessageImage == null) {
+        break missingId;
+      }
+
+      id = R.id.tv_avatar;
+      TextView tvAvatar = ViewBindings.findChildViewById(rootView, id);
+      if (tvAvatar == null) {
+        break missingId;
+      }
+
       id = R.id.tv_message;
       TextView tvMessage = ViewBindings.findChildViewById(rootView, id);
       if (tvMessage == null) {
@@ -71,7 +92,8 @@ public final class ItemChatReceiverBinding implements ViewBinding {
         break missingId;
       }
 
-      return new ItemChatReceiverBinding((LinearLayout) rootView, tvMessage, tvTime);
+      return new ItemChatReceiverBinding((LinearLayout) rootView, ivMessageImage, tvAvatar,
+          tvMessage, tvTime);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

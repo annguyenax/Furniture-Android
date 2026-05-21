@@ -4,6 +4,7 @@ package com.furniture.app.databinding;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,6 +23,9 @@ import java.lang.String;
 public final class ActivityEditProfileBinding implements ViewBinding {
   @NonNull
   private final CoordinatorLayout rootView;
+
+  @NonNull
+  public final MaterialButton btnChangePassword;
 
   @NonNull
   public final TextView btnChangePhoto;
@@ -45,14 +49,19 @@ public final class ActivityEditProfileBinding implements ViewBinding {
   public final CircleImageView profileImage;
 
   @NonNull
+  public final ProgressBar progressBar;
+
+  @NonNull
   public final Toolbar toolbar;
 
   private ActivityEditProfileBinding(@NonNull CoordinatorLayout rootView,
-      @NonNull TextView btnChangePhoto, @NonNull MaterialButton btnSave,
-      @NonNull TextInputEditText etAddress, @NonNull TextInputEditText etFirstName,
-      @NonNull TextInputEditText etLastName, @NonNull TextInputEditText etPhone,
-      @NonNull CircleImageView profileImage, @NonNull Toolbar toolbar) {
+      @NonNull MaterialButton btnChangePassword, @NonNull TextView btnChangePhoto,
+      @NonNull MaterialButton btnSave, @NonNull TextInputEditText etAddress,
+      @NonNull TextInputEditText etFirstName, @NonNull TextInputEditText etLastName,
+      @NonNull TextInputEditText etPhone, @NonNull CircleImageView profileImage,
+      @NonNull ProgressBar progressBar, @NonNull Toolbar toolbar) {
     this.rootView = rootView;
+    this.btnChangePassword = btnChangePassword;
     this.btnChangePhoto = btnChangePhoto;
     this.btnSave = btnSave;
     this.etAddress = etAddress;
@@ -60,6 +69,7 @@ public final class ActivityEditProfileBinding implements ViewBinding {
     this.etLastName = etLastName;
     this.etPhone = etPhone;
     this.profileImage = profileImage;
+    this.progressBar = progressBar;
     this.toolbar = toolbar;
   }
 
@@ -90,6 +100,12 @@ public final class ActivityEditProfileBinding implements ViewBinding {
     // This is done to optimize the compiled bytecode for size and performance.
     int id;
     missingId: {
+      id = R.id.btn_change_password;
+      MaterialButton btnChangePassword = ViewBindings.findChildViewById(rootView, id);
+      if (btnChangePassword == null) {
+        break missingId;
+      }
+
       id = R.id.btn_change_photo;
       TextView btnChangePhoto = ViewBindings.findChildViewById(rootView, id);
       if (btnChangePhoto == null) {
@@ -132,14 +148,21 @@ public final class ActivityEditProfileBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.progress_bar;
+      ProgressBar progressBar = ViewBindings.findChildViewById(rootView, id);
+      if (progressBar == null) {
+        break missingId;
+      }
+
       id = R.id.toolbar;
       Toolbar toolbar = ViewBindings.findChildViewById(rootView, id);
       if (toolbar == null) {
         break missingId;
       }
 
-      return new ActivityEditProfileBinding((CoordinatorLayout) rootView, btnChangePhoto, btnSave,
-          etAddress, etFirstName, etLastName, etPhone, profileImage, toolbar);
+      return new ActivityEditProfileBinding((CoordinatorLayout) rootView, btnChangePassword,
+          btnChangePhoto, btnSave, etAddress, etFirstName, etLastName, etPhone, profileImage,
+          progressBar, toolbar);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

@@ -20,6 +20,9 @@ public interface AuthApi {
     @POST("auth/login")
     Call<ApiResponse<AuthResponse>> login(@Body LoginRequest request);
 
+    @POST("auth/google")
+    Call<ApiResponse<AuthResponse>> googleLogin(@Body String idToken);
+
     @POST("auth/refresh-token")
     Call<ApiResponse<AuthResponse>> refreshToken(@Body String refreshToken);
 

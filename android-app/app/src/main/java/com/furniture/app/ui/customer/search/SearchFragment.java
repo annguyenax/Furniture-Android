@@ -1,5 +1,6 @@
 package com.furniture.app.ui.customer.search;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -14,12 +15,14 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.furniture.app.R;
@@ -56,10 +59,12 @@ public class SearchFragment extends Fragment {
     private EditText searchEditText;
     private ImageView clearSearchBtn;
     private RecyclerView searchResultsRecyclerView;
+    private RecyclerView rvSuggestions;
     private ProgressBar progressBar;
     private View emptyState;
     private ChipGroup filterChipGroup, sortChipGroup;
     private ProductAdapter productAdapter;
+    private SuggestionAdapter suggestionAdapter;
     private ProductApi productApi;
     private CategoryApi categoryApi;
 
@@ -67,14 +72,9 @@ public class SearchFragment extends Fragment {
     private Runnable debounceRunnable;
 
     private List<Product> rawResults = new ArrayList<>();
+    private List<String> allProductNames = new ArrayList<>();
     private int currentSort = SORT_DEFAULT;
     private Integer selectedCategoryId = null;
-
-    private static final int[] CATEGORY_CHIP_IDS = {
-            R.id.chip_all, R.id.chip_living_room, R.id.chip_bedroom,
-            R.id.chip_kitchen, R.id.chip_office
-    };
-    private final Integer[] categoryIds = new Integer[5];
 
     @Nullable
     @Override
@@ -92,11 +92,9 @@ public class SearchFragment extends Fragment {
         categoryApi = RetrofitClient.getInstance(sessionManager.getToken()).create(CategoryApi.class);
 
         initViews(view);
-        setupRecyclerView();
+        setupRecyclerViews();
         setupListeners();
-        loadCategoryIds();
-
-        // Load initial product list
+        loadCategories();
         loadAllProducts();
     }
 
@@ -110,41 +108,73 @@ public class SearchFragment extends Fragment {
         searchEditText = view.findViewById(R.id.search_edit_text);
         clearSearchBtn = view.findViewById(R.id.clear_search);
         searchResultsRecyclerView = view.findViewById(R.id.search_results_recycler_view);
+        rvSuggestions = view.findViewById(R.id.rv_suggestions);
         progressBar = view.findViewById(R.id.progress_bar);
         emptyState = view.findViewById(R.id.empty_state);
         filterChipGroup = view.findViewById(R.id.filter_chip_group);
         sortChipGroup = view.findViewById(R.id.sort_chip_group);
     }
 
-    private void setupRecyclerView() {
+    private void setupRecyclerViews() {
         productAdapter = new ProductAdapter(new ArrayList<>(), this::onProductClick);
         searchResultsRecyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 2));
         searchResultsRecyclerView.setAdapter(productAdapter);
+
+        suggestionAdapter = new SuggestionAdapter(new ArrayList<>(), name -> {
+            searchEditText.setText(name);
+            searchEditText.setSelection(name.length());
+            hideSuggestions();
+            hideKeyboard();
+            triggerSearch();
+        });
+        rvSuggestions.setLayoutManager(new LinearLayoutManager(requireContext()));
+        rvSuggestions.setAdapter(suggestionAdapter);
     }
 
-    private void loadCategoryIds() {
-        categoryIds[0] = null;
+    private void loadCategories() {
         categoryApi.getAllCategories().enqueue(new Callback<ApiResponse<List<Category>>>() {
             @Override
             public void onResponse(Call<ApiResponse<List<Category>>> call,
                                    Response<ApiResponse<List<Category>>> response) {
-                if (!response.isSuccessful() || response.body() == null
+                if (!isAdded() || !response.isSuccessful() || response.body() == null
                         || response.body().getData() == null) return;
-                List<Category> cats = response.body().getData();
-                String[] keywords = {"", "Phòng khách", "Phòng ngủ", "Phòng ăn", "Phòng làm việc"};
-                for (int i = 1; i < keywords.length; i++) {
-                    for (Category c : cats) {
-                        if (c.getCategoryName() != null && c.getCategoryName().contains(keywords[i])) {
-                            categoryIds[i] = c.getCategoryId();
-                            break;
-                        }
-                    }
-                }
+                buildCategoryChips(response.body().getData());
             }
-
-            @Override
-            public void onFailure(Call<ApiResponse<List<Category>>> call, Throwable t) {}
+            @Override public void onFailure(Call<ApiResponse<List<Category>>> call, Throwable t) {}
         });
+    }
+
+    private void buildCategoryChips(List<Category> categories) {
+        filterChipGroup.removeAllViews();
+
+        Chip chipAll = createChip("Tất cả", View.generateViewId());
+        chipAll.setChecked(true);
+        chipAll.setTag(null);
+        filterChipGroup.addView(chipAll);
+
+        for (Category cat : categories) {
+            Chip chip = createChip(cat.getCategoryName(), View.generateViewId());
+            chip.setTag(cat.getCategoryId());
+            filterChipGroup.addView(chip);
+        }
+
+        filterChipGroup.setOnCheckedStateChangeListener((group, checkedIds) -> {
+            if (checkedIds.isEmpty()) return;
+            View checkedChip = group.findViewById(checkedIds.get(0));
+            if (checkedChip instanceof Chip) {
+                Object tag = ((Chip) checkedChip).getTag();
+                selectedCategoryId = tag instanceof Integer ? (Integer) tag : null;
+                triggerSearch();
+            }
+        });
+    }
+
+    private Chip createChip(String text, int id) {
+        Chip chip = (Chip) LayoutInflater.from(requireContext())
+                .inflate(R.layout.item_chip_choice, filterChipGroup, false);
+        chip.setId(id);
+        chip.setText(text);
+        return chip;
     }
 
     private void setupListeners() {
@@ -154,6 +184,7 @@ public class SearchFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 clearSearchBtn.setVisibility(s.length() > 0 ? View.VISIBLE : View.GONE);
+                updateSuggestions(s.toString().trim());
             }
 
             @Override
@@ -167,6 +198,7 @@ public class SearchFragment extends Fragment {
         searchEditText.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 if (debounceRunnable != null) debounceHandler.removeCallbacks(debounceRunnable);
+                hideSuggestions();
                 triggerSearch();
                 hideKeyboard();
                 return true;
@@ -174,23 +206,17 @@ public class SearchFragment extends Fragment {
             return false;
         });
 
-        clearSearchBtn.setOnClickListener(v -> {
-            searchEditText.setText("");
-            hideKeyboard();
-            // Reset to all products with current category
-            triggerSearch();
+        searchEditText.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                // Delay so suggestion item click registers before the list disappears
+                debounceHandler.postDelayed(this::hideSuggestions, 200);
+            }
         });
 
-        filterChipGroup.setOnCheckedStateChangeListener((group, checkedIds) -> {
-            if (checkedIds.isEmpty()) return;
-            int chipId = checkedIds.get(0);
-            selectedCategoryId = null;
-            for (int i = 0; i < CATEGORY_CHIP_IDS.length; i++) {
-                if (CATEGORY_CHIP_IDS[i] == chipId) {
-                    selectedCategoryId = categoryIds[i];
-                    break;
-                }
-            }
+        clearSearchBtn.setOnClickListener(v -> {
+            searchEditText.setText("");
+            hideSuggestions();
+            hideKeyboard();
             triggerSearch();
         });
 
@@ -208,12 +234,33 @@ public class SearchFragment extends Fragment {
         });
     }
 
+    private void updateSuggestions(String query) {
+        if (query.length() < 2 || allProductNames.isEmpty()) {
+            hideSuggestions();
+            return;
+        }
+        String kw = query.toLowerCase();
+        List<String> suggestions = allProductNames.stream()
+                .filter(name -> name.toLowerCase().contains(kw))
+                .distinct().limit(6)
+                .collect(Collectors.toList());
+        if (suggestions.isEmpty()) {
+            hideSuggestions();
+        } else {
+            suggestionAdapter.setItems(suggestions);
+            rvSuggestions.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void hideSuggestions() {
+        if (rvSuggestions != null) rvSuggestions.setVisibility(View.GONE);
+    }
+
     private void triggerSearch() {
         String keyword = searchEditText.getText() != null
                 ? searchEditText.getText().toString().trim() : "";
 
         if (selectedCategoryId != null) {
-            // Load by category, then client-side filter by keyword
             loadByCategory(selectedCategoryId, keyword);
         } else if (!keyword.isEmpty()) {
             searchByKeyword(keyword);
@@ -233,10 +280,10 @@ public class SearchFragment extends Fragment {
                         if (response.isSuccessful() && response.body() != null
                                 && response.body().getData() != null) {
                             rawResults = new ArrayList<>(response.body().getData().getContent());
+                            cacheProductNames(rawResults);
                             applyFilterAndSort();
                         }
                     }
-
                     @Override
                     public void onFailure(Call<ApiResponse<PageResponse<Product>>> call, Throwable t) {
                         setLoading(false);
@@ -259,7 +306,6 @@ public class SearchFragment extends Fragment {
                             applyFilterAndSort();
                         }
                     }
-
                     @Override
                     public void onFailure(Call<ApiResponse<PageResponse<Product>>> call, Throwable t) {
                         setLoading(false);
@@ -279,7 +325,6 @@ public class SearchFragment extends Fragment {
                         if (response.isSuccessful() && response.body() != null
                                 && response.body().getData() != null) {
                             rawResults = new ArrayList<>(response.body().getData().getContent());
-                            // Filter by keyword client-side
                             if (!keyword.isEmpty()) {
                                 String kw = keyword.toLowerCase();
                                 rawResults = rawResults.stream()
@@ -290,7 +335,6 @@ public class SearchFragment extends Fragment {
                             applyFilterAndSort();
                         }
                     }
-
                     @Override
                     public void onFailure(Call<ApiResponse<PageResponse<Product>>> call, Throwable t) {
                         setLoading(false);
@@ -299,10 +343,16 @@ public class SearchFragment extends Fragment {
                 });
     }
 
+    private void cacheProductNames(List<Product> products) {
+        allProductNames = products.stream()
+                .map(Product::getProductName)
+                .filter(name -> name != null && !name.isEmpty())
+                .collect(Collectors.toList());
+    }
+
     private void applyFilterAndSort() {
         List<Product> results = new ArrayList<>(rawResults);
 
-        // Sort
         if (currentSort == SORT_PRICE_ASC) {
             Collections.sort(results, (a, b) -> {
                 BigDecimal pa = a.getLowestPrice() != null ? a.getLowestPrice() : BigDecimal.ZERO;
@@ -340,7 +390,7 @@ public class SearchFragment extends Fragment {
     private void hideKeyboard() {
         if (!isAdded()) return;
         InputMethodManager imm = (InputMethodManager)
-                requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+                requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         if (imm != null) imm.hideSoftInputFromWindow(searchEditText.getWindowToken(), 0);
     }
 
@@ -348,5 +398,45 @@ public class SearchFragment extends Fragment {
         Intent intent = new Intent(requireContext(), ProductDetailActivity.class);
         intent.putExtra(ProductDetailActivity.EXTRA_PRODUCT, product);
         startActivity(intent);
+    }
+
+    // ── Suggestion Adapter ───────────────────────────────────────────────────
+
+    interface OnSuggestionClick { void onClick(String name); }
+
+    static class SuggestionAdapter extends RecyclerView.Adapter<SuggestionAdapter.VH> {
+        private List<String> items;
+        private final OnSuggestionClick listener;
+
+        SuggestionAdapter(List<String> items, OnSuggestionClick listener) {
+            this.items = items;
+            this.listener = listener;
+        }
+
+        void setItems(List<String> items) {
+            this.items = items;
+            notifyDataSetChanged();
+        }
+
+        @NonNull @Override
+        public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View v = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.item_suggestion, parent, false);
+            return new VH(v);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull VH h, int position) {
+            String name = items.get(position);
+            h.tvSuggestion.setText(name);
+            h.itemView.setOnClickListener(v -> listener.onClick(name));
+        }
+
+        @Override public int getItemCount() { return items.size(); }
+
+        static class VH extends RecyclerView.ViewHolder {
+            TextView tvSuggestion;
+            VH(View v) { super(v); tvSuggestion = v.findViewById(R.id.tv_suggestion); }
+        }
     }
 }

@@ -18,6 +18,8 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.furniture.app.util.LoadingDialog;
+
 import com.furniture.app.R;
 import com.furniture.app.data.model.ApiResponse;
 import com.furniture.app.data.model.Order;
@@ -145,21 +147,26 @@ public class AdminOrderListActivity extends AppCompatActivity {
                 .setTitle("Cập nhật trạng thái: " + (order.getOrderCode() != null ? order.getOrderCode() : ""))
                 .setItems(labels, (dialog, which) -> {
                     String newStatus = statuses[which];
+                    LoadingDialog loading = LoadingDialog.show(AdminOrderListActivity.this, "Đang cập nhật trạng thái...");
                     adminOrderApi.updateOrderStatus(order.getOrderId(), newStatus)
                             .enqueue(new Callback<ApiResponse<Order>>() {
                                 @Override
                                 public void onResponse(Call<ApiResponse<Order>> call,
                                                        Response<ApiResponse<Order>> response) {
+                                    loading.dismiss();
                                     if (response.isSuccessful() && response.body() != null
                                             && response.body().isSuccess()) {
                                         Toast.makeText(AdminOrderListActivity.this,
                                                 "Đã cập nhật → " + labels[which], Toast.LENGTH_SHORT).show();
                                         loadOrders();
+                                    } else {
+                                        Toast.makeText(AdminOrderListActivity.this, "Cập nhật thất bại", Toast.LENGTH_SHORT).show();
                                     }
                                 }
 
                                 @Override
                                 public void onFailure(Call<ApiResponse<Order>> call, Throwable t) {
+                                    loading.dismiss();
                                     Toast.makeText(AdminOrderListActivity.this, "Lỗi cập nhật", Toast.LENGTH_SHORT).show();
                                 }
                             });
@@ -204,9 +211,12 @@ public class AdminOrderListActivity extends AppCompatActivity {
             }
 
             // Status badge color
+            String returnStatus = o.getReturnStatus();
             String status = o.getStatus();
             int color;
-            if ("DELIVERED".equals(status)) color = 0xFF4CAF50;
+            if ("APPROVED".equals(returnStatus)) color = 0xFF9C27B0;
+            else if ("PENDING".equals(returnStatus)) color = 0xFFFF5722;
+            else if ("DELIVERED".equals(status)) color = 0xFF4CAF50;
             else if ("CANCELLED".equals(status)) color = 0xFFF44336;
             else if ("SHIPPED".equals(status)) color = 0xFF2196F3;
             else if ("PROCESSING".equals(status)) color = 0xFFFF9800;

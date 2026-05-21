@@ -6,6 +6,7 @@ import com.furniture.api.exception.BadRequestException;
 import com.furniture.api.exception.ResourceNotFoundException;
 import com.furniture.api.model.User;
 import com.furniture.api.repository.UserRepository;
+import com.furniture.api.service.CloudinaryService;
 import com.furniture.api.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CloudinaryService cloudinaryService;
 
     @Override
     @Transactional(readOnly = true)
@@ -71,8 +73,12 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public String uploadAvatar(Integer userId, MultipartFile file) {
-        // TODO: Implement Cloudinary upload
-        throw new UnsupportedOperationException("Avatar upload not implemented yet");
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+        CloudinaryService.UploadResult result = cloudinaryService.uploadImage(file, "furniture/avatars");
+        user.setProfilePicture(result.url());
+        userRepository.save(user);
+        return result.url();
     }
 
     @Override

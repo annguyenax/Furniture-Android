@@ -4,6 +4,7 @@ package com.furniture.app.databinding;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -32,10 +33,16 @@ public final class FragmentCartBinding implements ViewBinding {
   public final MaterialButton btnCheckout;
 
   @NonNull
+  public final MaterialButton btnLoginCart;
+
+  @NonNull
   public final MaterialButton btnStartShopping;
 
   @NonNull
   public final RecyclerView cartRecyclerView;
+
+  @NonNull
+  public final CheckBox cbSelectAll;
 
   @NonNull
   public final MaterialCardView checkoutCard;
@@ -44,25 +51,41 @@ public final class FragmentCartBinding implements ViewBinding {
   public final LinearLayout emptyCartState;
 
   @NonNull
+  public final LinearLayout layoutGuest;
+
+  @NonNull
+  public final LinearLayout layoutSelectAll;
+
+  @NonNull
   public final ProgressBar progressBar;
 
   @NonNull
   public final TextView totalText;
 
+  @NonNull
+  public final TextView tvSelectedCount;
+
   private FragmentCartBinding(@NonNull RelativeLayout rootView, @NonNull AppBarLayout appBar,
-      @NonNull MaterialButton btnCheckout, @NonNull MaterialButton btnStartShopping,
-      @NonNull RecyclerView cartRecyclerView, @NonNull MaterialCardView checkoutCard,
-      @NonNull LinearLayout emptyCartState, @NonNull ProgressBar progressBar,
-      @NonNull TextView totalText) {
+      @NonNull MaterialButton btnCheckout, @NonNull MaterialButton btnLoginCart,
+      @NonNull MaterialButton btnStartShopping, @NonNull RecyclerView cartRecyclerView,
+      @NonNull CheckBox cbSelectAll, @NonNull MaterialCardView checkoutCard,
+      @NonNull LinearLayout emptyCartState, @NonNull LinearLayout layoutGuest,
+      @NonNull LinearLayout layoutSelectAll, @NonNull ProgressBar progressBar,
+      @NonNull TextView totalText, @NonNull TextView tvSelectedCount) {
     this.rootView = rootView;
     this.appBar = appBar;
     this.btnCheckout = btnCheckout;
+    this.btnLoginCart = btnLoginCart;
     this.btnStartShopping = btnStartShopping;
     this.cartRecyclerView = cartRecyclerView;
+    this.cbSelectAll = cbSelectAll;
     this.checkoutCard = checkoutCard;
     this.emptyCartState = emptyCartState;
+    this.layoutGuest = layoutGuest;
+    this.layoutSelectAll = layoutSelectAll;
     this.progressBar = progressBar;
     this.totalText = totalText;
+    this.tvSelectedCount = tvSelectedCount;
   }
 
   @Override
@@ -104,6 +127,12 @@ public final class FragmentCartBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.btn_login_cart;
+      MaterialButton btnLoginCart = ViewBindings.findChildViewById(rootView, id);
+      if (btnLoginCart == null) {
+        break missingId;
+      }
+
       id = R.id.btn_start_shopping;
       MaterialButton btnStartShopping = ViewBindings.findChildViewById(rootView, id);
       if (btnStartShopping == null) {
@@ -113,6 +142,12 @@ public final class FragmentCartBinding implements ViewBinding {
       id = R.id.cart_recycler_view;
       RecyclerView cartRecyclerView = ViewBindings.findChildViewById(rootView, id);
       if (cartRecyclerView == null) {
+        break missingId;
+      }
+
+      id = R.id.cb_select_all;
+      CheckBox cbSelectAll = ViewBindings.findChildViewById(rootView, id);
+      if (cbSelectAll == null) {
         break missingId;
       }
 
@@ -128,6 +163,18 @@ public final class FragmentCartBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.layout_guest;
+      LinearLayout layoutGuest = ViewBindings.findChildViewById(rootView, id);
+      if (layoutGuest == null) {
+        break missingId;
+      }
+
+      id = R.id.layout_select_all;
+      LinearLayout layoutSelectAll = ViewBindings.findChildViewById(rootView, id);
+      if (layoutSelectAll == null) {
+        break missingId;
+      }
+
       id = R.id.progress_bar;
       ProgressBar progressBar = ViewBindings.findChildViewById(rootView, id);
       if (progressBar == null) {
@@ -140,8 +187,15 @@ public final class FragmentCartBinding implements ViewBinding {
         break missingId;
       }
 
-      return new FragmentCartBinding((RelativeLayout) rootView, appBar, btnCheckout,
-          btnStartShopping, cartRecyclerView, checkoutCard, emptyCartState, progressBar, totalText);
+      id = R.id.tv_selected_count;
+      TextView tvSelectedCount = ViewBindings.findChildViewById(rootView, id);
+      if (tvSelectedCount == null) {
+        break missingId;
+      }
+
+      return new FragmentCartBinding((RelativeLayout) rootView, appBar, btnCheckout, btnLoginCart,
+          btnStartShopping, cartRecyclerView, cbSelectAll, checkoutCard, emptyCartState,
+          layoutGuest, layoutSelectAll, progressBar, totalText, tvSelectedCount);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));
