@@ -2,6 +2,8 @@ package com.furniture.app.ui.auth;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputType;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -11,6 +13,7 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -33,6 +36,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -95,13 +100,73 @@ public class LoginActivity extends AppCompatActivity {
 
         loginButton.setOnClickListener(v -> handleLogin());
         signupButton.setOnClickListener(v -> navigateToSignup());
-        forgotPasswordButton.setOnClickListener(v -> Toast.makeText(this,
-                "Quên mật khẩu chưa cấu hình dịch vụ email", Toast.LENGTH_SHORT).show());
+        forgotPasswordButton.setOnClickListener(v -> showForgotPasswordDialog());
         btnFacebookLogin.setOnClickListener(v -> Toast.makeText(this,
-                "Facebook login chưa được hỗ trợ", Toast.LENGTH_SHORT).show());
+                "Facebook login chua duoc ho tro", Toast.LENGTH_SHORT).show());
 
         setupGoogleSignIn();
         btnGoogleLogin.setOnClickListener(v -> signInWithGoogle());
+    }
+
+    private void showForgotPasswordDialog() {
+        TextInputLayout emailLayout = new TextInputLayout(this);
+        emailLayout.setHint("Email");
+        emailLayout.setBoxBackgroundMode(TextInputLayout.BOX_BACKGROUND_OUTLINE);
+        emailLayout.setBoxCornerRadii(10, 10, 10, 10);
+
+        TextInputEditText emailInput = new TextInputEditText(emailLayout.getContext());
+        emailInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+        emailInput.setSingleLine(true);
+        emailInput.setText(emailEditText.getText().toString().trim());
+        emailLayout.addView(emailInput);
+
+        int horizontalMargin = (int) (18 * getResources().getDisplayMetrics().density);
+        int topMargin = (int) (8 * getResources().getDisplayMetrics().density);
+        emailLayout.setPadding(horizontalMargin, topMargin, horizontalMargin, 0);
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Quên mật khẩu")
+                .setMessage("Nhập email để nhận liên kết đặt lại mật khẩu.")
+                .setView(emailLayout)
+                .setNegativeButton("Hủy", null)
+                .setPositiveButton("Gửi", null)
+                .create();
+
+        dialog.setOnShowListener(d -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+            String email = emailInput.getText().toString().trim();
+            if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                emailLayout.setError("Email không hợp lệ");
+                return;
+            }
+
+            emailLayout.setError(null);
+            sendForgotPasswordRequest(email, dialog);
+        }));
+
+        dialog.show();
+    }
+
+    private void sendForgotPasswordRequest(String email, AlertDialog dialog) {
+        progressBar.setVisibility(View.VISIBLE);
+        forgotPasswordButton.setEnabled(false);
+
+        AuthRepository authRepository = new AuthRepository(this);
+        authRepository.forgotPassword(email, new AuthRepository.SimpleCallback() {
+            @Override
+            public void onSuccess(String message) {
+                progressBar.setVisibility(View.GONE);
+                forgotPasswordButton.setEnabled(true);
+                dialog.dismiss();
+                Toast.makeText(LoginActivity.this, message, Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onError(String error) {
+                progressBar.setVisibility(View.GONE);
+                forgotPasswordButton.setEnabled(true);
+                Toast.makeText(LoginActivity.this, error, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     private void setupGoogleSignIn() {
@@ -113,7 +178,6 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void signInWithGoogle() {
-        // Sign out first to always show account chooser
         googleSignInClient.signOut().addOnCompleteListener(this, task -> {
             Intent signInIntent = googleSignInClient.getSignInIntent();
             googleSignInLauncher.launch(signInIntent);
@@ -127,10 +191,10 @@ public class LoginActivity extends AppCompatActivity {
             if (idToken != null) {
                 sendGoogleTokenToBackend(idToken);
             } else {
-                Toast.makeText(this, "Không lấy được token Google", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Khong lay duoc token Google", Toast.LENGTH_SHORT).show();
             }
         } catch (ApiException e) {
-            Toast.makeText(this, "Đăng nhập Google thất bại (mã lỗi: " + e.getStatusCode() + ")", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Dang nhap Google that bai (ma loi: " + e.getStatusCode() + ")", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -149,7 +213,7 @@ public class LoginActivity extends AppCompatActivity {
                     AuthResponse authResponse = response.body().getData();
                     saveSessionAndNavigate(authResponse);
                 } else {
-                    String msg = response.body() != null ? response.body().getMessage() : "Đăng nhập Google thất bại";
+                    String msg = response.body() != null ? response.body().getMessage() : "Dang nhap Google that bai";
                     Toast.makeText(LoginActivity.this, msg, Toast.LENGTH_LONG).show();
                 }
             }
@@ -158,7 +222,7 @@ public class LoginActivity extends AppCompatActivity {
             public void onFailure(Call<ApiResponse<AuthResponse>> call, Throwable t) {
                 progressBar.setVisibility(View.GONE);
                 btnGoogleLogin.setEnabled(true);
-                Toast.makeText(LoginActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                Toast.makeText(LoginActivity.this, "Loi ket noi", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -179,7 +243,7 @@ public class LoginActivity extends AppCompatActivity {
                 user.getProfilePicture(),
                 role
         );
-        Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Dang nhap thanh cong!", Toast.LENGTH_SHORT).show();
         navigateToHome();
     }
 
@@ -198,7 +262,7 @@ public class LoginActivity extends AppCompatActivity {
 
         authViewModel.getAuthResponse().observe(this, response -> {
             if (response != null) {
-                Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Dang nhap thanh cong!", Toast.LENGTH_SHORT).show();
                 navigateToHome();
             }
         });

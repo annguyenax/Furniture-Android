@@ -27,6 +27,12 @@ public interface ProductApi {
     @GET("products/{productId}")
     Call<ApiResponse<Product>> getProductById(@Path("productId") int productId);
 
+    @GET("products/{productId}/related")
+    Call<ApiResponse<List<Product>>> getRelatedProducts(
+            @Path("productId") int productId,
+            @Query("limit") int limit
+    );
+
     @GET("products/category/{categoryId}")
     Call<ApiResponse<PageResponse<Product>>> getProductsByCategory(
             @Path("categoryId") int categoryId,

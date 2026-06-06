@@ -56,13 +56,13 @@ public class HomeFragment extends Fragment {
     private View emptyState;
     private android.widget.TextView tvEmptyMessage;
     private com.google.android.material.button.MaterialButton btnRetry;
-    private View searchBar;
     private View btnChatHome;
     private View btnNotificationHome;
     private View seeAllFeatured;
     private ViewPager2 bannerViewPager;
     private ProductViewModel productViewModel;
     private ProductAdapter productAdapter;
+    private BannerAdapter bannerAdapter;
     private CategoryAdapter categoryAdapter;
     private CategoryApi categoryApi;
     private SessionManager sessionManager;
@@ -102,7 +102,6 @@ public class HomeFragment extends Fragment {
         emptyState = view.findViewById(R.id.empty_state);
         tvEmptyMessage = view.findViewById(R.id.tv_empty_message);
         btnRetry = view.findViewById(R.id.btn_retry);
-        searchBar = view.findViewById(R.id.search_bar);
         btnChatHome = view.findViewById(R.id.btn_chat_home);
         btnNotificationHome = view.findViewById(R.id.btn_notification_home);
         seeAllFeatured = view.findViewById(R.id.see_all_featured);
@@ -117,6 +116,7 @@ public class HomeFragment extends Fragment {
         productViewModel.getProducts().observe(getViewLifecycleOwner(), products -> {
             if (products != null && !products.isEmpty()) {
                 productAdapter.setProducts(products);
+                updateBannerFromProducts(products);
                 emptyState.setVisibility(View.GONE);
                 featuredProductsRecyclerView.setVisibility(View.VISIBLE);
             } else {
@@ -166,7 +166,6 @@ public class HomeFragment extends Fragment {
             loadCategories();
         });
 
-        if (searchBar != null) searchBar.setOnClickListener(v -> navigateToTab(1));
         if (seeAllFeatured != null) seeAllFeatured.setOnClickListener(v -> navigateToTab(1));
 
         if (btnChatHome != null) btnChatHome.setOnClickListener(v -> {
@@ -198,9 +197,30 @@ public class HomeFragment extends Fragment {
             "https://images.unsplash.com/photo-1449247709967-d4461a6a6103?w=600&q=80",
             "https://images.unsplash.com/photo-1493663284031-b7e3aaa4cab8?w=600&q=80"
         );
-        BannerAdapter bannerAdapter = new BannerAdapter(bannerUrls);
+        bannerAdapter = new BannerAdapter(bannerUrls);
         bannerViewPager.setAdapter(bannerAdapter);
         startBannerAutoScroll(bannerUrls.size());
+    }
+
+    private void updateBannerFromProducts(List<Product> products) {
+        if (bannerAdapter == null || bannerViewPager == null) return;
+
+        List<String> productImageUrls = new ArrayList<>();
+        for (Product product : products) {
+            String imageUrl = product.getFirstImageUrl();
+            if (imageUrl != null && !imageUrl.isEmpty()) {
+                productImageUrls.add(imageUrl);
+            }
+            if (productImageUrls.size() == 4) break;
+        }
+
+        if (productImageUrls.isEmpty()) return;
+
+        bannerHandler.removeCallbacksAndMessages(null);
+        bannerAdapter = new BannerAdapter(productImageUrls);
+        bannerViewPager.setAdapter(bannerAdapter);
+        bannerViewPager.setCurrentItem(0, false);
+        startBannerAutoScroll(productImageUrls.size());
     }
 
     private void startBannerAutoScroll(int count) {

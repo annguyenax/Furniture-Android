@@ -1,7 +1,10 @@
 package com.furniture.api.controller;
 
+import com.furniture.api.dto.request.ForgotPasswordRequest;
 import com.furniture.api.dto.request.LoginRequest;
 import com.furniture.api.dto.request.RegisterRequest;
+import com.furniture.api.dto.request.ResetPasswordRequest;
+import com.furniture.api.dto.request.VerifyEmailRequest;
 import com.furniture.api.dto.response.ApiResponse;
 import com.furniture.api.dto.response.AuthResponse;
 import com.furniture.api.service.AuthService;
@@ -81,17 +84,21 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<ApiResponse<Void>> forgotPassword(@RequestBody String email) {
-        authService.forgotPassword(email);
+    public ResponseEntity<ApiResponse<Void>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        authService.forgotPassword(request.getEmail());
         return ResponseEntity.ok(ApiResponse.successMessage("Password reset email sent"));
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<ApiResponse<Void>> resetPassword(
-            @RequestParam String token,
-            @RequestBody String newPassword) {
-        authService.resetPassword(token, newPassword);
+    public ResponseEntity<ApiResponse<Void>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request.getToken(), request.getNewPassword());
         return ResponseEntity.ok(ApiResponse.successMessage("Password reset successful"));
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<ApiResponse<Void>> verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
+        authService.verifyEmail(request.getToken());
+        return ResponseEntity.ok(ApiResponse.successMessage("Email verified successfully"));
     }
 
     private void addTokenCookies(HttpServletResponse response, AuthResponse auth, boolean rememberMe) {

@@ -26,11 +26,13 @@ import com.furniture.app.data.model.Product;
 import com.furniture.app.data.model.ProductVariant;
 import com.furniture.app.data.model.ReviewModel;
 import com.furniture.app.data.remote.RetrofitClient;
+import com.furniture.app.data.remote.api.ProductApi;
 import com.furniture.app.data.remote.api.ReviewApi;
 import com.furniture.app.data.remote.api.WishlistApi;
 import com.furniture.app.data.repository.CartRepository;
 import com.furniture.app.data.repository.ProductRepository;
 import com.furniture.app.ui.adapter.ImageSliderAdapter;
+import com.furniture.app.ui.adapter.RelatedProductAdapter;
 import com.furniture.app.ui.adapter.ReviewAdapter;
 import com.furniture.app.ui.adapter.VariantAdapter;
 import com.furniture.app.ui.customer.order.CheckoutActivity;
@@ -59,6 +61,7 @@ public class ProductDetailActivity extends AppCompatActivity {
 
     private ProductViewModel productViewModel;
     private CartViewModel cartViewModel;
+    private ProductApi productApi;
     private ReviewApi reviewApi;
     private WishlistApi wishlistApi;
     private SessionManager sessionManager;
@@ -75,7 +78,8 @@ public class ProductDetailActivity extends AppCompatActivity {
     private android.widget.EditText tvQuantity;
     private TextView tvReviewCount, tvNoReviews;
     private RatingBar ratingBar;
-    private RecyclerView rvVariants, rvReviews;
+    private RecyclerView rvVariants, rvReviews, rvRelatedProducts;
+    private View relatedProductsSection;
     private ProgressBar progressBar;
 
     private Product currentProduct;
@@ -91,6 +95,7 @@ public class ProductDetailActivity extends AppCompatActivity {
 
         sessionManager = new SessionManager(this);
         currencyFormat = NumberFormat.getInstance(new Locale("vi", "VN"));
+        productApi = RetrofitClient.getInstance().create(ProductApi.class);
         reviewApi = RetrofitClient.getInstance(sessionManager.getToken()).create(ReviewApi.class);
         wishlistApi = RetrofitClient.getInstance(sessionManager.getToken()).create(WishlistApi.class);
 
@@ -134,12 +139,17 @@ public class ProductDetailActivity extends AppCompatActivity {
         tvNoReviews = findViewById(R.id.tv_no_reviews);
         rvVariants = findViewById(R.id.rv_variants);
         rvReviews = findViewById(R.id.rv_reviews);
+        rvRelatedProducts = findViewById(R.id.rv_related_products);
+        relatedProductsSection = findViewById(R.id.related_products_section);
         progressBar = findViewById(R.id.progress_bar);
 
         // Setup variants RecyclerView
         rvVariants.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         rvReviews.setLayoutManager(new LinearLayoutManager(this));
         rvReviews.setNestedScrollingEnabled(false);
+        rvRelatedProducts.setLayoutManager(
+                new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        rvRelatedProducts.setNestedScrollingEnabled(false);
     }
 
     private void setupToolbar() {
@@ -351,6 +361,9 @@ public class ProductDetailActivity extends AppCompatActivity {
         // Reviews
         loadReviews(product.getProductId());
 
+        // Related products
+        loadRelatedProducts(product.getProductId());
+
         // Wishlist
         setupWishlistButton(product.getProductId());
     }
@@ -382,6 +395,80 @@ public class ProductDetailActivity extends AppCompatActivity {
                 // silently fail — reviews are non-critical
             }
         });
+    }
+
+    private void loadRelatedProducts(int productId) {
+        if (relatedProductsSection == null || rvRelatedProducts == null) return;
+
+        productApi.getRelatedProducts(productId, 8).enqueue(new Callback<ApiResponse<List<Product>>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<List<Product>>> call,
+                                   Response<ApiResponse<List<Product>>> response) {
+                if (!response.isSuccessful() || response.body() == null || response.body().getData() == null) {
+                    loadFallbackRelatedProducts(productId);
+                    return;
+                }
+
+                List<Product> products = new ArrayList<>();
+                for (Product related : response.body().getData()) {
+                    if (related != null && related.getProductId() != productId) {
+                        products.add(related);
+                    }
+                }
+
+                if (products.isEmpty()) {
+                    loadFallbackRelatedProducts(productId);
+                } else {
+                    showRelatedProducts(products);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<List<Product>>> call, Throwable t) {
+                loadFallbackRelatedProducts(productId);
+            }
+        });
+    }
+
+    private void loadFallbackRelatedProducts(int productId) {
+        productApi.getFeaturedProducts(10).enqueue(new Callback<ApiResponse<List<Product>>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<List<Product>>> call,
+                                   Response<ApiResponse<List<Product>>> response) {
+                if (!response.isSuccessful() || response.body() == null || response.body().getData() == null) {
+                    relatedProductsSection.setVisibility(View.GONE);
+                    return;
+                }
+
+                List<Product> products = new ArrayList<>();
+                for (Product product : response.body().getData()) {
+                    if (product != null && product.getProductId() != productId) {
+                        products.add(product);
+                    }
+                    if (products.size() >= 8) break;
+                }
+
+                if (products.isEmpty()) {
+                    relatedProductsSection.setVisibility(View.GONE);
+                } else {
+                    showRelatedProducts(products);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<List<Product>>> call, Throwable t) {
+                relatedProductsSection.setVisibility(View.GONE);
+            }
+        });
+    }
+
+    private void showRelatedProducts(List<Product> products) {
+        relatedProductsSection.setVisibility(View.VISIBLE);
+        rvRelatedProducts.setAdapter(new RelatedProductAdapter(products, product -> {
+            Intent intent = new Intent(ProductDetailActivity.this, ProductDetailActivity.class);
+            intent.putExtra(EXTRA_PRODUCT_ID, product.getProductId());
+            startActivity(intent);
+        }));
     }
 
     private void updatePriceDisplay(BigDecimal price, BigDecimal originalPrice, BigDecimal discount) {

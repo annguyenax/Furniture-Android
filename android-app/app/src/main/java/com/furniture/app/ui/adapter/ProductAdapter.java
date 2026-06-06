@@ -1,5 +1,6 @@
 package com.furniture.app.ui.adapter;
 
+import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,7 @@ import com.furniture.app.R;
 import com.furniture.app.data.model.Product;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
@@ -63,6 +65,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         private final ImageView productImageView;
         private final TextView productNameTextView;
         private final TextView priceTextView;
+        private final TextView originalPriceTextView;
         private final TextView discountBadge;
         private final TextView soldTextView;
         private final RatingBar ratingBar;
@@ -72,6 +75,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             productImageView = itemView.findViewById(R.id.product_image_view);
             productNameTextView = itemView.findViewById(R.id.product_name_text_view);
             priceTextView = itemView.findViewById(R.id.price_text_view);
+            originalPriceTextView = itemView.findViewById(R.id.original_price_text_view);
             discountBadge = itemView.findViewById(R.id.discount_badge);
             soldTextView = itemView.findViewById(R.id.sold_text_view);
             ratingBar = itemView.findViewById(R.id.rating_bar);
@@ -79,18 +83,32 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
 
         public void bind(Product product, OnProductClickListener listener, NumberFormat currencyFormat) {
             productNameTextView.setText(product.getProductName());
-
             // Format price
             BigDecimal price = product.getLowestPrice();
             if (price != null && price.compareTo(BigDecimal.ZERO) > 0) {
-                priceTextView.setText(String.format("₫%s", currencyFormat.format(price)));
+                priceTextView.setText(String.format("\u20ab%s", currencyFormat.format(price)));
             } else {
-                priceTextView.setText("Liên hệ");
+                priceTextView.setText("Lien he");
             }
 
+            boolean hasDiscount = product.getDiscount() != null
+                    && product.getDiscount().compareTo(BigDecimal.ZERO) > 0;
+
+            // Show original price when a discount is active.
+            if (originalPriceTextView != null) {
+                BigDecimal originalPrice = getOriginalPrice(product, price, hasDiscount);
+                if (originalPrice != null) {
+                    originalPriceTextView.setVisibility(View.VISIBLE);
+                    originalPriceTextView.setText(String.format("\u20ab%s", currencyFormat.format(originalPrice)));
+                    originalPriceTextView.setPaintFlags(
+                            originalPriceTextView.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                } else {
+                    originalPriceTextView.setVisibility(View.GONE);
+                }
+            }
             // Show discount badge
             if (discountBadge != null) {
-                if (product.getDiscount() != null && product.getDiscount().compareTo(BigDecimal.ZERO) > 0) {
+                if (hasDiscount) {
                     discountBadge.setVisibility(View.VISIBLE);
                     discountBadge.setText(String.format("-%d%%", product.getDiscount().intValue()));
                 } else {
@@ -130,6 +148,30 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                     listener.onProductClick(product);
                 }
             });
+        }
+        private BigDecimal getOriginalPrice(Product product, BigDecimal salePrice, boolean hasDiscount) {
+            if (!hasDiscount || salePrice == null || salePrice.compareTo(BigDecimal.ZERO) <= 0) {
+                return null;
+            }
+
+            BigDecimal basePrice = product.getBasePrice();
+            if (basePrice != null && basePrice.compareTo(salePrice) > 0) {
+                return basePrice;
+            }
+
+            BigDecimal discount = product.getDiscount();
+            BigDecimal remainingPercent = BigDecimal.valueOf(100).subtract(discount);
+            if (remainingPercent.compareTo(BigDecimal.ZERO) <= 0) {
+                return null;
+            }
+
+            BigDecimal original = salePrice
+                    .multiply(BigDecimal.valueOf(100))
+                    .divide(remainingPercent, 0, RoundingMode.HALF_UP);
+
+            return original
+                    .divide(BigDecimal.valueOf(1000), 0, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(1000));
         }
     }
 }

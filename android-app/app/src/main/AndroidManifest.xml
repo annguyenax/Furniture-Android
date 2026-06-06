@@ -54,6 +54,31 @@
             android:exported="false"
             android:theme="@style/Theme.FurnitureApp" />
 
+        <activity
+            android:name=".ui.auth.ResetPasswordActivity"
+            android:exported="true"
+            android:theme="@style/Theme.FurnitureApp">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:host="auth"
+                    android:pathPrefix="/reset-password"
+                    android:scheme="furnitureapp" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:host="localhost"
+                    android:pathPrefix="/reset-password"
+                    android:port="3000"
+                    android:scheme="http" />
+            </intent-filter>
+        </activity>
+
         <!-- Customer Activities -->
         <activity
             android:name=".ui.customer.CustomerMainActivity"

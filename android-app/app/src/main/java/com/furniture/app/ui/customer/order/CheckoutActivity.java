@@ -379,6 +379,7 @@ public class CheckoutActivity extends AppCompatActivity {
                 .setMessage("Mã đơn hàng: " + (order != null ? order.getOrderCode() : "N/A") +
                         "\n\nCảm ơn bạn đã đặt hàng. Chúng tôi sẽ liên hệ với bạn sớm nhất.")
                 .setPositiveButton("Xem đơn hàng", (dialog, which) -> {
+                    setResult(RESULT_OK);
                     // Remove ordered items from cart (fire-and-forget)
                     if (cartItemsToRemove != null && !cartItemsToRemove.isEmpty()) {
                         for (CartItem item : cartItemsToRemove) {
