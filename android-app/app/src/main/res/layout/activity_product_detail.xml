@@ -32,9 +32,17 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|center_horizontal"
                 android:layout_marginBottom="16dp"
+                android:background="@android:color/transparent"
                 app:tabBackground="@drawable/tab_selector"
                 app:tabGravity="center"
-                app:tabIndicatorHeight="0dp" />
+                app:tabIndicatorHeight="0dp"
+                app:tabMaxWidth="16dp"
+                app:tabMinWidth="16dp"
+                app:tabPaddingBottom="4dp"
+                app:tabPaddingEnd="4dp"
+                app:tabPaddingStart="4dp"
+                app:tabPaddingTop="4dp"
+                app:tabRippleColor="@android:color/transparent" />
 
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"
