@@ -56,7 +56,6 @@ public class HomeFragment extends Fragment {
     private View emptyState;
     private android.widget.TextView tvEmptyMessage;
     private com.google.android.material.button.MaterialButton btnRetry;
-    private View searchBar;
     private View btnChatHome;
     private View btnNotificationHome;
     private View seeAllFeatured;
@@ -103,7 +102,6 @@ public class HomeFragment extends Fragment {
         emptyState = view.findViewById(R.id.empty_state);
         tvEmptyMessage = view.findViewById(R.id.tv_empty_message);
         btnRetry = view.findViewById(R.id.btn_retry);
-        searchBar = view.findViewById(R.id.search_bar);
         btnChatHome = view.findViewById(R.id.btn_chat_home);
         btnNotificationHome = view.findViewById(R.id.btn_notification_home);
         seeAllFeatured = view.findViewById(R.id.see_all_featured);
@@ -168,7 +166,6 @@ public class HomeFragment extends Fragment {
             loadCategories();
         });
 
-        if (searchBar != null) searchBar.setOnClickListener(v -> navigateToTab(1));
         if (seeAllFeatured != null) seeAllFeatured.setOnClickListener(v -> navigateToTab(1));
 
         if (btnChatHome != null) btnChatHome.setOnClickListener(v -> {
