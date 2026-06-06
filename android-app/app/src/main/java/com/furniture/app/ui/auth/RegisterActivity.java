@@ -17,6 +17,7 @@ import com.furniture.app.data.repository.AuthRepository;
 import com.furniture.app.ui.customer.CustomerMainActivity;
 import com.furniture.app.ui.viewmodel.AuthViewModel;
 import com.furniture.app.ui.viewmodel.AuthViewModelFactory;
+import com.furniture.app.util.InputValidator;
 import com.furniture.app.util.SessionManager;
 
 public class RegisterActivity extends AppCompatActivity {
@@ -110,36 +111,12 @@ public class RegisterActivity extends AppCompatActivity {
 
     private boolean validateInput(String username, String email, String password,
                                   String firstName, String lastName, String phone) {
-        if (firstName.isEmpty()) {
-            firstNameEditText.setError("Vui lòng nhập họ");
-            firstNameEditText.requestFocus();
-            return false;
-        }
-        if (lastName.isEmpty()) {
-            lastNameEditText.setError("Vui lòng nhập tên");
-            lastNameEditText.requestFocus();
-            return false;
-        }
-        if (username.length() < 3) {
-            usernameEditText.setError("Tên đăng nhập phải từ 3 ký tự");
-            usernameEditText.requestFocus();
-            return false;
-        }
-        if (email.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            emailEditText.setError("Email không hợp lệ");
-            emailEditText.requestFocus();
-            return false;
-        }
-        if (phone.isEmpty() || !phone.matches("^(0|\\+84)[0-9]{9,10}$")) {
-            phoneEditText.setError("Số điện thoại không hợp lệ");
-            phoneEditText.requestFocus();
-            return false;
-        }
-        if (password.length() < 6) {
-            passwordEditText.setError("Mật khẩu phải từ 6 ký tự");
-            passwordEditText.requestFocus();
-            return false;
-        }
+        if (!InputValidator.validateRequired(firstNameEditText, "họ")) return false;
+        if (!InputValidator.validateRequired(lastNameEditText, "tên")) return false;
+        if (!InputValidator.validateMinLength(usernameEditText, "Tên đăng nhập", 3)) return false;
+        if (!InputValidator.validateEmail(emailEditText)) return false;
+        if (!InputValidator.validatePhone(phoneEditText)) return false;
+        if (!InputValidator.validatePassword(passwordEditText, 6)) return false;
         return true;
     }
 

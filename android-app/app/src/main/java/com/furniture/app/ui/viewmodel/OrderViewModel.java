@@ -1,8 +1,8 @@
 package com.furniture.app.ui.viewmodel;
 
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
 
 import com.furniture.app.data.model.ApiResponse;
@@ -25,77 +25,67 @@ public class OrderViewModel extends ViewModel {
         this.orderRepository = orderRepository;
     }
 
-    public LiveData<List<Order>> getOrders() {
-        return orders;
-    }
+    public LiveData<List<Order>> getOrders() { return orders; }
+    public LiveData<Order> getOrderDetail() { return orderDetail; }
+    public LiveData<ApiResponse<Order>> getCreateOrderResult() { return createOrderResult; }
+    public LiveData<ApiResponse<Order>> getCancelOrderResult() { return cancelOrderResult; }
+    public LiveData<Boolean> getIsLoading() { return isLoading; }
 
-    public LiveData<Order> getOrderDetail() {
-        return orderDetail;
+    public void loadOrders(int page, int size) {
+        isLoading.setValue(true);
+        LiveData<List<Order>> source = orderRepository.getOrders(page, size);
+        source.observeForever(new Observer<List<Order>>() {
+            @Override
+            public void onChanged(List<Order> orderList) {
+                isLoading.setValue(false);
+                orders.setValue(orderList);
+                source.removeObserver(this);
+            }
+        });
     }
 
     public void loadOrderById(Integer orderId) {
         isLoading.setValue(true);
-        MediatorLiveData<Order> result = new MediatorLiveData<>();
         LiveData<Order> source = orderRepository.getOrderById(orderId);
-        result.addSource(source, order -> {
-            isLoading.setValue(false);
-            orderDetail.setValue(order);
-            result.removeSource(source);
+        source.observeForever(new Observer<Order>() {
+            @Override
+            public void onChanged(Order order) {
+                isLoading.setValue(false);
+                orderDetail.setValue(order);
+                source.removeObserver(this);
+            }
         });
-        result.observeForever(o -> {});
-    }
-
-    public LiveData<ApiResponse<Order>> getCreateOrderResult() {
-        return createOrderResult;
-    }
-
-    public LiveData<ApiResponse<Order>> getCancelOrderResult() {
-        return cancelOrderResult;
-    }
-
-    public LiveData<Boolean> getIsLoading() {
-        return isLoading;
-    }
-
-    public void loadOrders(int page, int size) {
-        isLoading.setValue(true);
-        MediatorLiveData<List<Order>> result = new MediatorLiveData<>();
-        LiveData<List<Order>> source = orderRepository.getOrders(page, size);
-        result.addSource(source, orderList -> {
-            isLoading.setValue(false);
-            orders.setValue(orderList);
-            result.removeSource(source);
-        });
-        result.observeForever(o -> {});
     }
 
     public void createOrder(String recipientName, String phone, String address,
                             String paymentMethod, String note, List<CartItem> items) {
         boolean fromCart = (items == null);
         isLoading.setValue(true);
-        MediatorLiveData<ApiResponse<Order>> result = new MediatorLiveData<>();
         LiveData<ApiResponse<Order>> source = orderRepository.createOrder(
                 recipientName, phone, address, paymentMethod, note, fromCart, items);
-        result.addSource(source, response -> {
-            isLoading.setValue(false);
-            createOrderResult.setValue(response);
-            result.removeSource(source);
+        source.observeForever(new Observer<ApiResponse<Order>>() {
+            @Override
+            public void onChanged(ApiResponse<Order> response) {
+                isLoading.setValue(false);
+                createOrderResult.setValue(response);
+                source.removeObserver(this);
+            }
         });
-        result.observeForever(r -> {});
     }
 
     public void cancelOrder(Integer orderId) {
         isLoading.setValue(true);
-        MediatorLiveData<ApiResponse<Order>> result = new MediatorLiveData<>();
         LiveData<ApiResponse<Order>> source = orderRepository.cancelOrder(orderId);
-        result.addSource(source, response -> {
-            isLoading.setValue(false);
-            cancelOrderResult.setValue(response);
-            if (response != null && response.isSuccess()) {
-                loadOrders(0, 20);
+        source.observeForever(new Observer<ApiResponse<Order>>() {
+            @Override
+            public void onChanged(ApiResponse<Order> response) {
+                isLoading.setValue(false);
+                cancelOrderResult.setValue(response);
+                if (response != null && response.isSuccess()) {
+                    loadOrders(0, 20);
+                }
+                source.removeObserver(this);
             }
-            result.removeSource(source);
         });
-        result.observeForever(r -> {});
     }
 }

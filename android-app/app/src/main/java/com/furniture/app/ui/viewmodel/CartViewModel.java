@@ -1,8 +1,8 @@
 package com.furniture.app.ui.viewmodel;
 
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
 
 import com.furniture.app.data.model.ApiResponse;
@@ -20,84 +20,81 @@ public class CartViewModel extends ViewModel {
         this.cartRepository = cartRepository;
     }
 
-    public LiveData<Cart> getCart() {
-        return cart;
-    }
-
-    public LiveData<ApiResponse<Cart>> getAddToCartResult() {
-        return addToCartResult;
-    }
-
-    public LiveData<Boolean> getIsLoading() {
-        return isLoading;
-    }
+    public LiveData<Cart> getCart() { return cart; }
+    public LiveData<ApiResponse<Cart>> getAddToCartResult() { return addToCartResult; }
+    public LiveData<Boolean> getIsLoading() { return isLoading; }
 
     public void loadCart() {
         isLoading.setValue(true);
-        MediatorLiveData<Cart> result = new MediatorLiveData<>();
         LiveData<Cart> source = cartRepository.getCart();
-        result.addSource(source, cartData -> {
-            isLoading.setValue(false);
-            cart.setValue(cartData);
-            result.removeSource(source);
+        source.observeForever(new Observer<Cart>() {
+            @Override
+            public void onChanged(Cart cartData) {
+                isLoading.setValue(false);
+                cart.setValue(cartData);
+                source.removeObserver(this);
+            }
         });
-        result.observeForever(c -> {});
     }
 
     public void addToCart(Integer productId, Integer variantId, Integer quantity) {
         isLoading.setValue(true);
-        MediatorLiveData<ApiResponse<Cart>> result = new MediatorLiveData<>();
         LiveData<ApiResponse<Cart>> source = cartRepository.addToCart(productId, variantId, quantity);
-        result.addSource(source, response -> {
-            isLoading.setValue(false);
-            addToCartResult.setValue(response);
-            if (response != null && response.isSuccess()) {
-                cart.setValue(response.getData());
+        source.observeForever(new Observer<ApiResponse<Cart>>() {
+            @Override
+            public void onChanged(ApiResponse<Cart> response) {
+                isLoading.setValue(false);
+                addToCartResult.setValue(response);
+                if (response != null && response.isSuccess()) {
+                    cart.setValue(response.getData());
+                }
+                source.removeObserver(this);
             }
-            result.removeSource(source);
         });
-        result.observeForever(r -> {});
     }
 
     public void updateCartItem(Integer itemId, Integer quantity) {
         isLoading.setValue(true);
-        MediatorLiveData<ApiResponse<Cart>> result = new MediatorLiveData<>();
         LiveData<ApiResponse<Cart>> source = cartRepository.updateCartItem(itemId, quantity);
-        result.addSource(source, response -> {
-            isLoading.setValue(false);
-            if (response != null && response.isSuccess()) {
-                cart.setValue(response.getData());
+        source.observeForever(new Observer<ApiResponse<Cart>>() {
+            @Override
+            public void onChanged(ApiResponse<Cart> response) {
+                isLoading.setValue(false);
+                if (response != null && response.isSuccess()) {
+                    cart.setValue(response.getData());
+                }
+                source.removeObserver(this);
             }
-            result.removeSource(source);
         });
-        result.observeForever(r -> {});
     }
 
     public void removeCartItem(Integer itemId) {
         isLoading.setValue(true);
-        MediatorLiveData<ApiResponse<Void>> result = new MediatorLiveData<>();
         LiveData<ApiResponse<Void>> source = cartRepository.removeCartItem(itemId);
-        result.addSource(source, response -> {
-            isLoading.setValue(false);
-            if (response != null && response.isSuccess()) {
-                loadCart(); // Reload cart after removing item
+        source.observeForever(new Observer<ApiResponse<Void>>() {
+            @Override
+            public void onChanged(ApiResponse<Void> response) {
+                isLoading.setValue(false);
+                if (response != null && response.isSuccess()) {
+                    loadCart();
+                }
+                source.removeObserver(this);
             }
-            result.removeSource(source);
         });
-        result.observeForever(r -> {});
     }
 
     public void clearCart() {
         isLoading.setValue(true);
-        MediatorLiveData<ApiResponse<Void>> result = new MediatorLiveData<>();
         LiveData<ApiResponse<Void>> source = cartRepository.clearCart();
-        result.addSource(source, response -> {
-            isLoading.setValue(false);
-            if (response != null && response.isSuccess()) {
-                cart.setValue(null);
+        source.observeForever(new Observer<ApiResponse<Void>>() {
+            @Override
+            public void onChanged(ApiResponse<Void> response) {
+                isLoading.setValue(false);
+                if (response != null && response.isSuccess()) {
+                    cart.setValue(null);
+                }
+                source.removeObserver(this);
             }
-            result.removeSource(source);
         });
-        result.observeForever(r -> {});
     }
 }

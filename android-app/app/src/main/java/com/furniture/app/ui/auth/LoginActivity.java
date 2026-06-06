@@ -25,6 +25,7 @@ import com.furniture.app.ui.admin.AdminMainActivity;
 import com.furniture.app.ui.customer.CustomerMainActivity;
 import com.furniture.app.ui.viewmodel.AuthViewModel;
 import com.furniture.app.ui.viewmodel.AuthViewModelFactory;
+import com.furniture.app.util.InputValidator;
 import com.furniture.app.util.SessionManager;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -204,21 +205,14 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void handleLogin() {
-        String email = emailEditText.getText().toString().trim();
-        String password = passwordEditText.getText().toString().trim();
-
-        if (email.isEmpty()) {
-            emailEditText.setError("Vui lòng nhập email");
-            return;
-        }
-
-        if (password.isEmpty()) {
-            passwordEditText.setError("Vui lòng nhập mật khẩu");
-            return;
-        }
+        if (!InputValidator.validateEmail(emailEditText)) return;
+        if (!InputValidator.validatePassword(passwordEditText, 6)) return;
 
         errorTextView.setVisibility(View.GONE);
-        authViewModel.login(email, password);
+        authViewModel.login(
+                InputValidator.getText(emailEditText),
+                InputValidator.getText(passwordEditText)
+        );
     }
 
     private void navigateToSignup() {

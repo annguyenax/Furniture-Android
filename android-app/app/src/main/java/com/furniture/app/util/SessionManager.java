@@ -3,8 +3,14 @@ package com.furniture.app.util;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import androidx.security.crypto.EncryptedSharedPreferences;
+import androidx.security.crypto.MasterKey;
+
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+
 public class SessionManager {
-    private static final String PREF_NAME = "furniture_app_pref";
+    private static final String PREF_NAME = "furniture_secure_pref";
     private static final String KEY_ACCESS_TOKEN = "access_token";
     private static final String KEY_REFRESH_TOKEN = "refresh_token";
     private static final String KEY_USER_ID = "user_id";
@@ -16,41 +22,61 @@ public class SessionManager {
     private static final String KEY_PROFILE_PIC = "profile_picture";
     private static final String KEY_IS_LOGGED_IN = "is_logged_in";
     private static final String KEY_USER_ROLE = "user_role";
+    private static final String KEY_ADDRESS = "address";
+    private static final String KEY_SHIPPING_NAME = "shipping_name";
+    private static final String KEY_SHIPPING_PHONE = "shipping_phone";
 
     private final SharedPreferences sharedPreferences;
-    private final SharedPreferences.Editor editor;
 
     public SessionManager(Context context) {
-        sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        editor = sharedPreferences.edit();
+        sharedPreferences = createEncryptedPreferences(context);
+    }
+
+    private SharedPreferences createEncryptedPreferences(Context context) {
+        try {
+            MasterKey masterKey = new MasterKey.Builder(context)
+                    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                    .build();
+            return EncryptedSharedPreferences.create(
+                    context,
+                    PREF_NAME,
+                    masterKey,
+                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            );
+        } catch (GeneralSecurityException | IOException e) {
+            // Fallback to plain SharedPreferences if encryption fails (e.g. old device)
+            return context.getSharedPreferences(PREF_NAME + "_plain", Context.MODE_PRIVATE);
+        }
     }
 
     public void saveUserSession(String accessToken, String refreshToken, int userId,
                                String username, String email, String phone, String firstName,
                                String lastName, String profilePicture, String role) {
-        editor.putString(KEY_USER_ROLE, role != null ? role : "CUSTOMER");
-        saveUserSession(accessToken, refreshToken, userId, username, email, phone, firstName, lastName, profilePicture);
+        sharedPreferences.edit()
+                .putString(KEY_USER_ROLE, role != null ? role : "CUSTOMER")
+                .putString(KEY_ACCESS_TOKEN, accessToken)
+                .putString(KEY_REFRESH_TOKEN, refreshToken)
+                .putInt(KEY_USER_ID, userId)
+                .putString(KEY_USERNAME, username)
+                .putString(KEY_EMAIL, email)
+                .putString(KEY_PHONE, phone)
+                .putString(KEY_FIRST_NAME, firstName)
+                .putString(KEY_LAST_NAME, lastName)
+                .putString(KEY_PROFILE_PIC, profilePicture)
+                .putBoolean(KEY_IS_LOGGED_IN, true)
+                .apply();
     }
 
     public void saveUserSession(String accessToken, String refreshToken, int userId,
                                String username, String email, String phone, String firstName,
                                String lastName, String profilePicture) {
-        editor.putString(KEY_ACCESS_TOKEN, accessToken);
-        editor.putString(KEY_REFRESH_TOKEN, refreshToken);
-        editor.putInt(KEY_USER_ID, userId);
-        editor.putString(KEY_USERNAME, username);
-        editor.putString(KEY_EMAIL, email);
-        editor.putString(KEY_PHONE, phone);
-        editor.putString(KEY_FIRST_NAME, firstName);
-        editor.putString(KEY_LAST_NAME, lastName);
-        editor.putString(KEY_PROFILE_PIC, profilePicture);
-        editor.putBoolean(KEY_IS_LOGGED_IN, true);
-        editor.apply();
+        saveUserSession(accessToken, refreshToken, userId, username, email, phone,
+                firstName, lastName, profilePicture, "CUSTOMER");
     }
 
     public void clearSession() {
-        editor.clear();
-        editor.apply();
+        sharedPreferences.edit().clear().apply();
     }
 
     public String getAccessToken() {
@@ -90,8 +116,7 @@ public class SessionManager {
     }
 
     public void saveAvatarUrl(String url) {
-        editor.putString(KEY_PROFILE_PIC, url);
-        editor.apply();
+        sharedPreferences.edit().putString(KEY_PROFILE_PIC, url).apply();
     }
 
     public boolean isLoggedIn() {
@@ -101,55 +126,44 @@ public class SessionManager {
     public String getUserName() {
         String firstName = getFirstName();
         String lastName = getLastName();
-        if (firstName != null && lastName != null) {
-            return firstName + " " + lastName;
-        } else if (firstName != null) {
-            return firstName;
-        } else {
-            return getUsername();
-        }
+        if (firstName != null && lastName != null) return firstName + " " + lastName;
+        if (firstName != null) return firstName;
+        return getUsername();
     }
 
-    public String getUserEmail() {
-        return getEmail();
-    }
+    public String getUserEmail() { return getEmail(); }
 
     public void setAccessToken(String token) {
-        editor.putString(KEY_ACCESS_TOKEN, token);
-        editor.apply();
+        sharedPreferences.edit().putString(KEY_ACCESS_TOKEN, token).apply();
     }
 
-    public String getToken() {
-        return getAccessToken();
-    }
+    public String getToken() { return getAccessToken(); }
 
-    public String getUserPhone() {
-        return getPhone();
-    }
+    public String getUserPhone() { return getPhone(); }
 
     public String getUserAddress() {
-        return sharedPreferences.getString("address", null);
+        return sharedPreferences.getString(KEY_ADDRESS, null);
     }
 
     public void setUserAddress(String address) {
-        editor.putString("address", address);
-        editor.apply();
+        sharedPreferences.edit().putString(KEY_ADDRESS, address).apply();
     }
 
     public void saveShippingInfo(String name, String phone, String address) {
-        editor.putString("shipping_name", name);
-        editor.putString("shipping_phone", phone);
-        editor.putString("address", address);
-        editor.apply();
+        sharedPreferences.edit()
+                .putString(KEY_SHIPPING_NAME, name)
+                .putString(KEY_SHIPPING_PHONE, phone)
+                .putString(KEY_ADDRESS, address)
+                .apply();
     }
 
     public String getShippingName() {
-        String name = sharedPreferences.getString("shipping_name", null);
+        String name = sharedPreferences.getString(KEY_SHIPPING_NAME, null);
         return name != null ? name : getUserName();
     }
 
     public String getShippingPhone() {
-        String phone = sharedPreferences.getString("shipping_phone", null);
+        String phone = sharedPreferences.getString(KEY_SHIPPING_PHONE, null);
         return phone != null ? phone : getPhone();
     }
 
@@ -162,9 +176,10 @@ public class SessionManager {
     }
 
     public void updateUserInfo(String firstName, String lastName, String phone) {
-        editor.putString(KEY_FIRST_NAME, firstName);
-        editor.putString(KEY_LAST_NAME, lastName);
-        editor.putString(KEY_PHONE, phone);
-        editor.apply();
+        sharedPreferences.edit()
+                .putString(KEY_FIRST_NAME, firstName)
+                .putString(KEY_LAST_NAME, lastName)
+                .putString(KEY_PHONE, phone)
+                .apply();
     }
 }
