@@ -13,6 +13,7 @@ import com.furniture.api.repository.RoleRepository;
 import com.furniture.api.repository.UserRepository;
 import com.furniture.api.security.JwtTokenProvider;
 import com.furniture.api.service.AuthService;
+import com.furniture.api.service.EmailService;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -28,6 +29,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -38,12 +40,15 @@ public class AuthServiceImpl implements AuthService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final EmailService emailService;
 
     @Value("${google.client-id}")
     private String googleClientId;
 
     private static final int MAX_LOGIN_ATTEMPTS = 5;
     private static final int LOCK_TIME_MINUTES = 15;
+    private static final int EMAIL_VERIFICATION_EXPIRY_HOURS = 24;
+    private static final int PASSWORD_RESET_EXPIRY_MINUTES = 30;
 
     @Override
     @Transactional
@@ -88,6 +93,7 @@ public class AuthServiceImpl implements AuthService {
             .build();
 
         user = userRepository.save(user);
+        createEmailVerificationToken(user);
         log.info("User registered successfully: {}", user.getEmail());
 
         // Generate tokens
@@ -97,6 +103,7 @@ public class AuthServiceImpl implements AuthService {
         // Save refresh token
         user.setRefreshToken(refreshToken);
         userRepository.save(user);
+        emailService.sendVerificationEmail(user, user.getEmailVerificationToken());
 
         return AuthResponse.builder()
             .accessToken(accessToken)
@@ -290,21 +297,85 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional
     public void forgotPassword(String email) {
-        // TODO: Implement forgot password with email service
-        throw new UnsupportedOperationException("Forgot password not implemented yet");
+        userRepository.findByEmail(email.trim().toLowerCase()).ifPresent(user -> {
+            if (user.getAuthProvider() != User.AuthProvider.LOCAL || user.isBanned()) {
+                log.info("Ignoring password reset request for non-local or banned account: {}", user.getEmail());
+                return;
+            }
+
+            String token = generateToken();
+            user.setResetPasswordToken(token);
+            user.setResetPasswordExpires(LocalDateTime.now().plusMinutes(PASSWORD_RESET_EXPIRY_MINUTES));
+            userRepository.save(user);
+            emailService.sendPasswordResetEmail(user, token);
+        });
     }
 
     @Override
+    @Transactional
     public void resetPassword(String token, String newPassword) {
-        // TODO: Implement reset password
-        throw new UnsupportedOperationException("Reset password not implemented yet");
+        User user = userRepository.findByResetPasswordToken(token)
+                .orElseThrow(() -> new BadRequestException("Invalid or expired password reset token"));
+
+        if (user.getResetPasswordExpires() == null || user.getResetPasswordExpires().isBefore(LocalDateTime.now())) {
+            clearPasswordResetToken(user);
+            userRepository.save(user);
+            throw new BadRequestException("Invalid or expired password reset token");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setLoginAttempts(0);
+        user.setLockedUntil(null);
+        user.setRefreshToken(null);
+        clearPasswordResetToken(user);
+        userRepository.save(user);
+        log.info("Password reset successfully for user: {}", user.getEmail());
     }
 
     @Override
+    @Transactional
     public void verifyEmail(String token) {
-        // TODO: Implement email verification
-        throw new UnsupportedOperationException("Email verification not implemented yet");
+        User user = userRepository.findByEmailVerificationToken(token)
+                .orElseThrow(() -> new BadRequestException("Invalid or expired email verification token"));
+
+        if (Boolean.TRUE.equals(user.getIsVerified())) {
+            clearEmailVerificationToken(user);
+            userRepository.save(user);
+            return;
+        }
+
+        if (user.getEmailVerificationExpires() == null
+                || user.getEmailVerificationExpires().isBefore(LocalDateTime.now())) {
+            clearEmailVerificationToken(user);
+            userRepository.save(user);
+            throw new BadRequestException("Invalid or expired email verification token");
+        }
+
+        user.setIsVerified(true);
+        clearEmailVerificationToken(user);
+        userRepository.save(user);
+        log.info("Email verified successfully for user: {}", user.getEmail());
+    }
+
+    private void createEmailVerificationToken(User user) {
+        user.setEmailVerificationToken(generateToken());
+        user.setEmailVerificationExpires(LocalDateTime.now().plusHours(EMAIL_VERIFICATION_EXPIRY_HOURS));
+    }
+
+    private String generateToken() {
+        return UUID.randomUUID().toString().replace("-", "") + UUID.randomUUID().toString().replace("-", "");
+    }
+
+    private void clearPasswordResetToken(User user) {
+        user.setResetPasswordToken(null);
+        user.setResetPasswordExpires(null);
+    }
+
+    private void clearEmailVerificationToken(User user) {
+        user.setEmailVerificationToken(null);
+        user.setEmailVerificationExpires(null);
     }
 
     private void handleFailedLogin(User user) {
