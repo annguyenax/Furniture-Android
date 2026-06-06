@@ -2,6 +2,15 @@ plugins {
     id 'com.android.application'
 }
 
+// Đọc base.url từ local.properties (không commit lên git)
+// Fallback về 10.0.2.2 cho emulator nếu không có
+def localProps = new Properties()
+def localPropsFile = rootProject.file('local.properties')
+if (localPropsFile.exists()) {
+    localProps.load(new FileInputStream(localPropsFile))
+}
+def backendUrl = localProps.getProperty('base.url', 'http://10.0.2.2:8080/api/')
+
 android {
     namespace 'com.furniture.app'
     compileSdk 34
@@ -23,8 +32,7 @@ android {
             buildConfigField "String", "BASE_URL", '"https://your-production-api.com/api/"'
         }
         debug {
-            // 10.0.2.2 = emulator loopback; replace with your PC's LAN IP when testing on real device
-            buildConfigField "String", "BASE_URL", '"http://10.238.143.21:8080/api/"'
+            buildConfigField "String", "BASE_URL", "\"${backendUrl}\""
         }
     }
 

@@ -1,0 +1,2 @@
+# local.properties chứa sdk.dir và base.url riêng mỗi máy — không commit
+**/local.properties
