@@ -1,6 +1,6 @@
 package com.furniture.api.service;
 
-import com.furniture.api.controller.ReviewController.ReviewRequest;
+import com.furniture.api.dto.request.ReviewRequest;
 import com.furniture.api.dto.response.ReviewResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

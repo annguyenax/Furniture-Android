@@ -14,6 +14,14 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Integer> {
     void deleteBySubOrderId(Integer subOrderId);
 
     @org.springframework.data.jpa.repository.Query(
+        "SELECT CASE WHEN COUNT(oi) > 0 THEN true ELSE false END " +
+        "FROM OrderItem oi JOIN oi.subOrder so " +
+        "WHERE so.orderId = :orderId AND oi.productId = :productId")
+    boolean existsByOrderIdAndProductId(
+            @org.springframework.data.repository.query.Param("orderId") Integer orderId,
+            @org.springframework.data.repository.query.Param("productId") Integer productId);
+
+    @org.springframework.data.jpa.repository.Query(
         value = "SELECT p.product_name, SUM(oi.total) as revenue " +
                 "FROM Order_Items oi " +
                 "JOIN Sub_Orders so ON oi.sub_order_id = so.sub_order_id " +

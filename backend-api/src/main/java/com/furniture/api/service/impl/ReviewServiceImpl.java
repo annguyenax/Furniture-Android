@@ -1,10 +1,15 @@
 package com.furniture.api.service.impl;
 
-import com.furniture.api.controller.ReviewController.ReviewRequest;
+import com.furniture.api.dto.request.ReviewRequest;
 import com.furniture.api.dto.response.ReviewResponse;
 import com.furniture.api.exception.BadRequestException;
+import com.furniture.api.exception.ResourceNotFoundException;
+import com.furniture.api.model.Order;
 import com.furniture.api.model.ProductReview;
+import com.furniture.api.repository.OrderItemRepository;
+import com.furniture.api.repository.OrderRepository;
 import com.furniture.api.repository.ProductReviewRepository;
+import com.furniture.api.repository.ProductRepository;
 import com.furniture.api.repository.UserRepository;
 import com.furniture.api.service.CloudinaryService;
 import com.furniture.api.service.ReviewService;
@@ -23,6 +28,9 @@ public class ReviewServiceImpl implements ReviewService {
 
     private final ProductReviewRepository reviewRepository;
     private final UserRepository userRepository;
+    private final ProductRepository productRepository;
+    private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
     private final CloudinaryService cloudinaryService;
 
     @Override
@@ -34,10 +42,16 @@ public class ReviewServiceImpl implements ReviewService {
         if (request.getProductId() == null) {
             throw new BadRequestException("Thiếu mã sản phẩm");
         }
-        if (request.getOrderId() != null &&
-                reviewRepository.existsByProductIdAndUserIdAndOrderId(
-                        request.getProductId(), userId, request.getOrderId())) {
-            throw new BadRequestException("Bạn đã đánh giá sản phẩm này cho đơn hàng này rồi");
+
+        productRepository.findById(request.getProductId())
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", request.getProductId()));
+
+        boolean verifiedPurchase = false;
+        if (request.getOrderId() != null) {
+            validateReviewOrder(request, userId);
+            verifiedPurchase = true;
+        } else if (reviewRepository.existsByProductIdAndUserId(request.getProductId(), userId)) {
+            throw new BadRequestException("Bạn đã đánh giá sản phẩm này rồi");
         }
 
         ProductReview review = ProductReview.builder()
@@ -47,11 +61,30 @@ public class ReviewServiceImpl implements ReviewService {
                 .rating(request.getRating())
                 .comment(request.getComment())
                 .images(request.getImages())
-                .isVerified(true)
+                .isVerified(verifiedPurchase)
                 .build();
 
         review = reviewRepository.save(review);
         return ReviewResponse.fromEntity(review, resolveUserName(userId));
+    }
+
+    private void validateReviewOrder(ReviewRequest request, Integer userId) {
+        Order order = orderRepository.findById(request.getOrderId())
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "id", request.getOrderId()));
+
+        if (!order.getUserId().equals(userId)) {
+            throw new BadRequestException("Bạn không có quyền đánh giá đơn hàng này");
+        }
+        if (order.getStatus() != Order.OrderStatus.DELIVERED) {
+            throw new BadRequestException("Chỉ có thể đánh giá sản phẩm trong đơn hàng đã giao");
+        }
+        if (!orderItemRepository.existsByOrderIdAndProductId(request.getOrderId(), request.getProductId())) {
+            throw new BadRequestException("Sản phẩm không thuộc đơn hàng này");
+        }
+        if (reviewRepository.existsByProductIdAndUserIdAndOrderId(
+                request.getProductId(), userId, request.getOrderId())) {
+            throw new BadRequestException("Bạn đã đánh giá sản phẩm này cho đơn hàng này rồi");
+        }
     }
 
     @Override

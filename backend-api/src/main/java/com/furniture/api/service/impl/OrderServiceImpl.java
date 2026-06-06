@@ -181,6 +181,9 @@ public class OrderServiceImpl implements OrderService {
     public Page<OrderResponse> getUserOrders(Integer userId, Pageable pageable) {
         Page<Order> orders = orderRepository.findByUserId(userId, pageable);
         List<Order> content = orders.getContent();
+        if (content.isEmpty()) {
+            return new PageImpl<>(java.util.Collections.emptyList(), pageable, orders.getTotalElements());
+        }
 
         // H3: Batch load addresses (1 query instead of N)
         Set<Integer> addressIds = content.stream()
@@ -225,6 +228,9 @@ public class OrderServiceImpl implements OrderService {
         Page<Order> orders = orderRepository.findByUserIdAndStatus(userId, orderStatus, pageable);
 
         List<Order> content = orders.getContent();
+        if (content.isEmpty()) {
+            return new PageImpl<>(java.util.Collections.emptyList(), pageable, orders.getTotalElements());
+        }
         Set<Integer> addressIds = content.stream().map(Order::getShippingAddressId)
                 .filter(Objects::nonNull).collect(Collectors.toSet());
         Map<Integer, Address> addressMap = addressRepository.findAllById(addressIds).stream()

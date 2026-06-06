@@ -1,5 +1,6 @@
 package com.furniture.api.controller;
 
+import com.furniture.api.dto.request.ReviewRequest;
 import com.furniture.api.dto.response.ApiResponse;
 import com.furniture.api.dto.response.ReviewResponse;
 import com.furniture.api.exception.BadRequestException;
@@ -68,18 +69,4 @@ public class ReviewController {
                 productId, PageRequest.of(page, size, Sort.by("createdAt").descending()))));
     }
 
-    // DTO kept here so existing usages (ReviewServiceImpl import) work without moving package
-    public static class ReviewRequest {
-        private Integer productId;
-        private Integer orderId;
-        private Integer rating;
-        private String comment;
-        private String images;
-
-        public Integer getProductId() { return productId; }
-        public Integer getOrderId() { return orderId; }
-        public Integer getRating() { return rating; }
-        public String getComment() { return comment; }
-        public String getImages() { return images; }
-    }
 }

@@ -4,7 +4,7 @@
 # Chạy backend với: mvn spring-boot:run -Dspring-boot.run.profiles=local
 # ============================================================
 
-# JWT Secret (local dev only — dùng bất kỳ chuỗi dài nào)
+# JWT Secret (local dev only; raw string dai hoac Base64 deu duoc)
 jwt.secret=local-dev-jwt-secret-change-before-any-deployment-must-be-64chars
 
 # Cloudinary (điền credentials thật của bạn)
