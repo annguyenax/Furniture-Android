@@ -15,3 +15,7 @@ cloudinary.api-secret=your_api_secret
 # Database (nếu khác default)
 # spring.datasource.username=root
 # spring.datasource.password=root
+
+# Email local dev
+app.frontend-url=http://localhost:3000
+app.email.send-enabled=false

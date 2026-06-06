@@ -71,6 +71,12 @@ public class User {
     @Column(name = "reset_password_expires")
     private LocalDateTime resetPasswordExpires;
 
+    @Column(name = "email_verification_token", length = 128)
+    private String emailVerificationToken;
+
+    @Column(name = "email_verification_expires")
+    private LocalDateTime emailVerificationExpires;
+
     @Column(name = "refresh_token", columnDefinition = "TEXT")
     private String refreshToken;
 
