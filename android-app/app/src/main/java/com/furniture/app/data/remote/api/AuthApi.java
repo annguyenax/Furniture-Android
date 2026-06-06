@@ -2,8 +2,10 @@ package com.furniture.app.data.remote.api;
 
 import com.furniture.app.data.model.ApiResponse;
 import com.furniture.app.data.model.AuthResponse;
+import com.furniture.app.data.model.ForgotPasswordRequest;
 import com.furniture.app.data.model.LoginRequest;
 import com.furniture.app.data.model.RegisterRequest;
+import com.furniture.app.data.model.ResetPasswordRequest;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -28,4 +30,10 @@ public interface AuthApi {
 
     @POST("auth/logout")
     Call<ApiResponse<Void>> logout();
+
+    @POST("auth/forgot-password")
+    Call<ApiResponse<Void>> forgotPassword(@Body ForgotPasswordRequest request);
+
+    @POST("auth/reset-password")
+    Call<ApiResponse<Void>> resetPassword(@Body ResetPasswordRequest request);
 }
