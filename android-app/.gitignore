@@ -6,6 +6,7 @@
 # Build directories
 build/
 app/build/
+**/build/
 
 # Gradle
 .gradle/
