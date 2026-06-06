@@ -1,5 +1,6 @@
 package com.furniture.app.ui.customer.cart;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -11,6 +12,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -59,6 +62,7 @@ public class CartFragment extends Fragment implements CartItemAdapter.OnCartItem
     private CartItemAdapter cartItemAdapter;
     private final List<CartItem> cartItems = new ArrayList<>();
     private boolean isUpdatingSelectAll = false;
+    private ActivityResultLauncher<Intent> checkoutLauncher;
 
     @Nullable
     @Override
@@ -73,6 +77,13 @@ public class CartFragment extends Fragment implements CartItemAdapter.OnCartItem
 
         sessionManager = new SessionManager(requireContext());
         currencyFormat = NumberFormat.getInstance(new Locale("vi", "VN"));
+        checkoutLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        loadCart();
+                    }
+                });
 
         initViews(view);
         setupViewModel();
@@ -139,7 +150,7 @@ public class CartFragment extends Fragment implements CartItemAdapter.OnCartItem
             }
             Intent intent = new Intent(requireContext(), CheckoutActivity.class);
             intent.putExtra(CheckoutActivity.EXTRA_CART_ITEMS, new ArrayList<>(selected));
-            startActivity(intent);
+            checkoutLauncher.launch(intent);
         });
     }
 
