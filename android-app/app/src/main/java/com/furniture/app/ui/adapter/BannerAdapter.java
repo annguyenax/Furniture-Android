@@ -35,7 +35,8 @@ public class BannerAdapter extends RecyclerView.Adapter<BannerAdapter.VH> {
                 .load(imageUrls.get(position))
                 .centerCrop()
                 .transition(DrawableTransitionOptions.withCrossFade())
-                .placeholder(R.color.primary)
+                .placeholder(R.drawable.placeholder_product)
+                .error(R.drawable.placeholder_product)
                 .into(h.image);
     }
 

@@ -63,6 +63,7 @@ public class HomeFragment extends Fragment {
     private ViewPager2 bannerViewPager;
     private ProductViewModel productViewModel;
     private ProductAdapter productAdapter;
+    private BannerAdapter bannerAdapter;
     private CategoryAdapter categoryAdapter;
     private CategoryApi categoryApi;
     private SessionManager sessionManager;
@@ -117,6 +118,7 @@ public class HomeFragment extends Fragment {
         productViewModel.getProducts().observe(getViewLifecycleOwner(), products -> {
             if (products != null && !products.isEmpty()) {
                 productAdapter.setProducts(products);
+                updateBannerFromProducts(products);
                 emptyState.setVisibility(View.GONE);
                 featuredProductsRecyclerView.setVisibility(View.VISIBLE);
             } else {
@@ -198,9 +200,30 @@ public class HomeFragment extends Fragment {
             "https://images.unsplash.com/photo-1449247709967-d4461a6a6103?w=600&q=80",
             "https://images.unsplash.com/photo-1493663284031-b7e3aaa4cab8?w=600&q=80"
         );
-        BannerAdapter bannerAdapter = new BannerAdapter(bannerUrls);
+        bannerAdapter = new BannerAdapter(bannerUrls);
         bannerViewPager.setAdapter(bannerAdapter);
         startBannerAutoScroll(bannerUrls.size());
+    }
+
+    private void updateBannerFromProducts(List<Product> products) {
+        if (bannerAdapter == null || bannerViewPager == null) return;
+
+        List<String> productImageUrls = new ArrayList<>();
+        for (Product product : products) {
+            String imageUrl = product.getFirstImageUrl();
+            if (imageUrl != null && !imageUrl.isEmpty()) {
+                productImageUrls.add(imageUrl);
+            }
+            if (productImageUrls.size() == 4) break;
+        }
+
+        if (productImageUrls.isEmpty()) return;
+
+        bannerHandler.removeCallbacksAndMessages(null);
+        bannerAdapter = new BannerAdapter(productImageUrls);
+        bannerViewPager.setAdapter(bannerAdapter);
+        bannerViewPager.setCurrentItem(0, false);
+        startBannerAutoScroll(productImageUrls.size());
     }
 
     private void startBannerAutoScroll(int count) {
