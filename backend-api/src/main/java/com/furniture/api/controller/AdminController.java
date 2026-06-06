@@ -18,7 +18,10 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.text.Normalizer;
 import java.time.LocalDateTime;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
@@ -81,6 +84,15 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success(result));
     }
 
+    // M4: Bảng chuyển trạng thái hợp lệ — không cho phép transition ngược
+    private static final Map<Order.OrderStatus, Set<Order.OrderStatus>> VALID_TRANSITIONS = Map.of(
+            Order.OrderStatus.PENDING,    EnumSet.of(Order.OrderStatus.PROCESSING, Order.OrderStatus.CANCELLED),
+            Order.OrderStatus.PROCESSING, EnumSet.of(Order.OrderStatus.SHIPPED, Order.OrderStatus.CANCELLED),
+            Order.OrderStatus.SHIPPED,    EnumSet.of(Order.OrderStatus.DELIVERED),
+            Order.OrderStatus.DELIVERED,  EnumSet.noneOf(Order.OrderStatus.class),
+            Order.OrderStatus.CANCELLED,  EnumSet.noneOf(Order.OrderStatus.class)
+    );
+
     @PutMapping("/orders/{orderId}/status")
     public ResponseEntity<ApiResponse<OrderResponse>> updateOrderStatus(
             @PathVariable Integer orderId,
@@ -94,12 +106,21 @@ public class AdminController {
             newStatus = Order.OrderStatus.valueOf(status.toUpperCase());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("Invalid status: " + status));
+                    .body(ApiResponse.error("Trạng thái không hợp lệ: " + status));
+        }
+
+        // M4: Validate state transition
+        Set<Order.OrderStatus> allowed = VALID_TRANSITIONS.getOrDefault(
+                order.getStatus(), EnumSet.noneOf(Order.OrderStatus.class));
+        if (!allowed.contains(newStatus)) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(
+                    "Không thể chuyển từ " + order.getStatus() + " sang " + newStatus +
+                    ". Cho phép: " + (allowed.isEmpty() ? "không có" : allowed.toString())));
         }
 
         order.setStatus(newStatus);
         order = orderRepository.save(order);
-        return ResponseEntity.ok(ApiResponse.success("Status updated", mapOrder(order)));
+        return ResponseEntity.ok(ApiResponse.success("Đã cập nhật trạng thái", mapOrder(order)));
     }
 
     // ─── Products ─────────────────────────────────────────────────────────────

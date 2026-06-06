@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.furniture.app.R;
@@ -58,6 +59,44 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
     @Override
     public int getItemCount() {
         return orders != null ? orders.size() : 0;
+    }
+
+    /** Cập nhật danh sách dùng DiffUtil — tránh flash toàn bộ list. */
+    public void updateOrders(List<Order> newOrders) {
+        DiffUtil.DiffResult result = DiffUtil.calculateDiff(new OrderDiffCallback(orders, newOrders));
+        orders.clear();
+        orders.addAll(newOrders);
+        result.dispatchUpdatesTo(this);
+    }
+
+    private static class OrderDiffCallback extends DiffUtil.Callback {
+        private final List<Order> oldList;
+        private final List<Order> newList;
+
+        OrderDiffCallback(List<Order> oldList, List<Order> newList) {
+            this.oldList = oldList;
+            this.newList = newList;
+        }
+
+        @Override public int getOldListSize() { return oldList.size(); }
+        @Override public int getNewListSize() { return newList.size(); }
+
+        @Override
+        public boolean areItemsTheSame(int oldPos, int newPos) {
+            Order o = oldList.get(oldPos);
+            Order n = newList.get(newPos);
+            return o.getOrderId() != null && o.getOrderId().equals(n.getOrderId());
+        }
+
+        @Override
+        public boolean areContentsTheSame(int oldPos, int newPos) {
+            Order o = oldList.get(oldPos);
+            Order n = newList.get(newPos);
+            // So sánh các field hiển thị trên item
+            return java.util.Objects.equals(o.getStatus(), n.getStatus())
+                    && java.util.Objects.equals(o.getReturnStatus(), n.getReturnStatus())
+                    && java.util.Objects.equals(o.getTotalAmount(), n.getTotalAmount());
+        }
     }
 
     static class OrderViewHolder extends RecyclerView.ViewHolder {

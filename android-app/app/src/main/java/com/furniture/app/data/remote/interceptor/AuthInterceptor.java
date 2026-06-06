@@ -48,9 +48,12 @@ public class AuthInterceptor implements Interceptor {
 
         Response response = chain.proceed(newRequest);
 
-        // Token hết hạn → tự động đăng xuất
-        if (response.code() == 401 && unauthorizedHandler != null) {
-            unauthorizedHandler.onUnauthorized();
+        // H4: Token hết hạn — clear token cục bộ, gọi handler để clear session + redirect login
+        if (response.code() == 401) {
+            this.authToken = null;
+            if (unauthorizedHandler != null) {
+                unauthorizedHandler.onUnauthorized();
+            }
         }
 
         return response;

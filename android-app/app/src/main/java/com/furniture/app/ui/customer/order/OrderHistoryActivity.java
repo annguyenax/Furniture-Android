@@ -105,13 +105,13 @@ public class OrderHistoryActivity extends AppCompatActivity implements OrderAdap
         orderViewModel.getOrders().observe(this, orderList -> {
             swipeRefreshLayout.setRefreshing(false);
             if (orderList != null && !orderList.isEmpty()) {
-                orders.clear();
-                orders.addAll(orderList);
-                orderAdapter.notifyDataSetChanged();
+                orderAdapter.updateOrders(orderList);  // M5: DiffUtil
                 showOrders();
                 loadReviewedOrders();
                 loadReturnedOrders();
             } else {
+                orders.clear();
+                orderAdapter.notifyDataSetChanged();
                 showEmptyState();
             }
         });

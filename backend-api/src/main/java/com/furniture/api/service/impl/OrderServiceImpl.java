@@ -2,6 +2,7 @@ package com.furniture.api.service.impl;
 
 import com.furniture.api.dto.request.CreateOrderRequest;
 import com.furniture.api.dto.response.OrderResponse;
+import com.furniture.api.exception.BadRequestException;
 import com.furniture.api.model.*;
 import com.furniture.api.model.ReturnRequest;
 import com.furniture.api.repository.*;
@@ -10,12 +11,14 @@ import com.furniture.api.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -52,6 +55,26 @@ public class OrderServiceImpl implements OrderService {
             }
         } else {
             itemsToOrder = convertRequestItemsToCartItems(request.getItems());
+        }
+
+        // H2: Validate stock before creating order
+        for (CartItem item : itemsToOrder) {
+            if (item.getProductVariantId() != null) {
+                ProductVariant variant = productVariantRepository.findById(item.getProductVariantId())
+                        .orElseThrow(() -> new BadRequestException("Sản phẩm không tồn tại hoặc đã bị xóa"));
+                if (variant.getStock() < item.getQuantity()) {
+                    throw new BadRequestException("Sản phẩm '" +
+                            (item.getVariantInfo() != null ? item.getVariantInfo() : "#" + item.getProductId()) +
+                            "' không đủ hàng (còn " + variant.getStock() + ", cần " + item.getQuantity() + ")");
+                }
+            } else {
+                Product product = productRepository.findById(item.getProductId())
+                        .orElseThrow(() -> new BadRequestException("Sản phẩm không tồn tại"));
+                if (product.getStock() != null && product.getStock() < item.getQuantity()) {
+                    throw new BadRequestException("Sản phẩm '" + product.getProductName() +
+                            "' không đủ hàng (còn " + product.getStock() + ", cần " + item.getQuantity() + ")");
+                }
+            }
         }
 
         // Calculate totals
@@ -157,12 +180,32 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public Page<OrderResponse> getUserOrders(Integer userId, Pageable pageable) {
         Page<Order> orders = orderRepository.findByUserId(userId, pageable);
+        List<Order> content = orders.getContent();
 
-        List<OrderResponse> responses = orders.getContent().stream()
+        // H3: Batch load addresses (1 query instead of N)
+        Set<Integer> addressIds = content.stream()
+                .map(Order::getShippingAddressId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        Map<Integer, Address> addressMap = addressRepository.findAllById(addressIds).stream()
+                .collect(Collectors.toMap(Address::getAddressId, Function.identity()));
+
+        // H3: Batch load returnStatus (2 queries instead of 2N)
+        Set<Integer> orderIds = content.stream()
+                .map(Order::getOrderId)
+                .collect(Collectors.toSet());
+        Set<Integer> approvedReturnIds = returnRequestRepository
+                .findOrderIdsByOrderIdsAndStatus(orderIds, ReturnRequest.ReturnStatus.APPROVED);
+        Set<Integer> pendingReturnIds = returnRequestRepository
+                .findOrderIdsByOrderIdsAndStatus(orderIds, ReturnRequest.ReturnStatus.PENDING);
+
+        List<OrderResponse> responses = content.stream()
                 .map(order -> {
-                    Address address = addressRepository.findById(order.getShippingAddressId()).orElse(null);
+                    Address address = addressMap.get(order.getShippingAddressId());
                     List<OrderItem> items = getOrderItems(order.getOrderId());
-                    return mapToOrderResponse(order, address, items);
+                    String returnStatus = approvedReturnIds.contains(order.getOrderId()) ? "APPROVED"
+                            : pendingReturnIds.contains(order.getOrderId()) ? "PENDING" : null;
+                    return mapToOrderResponse(order, address, items, returnStatus);
                 })
                 .collect(Collectors.toList());
 
@@ -181,11 +224,24 @@ public class OrderServiceImpl implements OrderService {
 
         Page<Order> orders = orderRepository.findByUserIdAndStatus(userId, orderStatus, pageable);
 
-        List<OrderResponse> responses = orders.getContent().stream()
+        List<Order> content = orders.getContent();
+        Set<Integer> addressIds = content.stream().map(Order::getShippingAddressId)
+                .filter(Objects::nonNull).collect(Collectors.toSet());
+        Map<Integer, Address> addressMap = addressRepository.findAllById(addressIds).stream()
+                .collect(Collectors.toMap(Address::getAddressId, Function.identity()));
+        Set<Integer> orderIds = content.stream().map(Order::getOrderId).collect(Collectors.toSet());
+        Set<Integer> approvedReturnIds = returnRequestRepository
+                .findOrderIdsByOrderIdsAndStatus(orderIds, ReturnRequest.ReturnStatus.APPROVED);
+        Set<Integer> pendingReturnIds = returnRequestRepository
+                .findOrderIdsByOrderIdsAndStatus(orderIds, ReturnRequest.ReturnStatus.PENDING);
+
+        List<OrderResponse> responses = content.stream()
                 .map(order -> {
-                    Address address = addressRepository.findById(order.getShippingAddressId()).orElse(null);
+                    Address address = addressMap.get(order.getShippingAddressId());
                     List<OrderItem> items = getOrderItems(order.getOrderId());
-                    return mapToOrderResponse(order, address, items);
+                    String rs = approvedReturnIds.contains(order.getOrderId()) ? "APPROVED"
+                            : pendingReturnIds.contains(order.getOrderId()) ? "PENDING" : null;
+                    return mapToOrderResponse(order, address, items, rs);
                 })
                 .collect(Collectors.toList());
 
@@ -202,8 +258,10 @@ public class OrderServiceImpl implements OrderService {
             throw new RuntimeException("Order does not belong to user");
         }
 
-        if (order.getStatus() != Order.OrderStatus.PENDING) {
-            throw new RuntimeException("Only pending orders can be cancelled");
+        // H1: Allow cancel for both PENDING and PROCESSING (match Android UI)
+        if (order.getStatus() != Order.OrderStatus.PENDING
+                && order.getStatus() != Order.OrderStatus.PROCESSING) {
+            throw new BadRequestException("Chỉ có thể hủy đơn hàng đang chờ xác nhận hoặc đang xử lý");
         }
 
         order.setStatus(Order.OrderStatus.CANCELLED);
@@ -328,7 +386,19 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    /** Single-order mapping — computes returnStatus with individual DB queries. */
     private OrderResponse mapToOrderResponse(Order order, Address address, List<OrderItem> items) {
+        String returnStatus = null;
+        if (returnRequestRepository.existsByOrderIdAndStatus(order.getOrderId(), ReturnRequest.ReturnStatus.APPROVED)) {
+            returnStatus = "APPROVED";
+        } else if (returnRequestRepository.existsByOrderIdAndStatus(order.getOrderId(), ReturnRequest.ReturnStatus.PENDING)) {
+            returnStatus = "PENDING";
+        }
+        return mapToOrderResponse(order, address, items, returnStatus);
+    }
+
+    /** Batch-optimised mapping — accepts pre-computed returnStatus from batch queries. */
+    private OrderResponse mapToOrderResponse(Order order, Address address, List<OrderItem> items, String precomputedReturnStatus) {
         List<OrderResponse.OrderItemResponse> itemResponses = items.stream()
                 .map(this::mapToOrderItemResponse)
                 .collect(Collectors.toList());
@@ -337,13 +407,6 @@ public class OrderServiceImpl implements OrderService {
                 .map(OrderItem::getTotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal shippingFee = order.getShippingFee() != null ? order.getShippingFee() : BigDecimal.ZERO;
-
-        String returnStatus = null;
-        if (returnRequestRepository.existsByOrderIdAndStatus(order.getOrderId(), ReturnRequest.ReturnStatus.APPROVED)) {
-            returnStatus = "APPROVED";
-        } else if (returnRequestRepository.existsByOrderIdAndStatus(order.getOrderId(), ReturnRequest.ReturnStatus.PENDING)) {
-            returnStatus = "PENDING";
-        }
 
         return OrderResponse.builder()
                 .orderId(order.getOrderId())
@@ -358,7 +421,7 @@ public class OrderServiceImpl implements OrderService {
                 .paymentMethod(order.getPaymentMethod().name())
                 .paymentStatus(order.getPaymentStatus().name())
                 .orderStatus(order.getStatus().name())
-                .returnStatus(returnStatus)
+                .returnStatus(precomputedReturnStatus)
                 .note(order.getNote())
                 .createdAt(order.getCreatedAt())
                 .items(itemResponses)

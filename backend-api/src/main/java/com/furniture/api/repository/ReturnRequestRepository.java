@@ -33,4 +33,10 @@ public interface ReturnRequestRepository extends JpaRepository<ReturnRequest, In
             @Param("statuses") Collection<ReturnRequest.ReturnStatus> statuses);
 
     boolean existsByOrderIdAndStatus(Integer orderId, ReturnRequest.ReturnStatus status);
+
+    /** Batch query: trả về tập orderId có ít nhất 1 ReturnRequest với status cho trước. */
+    @Query("SELECT DISTINCT r.orderId FROM ReturnRequest r WHERE r.orderId IN :orderIds AND r.status = :status")
+    Set<Integer> findOrderIdsByOrderIdsAndStatus(
+            @Param("orderIds") Collection<Integer> orderIds,
+            @Param("status") ReturnRequest.ReturnStatus status);
 }

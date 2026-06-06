@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.furniture.app.R;
 import com.furniture.app.data.remote.RetrofitClient;
+import com.furniture.app.data.remote.interceptor.AuthInterceptor;
 import com.furniture.app.ui.auth.LoginActivity;
 import com.furniture.app.ui.customer.profile.EditProfileActivity;
 import com.furniture.app.util.SessionManager;
@@ -29,6 +30,16 @@ public class AdminMainActivity extends AppCompatActivity {
         if (token != null && !token.isEmpty()) {
             RetrofitClient.getInstance(token);
         }
+
+        // H4: Khi token hết hạn (401), clear session và về màn login
+        AuthInterceptor.setUnauthorizedHandler(() -> runOnUiThread(() -> {
+            sessionManager.clearSession();
+            RetrofitClient.resetInstance();
+            Intent intent = new Intent(AdminMainActivity.this, LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            intent.putExtra("message", "Phiên đăng nhập hết hạn, vui lòng đăng nhập lại");
+            startActivity(intent);
+        }));
 
         initViews();
     }

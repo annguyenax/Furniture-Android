@@ -1,0 +1,17 @@
+# ============================================================
+# Local development overrides
+# Sao chép file này thành application-local.properties (gitignored)
+# Chạy backend với: mvn spring-boot:run -Dspring-boot.run.profiles=local
+# ============================================================
+
+# JWT Secret (local dev only — dùng bất kỳ chuỗi dài nào)
+jwt.secret=local-dev-jwt-secret-change-before-any-deployment-must-be-64chars
+
+# Cloudinary (điền credentials thật của bạn)
+cloudinary.cloud-name=your_cloud_name
+cloudinary.api-key=your_api_key
+cloudinary.api-secret=your_api_secret
+
+# Database (nếu khác default)
+# spring.datasource.username=root
+# spring.datasource.password=root

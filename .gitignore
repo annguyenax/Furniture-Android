@@ -1,2 +1,9 @@
-# local.properties chứa sdk.dir và base.url riêng mỗi máy — không commit
+# Android local config — mỗi máy tự đặt
 **/local.properties
+
+# Spring Boot local dev overrides — không commit (chứa credentials)
+**/application-local.properties
+
+# .env files — không commit (chứa credentials)
+**/.env
+!**/.env.example
