@@ -2,9 +2,11 @@ package com.furniture.app.data.repository;
 
 import android.content.Context;
 import com.furniture.app.data.model.AuthResponse;
+import com.furniture.app.data.model.ForgotPasswordRequest;
 import com.furniture.app.data.model.LoginRequest;
 import com.furniture.app.data.model.RegisterRequest;
 import com.furniture.app.data.model.ApiResponse;
+import com.furniture.app.data.model.ResetPasswordRequest;
 import com.furniture.app.data.remote.RetrofitClient;
 import com.furniture.app.data.remote.api.AuthApi;
 import com.google.gson.Gson;
@@ -84,8 +86,55 @@ public class AuthRepository {
         });
     }
 
+    public void forgotPassword(String email, final SimpleCallback callback) {
+        ForgotPasswordRequest request = new ForgotPasswordRequest(email);
+
+        authApi.forgotPassword(request).enqueue(new Callback<ApiResponse<Void>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    String message = response.body().getMessage();
+                    callback.onSuccess(message != null ? message : "Da gui email dat lai mat khau");
+                } else {
+                    callback.onError(parseErrorMessage(response, "Khong the gui email dat lai mat khau"));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                callback.onError("Khong the ket noi den may chu");
+            }
+        });
+    }
+
+    public void resetPassword(String token, String newPassword, final SimpleCallback callback) {
+        ResetPasswordRequest request = new ResetPasswordRequest(token, newPassword);
+
+        authApi.resetPassword(request).enqueue(new Callback<ApiResponse<Void>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    String message = response.body().getMessage();
+                    callback.onSuccess(message != null ? message : "Dat lai mat khau thanh cong");
+                } else {
+                    callback.onError(parseErrorMessage(response, "Khong the dat lai mat khau"));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                callback.onError("Khong the ket noi den may chu");
+            }
+        });
+    }
+
     public interface AuthCallback {
         void onSuccess(AuthResponse response);
+        void onError(String error);
+    }
+
+    public interface SimpleCallback {
+        void onSuccess(String message);
         void onError(String error);
     }
 }
