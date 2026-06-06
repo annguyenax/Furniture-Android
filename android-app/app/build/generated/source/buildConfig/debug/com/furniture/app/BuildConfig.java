@@ -10,5 +10,5 @@ public final class BuildConfig {
   public static final int VERSION_CODE = 1;
   public static final String VERSION_NAME = "1.0";
   // Field from build type: debug
-  public static final String BASE_URL = "http://10.238.143.21:8080/api/";
+  public static final String BASE_URL = "http://192.168.20.27:8080/api/";
 }
