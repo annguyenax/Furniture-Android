@@ -1,0 +1,19 @@
+# ============================================================
+# Android Local Configuration Template
+# Sao chép file này thành local.properties (không commit lên git)
+# ============================================================
+
+# SDK path — Android Studio tự điền, không cần sửa
+sdk.dir=C\:\\Users\\YOUR_USERNAME\\AppData\\Local\\Android\\Sdk
+
+# BASE URL của backend
+#
+# Emulator Android (mặc định, KHÔNG cần thêm dòng này):
+#   base.url=http://10.0.2.2:8080/api/
+#
+# Thiết bị thật (điền IP máy chạy backend, cùng WiFi):
+#   base.url=http://192.168.x.x:8080/api/
+#
+# Backend deploy lên server:
+#   base.url=https://your-domain.com/api/
+base.url=http://10.0.2.2:8080/api/
