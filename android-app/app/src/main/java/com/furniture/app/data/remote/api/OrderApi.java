@@ -35,4 +35,7 @@ public interface OrderApi {
 
     @POST("orders/{orderId}/cancel")
     Call<ApiResponse<Order>> cancelOrder(@Path("orderId") Integer orderId);
+
+    @POST("orders/{orderId}/confirm-received")
+    Call<ApiResponse<Order>> confirmReceived(@Path("orderId") Integer orderId);
 }

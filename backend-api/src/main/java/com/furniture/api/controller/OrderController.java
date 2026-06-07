@@ -68,4 +68,13 @@ public class OrderController {
         OrderResponse order = orderService.cancelOrder(userId, orderId);
         return ResponseEntity.ok(ApiResponse.success("Order cancelled successfully", order));
     }
+
+    @PostMapping("/{orderId}/confirm-received")
+    public ResponseEntity<ApiResponse<OrderResponse>> confirmReceived(
+            @RequestAttribute("userId") Integer userId,
+            @PathVariable Integer orderId) {
+
+        OrderResponse order = orderService.confirmReceived(userId, orderId);
+        return ResponseEntity.ok(ApiResponse.success("Order received successfully", order));
+    }
 }

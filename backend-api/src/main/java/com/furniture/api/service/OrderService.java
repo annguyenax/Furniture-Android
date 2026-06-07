@@ -16,4 +16,6 @@ public interface OrderService {
     Page<OrderResponse> getUserOrdersByStatus(Integer userId, String status, Pageable pageable);
 
     OrderResponse cancelOrder(Integer userId, Integer orderId);
+
+    OrderResponse confirmReceived(Integer userId, Integer orderId);
 }

@@ -14,6 +14,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -46,6 +48,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -63,6 +66,7 @@ public class CheckoutActivity extends AppCompatActivity {
 
     private SessionManager sessionManager;
     private NumberFormat currencyFormat;
+    private CartRepository cartRepository;
     private CartViewModel cartViewModel;
     private OrderViewModel orderViewModel;
     private AddressApi addressApi;
@@ -134,7 +138,7 @@ public class CheckoutActivity extends AppCompatActivity {
     private void setupViewModels() {
         String token = sessionManager.getToken();
 
-        CartRepository cartRepository = new CartRepository(token);
+        cartRepository = new CartRepository(token);
         cartViewModel = new ViewModelProvider(this,
                 new CartViewModelFactory(cartRepository)).get(CartViewModel.class);
 
@@ -149,7 +153,7 @@ public class CheckoutActivity extends AppCompatActivity {
             btnPlaceOrder.setEnabled(true);
 
             if (result != null && result.isSuccess()) {
-                showOrderSuccessDialog(result.getData());
+                cleanupCartAfterOrder(() -> showOrderSuccessDialog(result.getData()));
             } else {
                 String message = result != null ? result.getMessage() : "Đặt hàng thất bại";
                 Toast.makeText(this, message, Toast.LENGTH_LONG).show();
@@ -373,6 +377,68 @@ public class CheckoutActivity extends AppCompatActivity {
         );
     }
 
+    private void cleanupCartAfterOrder(Runnable onComplete) {
+        List<Integer> cartItemIds = new ArrayList<>();
+        if (cartItemsToRemove != null && !cartItemsToRemove.isEmpty()) {
+            for (CartItem item : cartItemsToRemove) {
+                if (item.getCartItemId() != null) {
+                    cartItemIds.add(item.getCartItemId());
+                }
+            }
+        }
+
+        if (!cartItemIds.isEmpty()) {
+            progressBar.setVisibility(View.VISIBLE);
+            btnPlaceOrder.setEnabled(false);
+            AtomicInteger pending = new AtomicInteger(cartItemIds.size());
+            final boolean[] hasFailure = {false};
+
+            for (Integer cartItemId : cartItemIds) {
+                LiveData<ApiResponse<Void>> source = cartRepository.removeCartItem(cartItemId);
+                source.observe(this, new Observer<ApiResponse<Void>>() {
+                    @Override
+                    public void onChanged(ApiResponse<Void> response) {
+                        if (response == null || !response.isSuccess()) {
+                            hasFailure[0] = true;
+                        }
+                        source.removeObserver(this);
+
+                        if (pending.decrementAndGet() == 0) {
+                            finishCartCleanup(hasFailure[0], onComplete);
+                        }
+                    }
+                });
+            }
+            return;
+        }
+
+        if (isFromCart) {
+            progressBar.setVisibility(View.VISIBLE);
+            btnPlaceOrder.setEnabled(false);
+            LiveData<ApiResponse<Void>> source = cartRepository.clearCart();
+            source.observe(this, new Observer<ApiResponse<Void>>() {
+                @Override
+                public void onChanged(ApiResponse<Void> response) {
+                    boolean failed = response == null || !response.isSuccess();
+                    source.removeObserver(this);
+                    finishCartCleanup(failed, onComplete);
+                }
+            });
+            return;
+        }
+
+        onComplete.run();
+    }
+
+    private void finishCartCleanup(boolean failed, Runnable onComplete) {
+        progressBar.setVisibility(View.GONE);
+        btnPlaceOrder.setEnabled(true);
+        if (failed) {
+            Toast.makeText(this, "Đơn hàng đã tạo, nhưng giỏ hàng chưa cập nhật xong. Vui lòng tải lại giỏ hàng.", Toast.LENGTH_LONG).show();
+        }
+        onComplete.run();
+    }
+
     private void showOrderSuccessDialog(Order order) {
         new AlertDialog.Builder(this)
                 .setTitle("Đặt hàng thành công!")
@@ -380,16 +446,6 @@ public class CheckoutActivity extends AppCompatActivity {
                         "\n\nCảm ơn bạn đã đặt hàng. Chúng tôi sẽ liên hệ với bạn sớm nhất.")
                 .setPositiveButton("Xem đơn hàng", (dialog, which) -> {
                     setResult(RESULT_OK);
-                    // Remove ordered items from cart (fire-and-forget)
-                    if (cartItemsToRemove != null && !cartItemsToRemove.isEmpty()) {
-                        for (CartItem item : cartItemsToRemove) {
-                            if (item.getCartItemId() != null) {
-                                cartViewModel.removeCartItem(item.getCartItemId());
-                            }
-                        }
-                    } else if (isFromCart) {
-                        cartViewModel.clearCart();
-                    }
                     // Navigate to order detail
                     if (order != null && order.getOrderId() != null) {
                         Intent intent = new Intent(this, OrderDetailActivity.class);

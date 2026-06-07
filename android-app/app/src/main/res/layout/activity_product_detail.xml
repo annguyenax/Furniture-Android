@@ -58,7 +58,7 @@
                     android:layout_gravity="end"
                     android:layout_marginEnd="8dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:src="@android:drawable/btn_star_big_off"
+                    android:src="@drawable/ic_heart_outline"
                     android:contentDescription="Yêu thích" />
 
             </androidx.appcompat.widget.Toolbar>

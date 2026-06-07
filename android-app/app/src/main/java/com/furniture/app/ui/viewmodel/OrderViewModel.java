@@ -19,6 +19,7 @@ public class OrderViewModel extends ViewModel {
     private final MutableLiveData<Order> orderDetail = new MutableLiveData<>();
     private final MutableLiveData<ApiResponse<Order>> createOrderResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResponse<Order>> cancelOrderResult = new MutableLiveData<>();
+    private final MutableLiveData<ApiResponse<Order>> confirmReceivedResult = new MutableLiveData<>();
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
 
     public OrderViewModel(OrderRepository orderRepository) {
@@ -29,6 +30,7 @@ public class OrderViewModel extends ViewModel {
     public LiveData<Order> getOrderDetail() { return orderDetail; }
     public LiveData<ApiResponse<Order>> getCreateOrderResult() { return createOrderResult; }
     public LiveData<ApiResponse<Order>> getCancelOrderResult() { return cancelOrderResult; }
+    public LiveData<ApiResponse<Order>> getConfirmReceivedResult() { return confirmReceivedResult; }
     public LiveData<Boolean> getIsLoading() { return isLoading; }
 
     public void loadOrders(int page, int size) {
@@ -83,6 +85,25 @@ public class OrderViewModel extends ViewModel {
                 cancelOrderResult.setValue(response);
                 if (response != null && response.isSuccess()) {
                     loadOrders(0, 20);
+                }
+                source.removeObserver(this);
+            }
+        });
+    }
+
+    public void confirmReceived(Integer orderId) {
+        isLoading.setValue(true);
+        LiveData<ApiResponse<Order>> source = orderRepository.confirmReceived(orderId);
+        source.observeForever(new Observer<ApiResponse<Order>>() {
+            @Override
+            public void onChanged(ApiResponse<Order> response) {
+                isLoading.setValue(false);
+                confirmReceivedResult.setValue(response);
+                if (response != null && response.isSuccess()) {
+                    loadOrders(0, 20);
+                    if (response.getData() != null && response.getData().getOrderId() != null) {
+                        orderDetail.setValue(response.getData());
+                    }
                 }
                 source.removeObserver(this);
             }

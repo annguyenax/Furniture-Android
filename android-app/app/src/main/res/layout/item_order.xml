@@ -127,6 +127,17 @@
                 android:backgroundTint="@color/primary" />
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_receive"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginEnd="8dp"
+                android:text="Đã nhận hàng"
+                android:textSize="12sp"
+                android:visibility="gone"
+                app:cornerRadius="8dp"
+                android:backgroundTint="@color/primary" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_return"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="wrap_content"

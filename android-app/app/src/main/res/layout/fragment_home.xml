@@ -41,10 +41,10 @@
 
         <ImageView
             android:id="@+id/btn_chat_home"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:src="@drawable/ic_chat"
-            android:padding="6dp"
+            android:padding="4dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Chat hỗ trợ" />
 
@@ -52,8 +52,7 @@
             android:id="@+id/btn_notification_home"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:src="@android:drawable/ic_popup_reminder"
-            android:tint="#FFFFFF"
+            android:src="@drawable/ic_notification"
             android:padding="4dp"
             android:layout_marginStart="4dp"
             android:background="?attr/selectableItemBackgroundBorderless"

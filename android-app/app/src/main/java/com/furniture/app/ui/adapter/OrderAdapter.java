@@ -31,6 +31,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         void onOrderClick(Order order);
         void onCancelOrder(Order order);
         void onReviewOrder(Order order);
+        void onConfirmReceived(Order order);
         void onReturnOrder(Order order);
     }
 
@@ -107,6 +108,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         private final TextView tvTotalAmount;
         private final MaterialButton btnCancel;
         private final MaterialButton btnReview;
+        private final MaterialButton btnReceive;
         private final MaterialButton btnReturn;
         private final MaterialButton btnViewDetail;
 
@@ -119,6 +121,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             tvTotalAmount = itemView.findViewById(R.id.tv_total_amount);
             btnCancel = itemView.findViewById(R.id.btn_cancel);
             btnReview = itemView.findViewById(R.id.btn_review);
+            btnReceive = itemView.findViewById(R.id.btn_receive);
             btnReturn = itemView.findViewById(R.id.btn_return);
             btnViewDetail = itemView.findViewById(R.id.btn_view_detail);
         }
@@ -156,11 +159,19 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             // Cancel: only for PENDING
             btnCancel.setVisibility("PENDING".equals(status) ? View.VISIBLE : View.GONE);
             btnCancel.setOnClickListener(v -> listener.onCancelOrder(order));
+            btnReceive.setVisibility(View.GONE);
 
             // Đã hoàn hàng — ẩn review và return
             if ("APPROVED".equals(returnStatus)) {
                 btnReview.setVisibility(View.GONE);
                 if (btnReturn != null) btnReturn.setVisibility(View.GONE);
+            } else if ("SHIPPED".equals(status)) {
+                btnReview.setVisibility(View.GONE);
+                if (btnReturn != null) btnReturn.setVisibility(View.GONE);
+                btnReceive.setVisibility(View.VISIBLE);
+                btnReceive.setEnabled(true);
+                btnReceive.setAlpha(1f);
+                btnReceive.setOnClickListener(v -> listener.onConfirmReceived(order));
             } else if ("DELIVERED".equals(status)) {
                 // Review: chỉ khi đã giao và chưa hoàn hàng
                 btnReview.setVisibility(View.VISIBLE);
