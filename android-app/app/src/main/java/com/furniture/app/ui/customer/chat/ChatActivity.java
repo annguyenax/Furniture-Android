@@ -48,8 +48,8 @@ import retrofit2.Response;
 
 public class ChatActivity extends AppCompatActivity {
 
-    public static final String EXTRA_SHOP_ID = "shop_id";
-    public static final String EXTRA_SHOP_NAME = "shop_name";
+    public static final String EXTRA_SUPPORT_ID = "support_id";
+    public static final String EXTRA_SUPPORT_NAME = "support_name";
     public static final String EXTRA_CHAT_ID = "chat_id";
     public static final String EXTRA_CUSTOMER_NAME = "customer_name";
     public static final String EXTRA_RECIPIENT_USER_ID = "recipient_user_id";
@@ -107,10 +107,10 @@ public class ChatActivity extends AppCompatActivity {
             titleName = getIntent().getStringExtra(EXTRA_CUSTOMER_NAME);
             if (titleName == null) titleName = "Khách hàng";
         } else {
-            int shopId = getIntent().getIntExtra(EXTRA_SHOP_ID, 1);
-            String shopName = getIntent().getStringExtra(EXTRA_SHOP_NAME);
+            int supportId = getIntent().getIntExtra(EXTRA_SUPPORT_ID, 1);
+            String shopName = getIntent().getStringExtra(EXTRA_SUPPORT_NAME);
             titleName = shopName != null ? shopName : "Hỗ trợ Shop";
-            chatId = sessionManager.getUserId() + "-" + shopId;
+            chatId = sessionManager.getUserId() + "-" + supportId;
         }
 
         initViews();

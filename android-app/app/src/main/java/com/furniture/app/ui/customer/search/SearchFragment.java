@@ -87,9 +87,8 @@ public class SearchFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        SessionManager sessionManager = new SessionManager(requireContext());
-        productApi = RetrofitClient.getInstance(sessionManager.getToken()).create(ProductApi.class);
-        categoryApi = RetrofitClient.getInstance(sessionManager.getToken()).create(CategoryApi.class);
+        productApi = RetrofitClient.getPublicRetrofit().create(ProductApi.class);
+        categoryApi = RetrofitClient.getPublicRetrofit().create(CategoryApi.class);
 
         initViews(view);
         setupRecyclerViews();

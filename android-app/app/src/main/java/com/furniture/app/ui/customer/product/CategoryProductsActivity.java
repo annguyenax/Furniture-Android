@@ -19,7 +19,6 @@ import com.furniture.app.data.model.Product;
 import com.furniture.app.data.remote.RetrofitClient;
 import com.furniture.app.data.remote.api.ProductApi;
 import com.furniture.app.ui.adapter.ProductAdapter;
-import com.furniture.app.util.SessionManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,8 +44,7 @@ public class CategoryProductsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_category_products);
 
-        SessionManager sessionManager = new SessionManager(this);
-        productApi = RetrofitClient.getInstance(sessionManager.getToken()).create(ProductApi.class);
+        productApi = RetrofitClient.getPublicRetrofit().create(ProductApi.class);
 
         category = (Category) getIntent().getSerializableExtra(EXTRA_CATEGORY);
 

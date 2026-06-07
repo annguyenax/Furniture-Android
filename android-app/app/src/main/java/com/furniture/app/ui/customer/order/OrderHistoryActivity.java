@@ -151,6 +151,7 @@ public class OrderHistoryActivity extends AppCompatActivity implements OrderAdap
                                    Response<ApiResponse<List<Integer>>> response) {
                 if (response.isSuccessful() && response.body() != null
                         && response.body().getData() != null) {
+                    returnedOrderIds.clear();
                     returnedOrderIds.addAll(response.body().getData());
                     orderAdapter.notifyDataSetChanged();
                 }
@@ -167,6 +168,7 @@ public class OrderHistoryActivity extends AppCompatActivity implements OrderAdap
                                    Response<ApiResponse<List<Integer>>> response) {
                 if (response.isSuccessful() && response.body() != null
                         && response.body().getData() != null) {
+                    reviewedOrderIds.clear();
                     reviewedOrderIds.addAll(response.body().getData());
                     orderAdapter.notifyDataSetChanged();
                 }

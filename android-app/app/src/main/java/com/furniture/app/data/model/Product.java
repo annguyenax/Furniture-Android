@@ -47,8 +47,6 @@ public class Product implements Serializable {
     @SerializedName("reviewCount")
     private int reviewCount;
 
-    @SerializedName("shopId")
-    private int shopId;
 
     @SerializedName("shopName")
     private String shopName;
@@ -160,14 +158,6 @@ public class Product implements Serializable {
 
     public void setReviewCount(int reviewCount) {
         this.reviewCount = reviewCount;
-    }
-
-    public int getShopId() {
-        return shopId;
-    }
-
-    public void setShopId(int shopId) {
-        this.shopId = shopId;
     }
 
     public String getShopName() {

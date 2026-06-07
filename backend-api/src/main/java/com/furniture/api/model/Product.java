@@ -61,9 +61,6 @@ public class Product {
     @Builder.Default
     private Integer reviewCount = 0;
 
-    @Column(name = "shop_id", nullable = false)
-    private Integer shopId;
-
     @Column(name = "category_id")
     private Integer categoryId;
 
@@ -76,11 +73,6 @@ public class Product {
     private LocalDateTime updatedAt;
 
     // Relationships
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "shop_id", insertable = false, updatable = false)
-    @ToString.Exclude
-    private Shop shop;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", insertable = false, updatable = false)
     @ToString.Exclude

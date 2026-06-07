@@ -29,8 +29,6 @@ public class ProductResponse {
     private String status;
     private BigDecimal averageRating;
     private Integer reviewCount;
-    private Integer shopId;
-    private String shopName;
     private Integer categoryId;
     private String categoryName;
     private List<VariantResponse> variants;
@@ -63,13 +61,8 @@ public class ProductResponse {
             .status(product.getStatus() != null ? product.getStatus().name() : null)
             .averageRating(product.getAverageRating())
             .reviewCount(product.getReviewCount())
-            .shopId(product.getShopId())
             .categoryId(product.getCategoryId())
             .createdAt(product.getCreatedAt());
-
-        if (product.getShop() != null) {
-            builder.shopName(product.getShop().getShopName());
-        }
 
         if (product.getCategory() != null) {
             builder.categoryName(product.getCategory().getCategoryName());

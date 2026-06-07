@@ -128,8 +128,11 @@ public class CartFragment extends Fragment implements CartItemAdapter.OnCartItem
     }
 
     private void setupListeners() {
-        btnLoginCart.setOnClickListener(v ->
-                startActivity(new Intent(requireContext(), com.furniture.app.ui.auth.LoginActivity.class)));
+        btnLoginCart.setOnClickListener(v -> {
+            Intent intent = new Intent(requireContext(), com.furniture.app.ui.auth.LoginActivity.class);
+            intent.putExtra(com.furniture.app.ui.auth.LoginActivity.EXTRA_RETURN_AFTER_LOGIN, true);
+            startActivity(intent);
+        });
 
         btnStartShopping.setOnClickListener(v -> {
             if (getActivity() instanceof CustomerMainActivity) {

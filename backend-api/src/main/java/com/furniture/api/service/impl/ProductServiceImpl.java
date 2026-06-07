@@ -46,12 +46,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Page<ProductResponse> getProductsByShop(Integer shopId, Pageable pageable) {
-        return productRepository.findByShopId(shopId, pageable)
-            .map(ProductResponse::fromEntity);
-    }
-
-    @Override
     public Page<ProductResponse> searchProducts(String keyword, Pageable pageable) {
         if (keyword == null || keyword.isBlank()) {
             return productRepository.findByStatusFetch(Product.ProductStatus.ACTIVE, pageable)

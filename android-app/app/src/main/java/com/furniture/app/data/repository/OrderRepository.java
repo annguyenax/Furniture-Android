@@ -71,8 +71,7 @@ public class OrderRepository {
         return orderLiveData;
     }
 
-    public LiveData<ApiResponse<Order>> createOrder(String recipientName, String phone,
-                                                     String address, String paymentMethod,
+    public LiveData<ApiResponse<Order>> createOrder(Integer addressId, String paymentMethod,
                                                      String note, boolean fromCart,
                                                      List<CartItem> items) {
         MutableLiveData<ApiResponse<Order>> resultLiveData = new MutableLiveData<>();
@@ -90,8 +89,7 @@ public class OrderRepository {
         }
 
         CreateOrderRequest request = new CreateOrderRequest(
-                recipientName, phone, address, paymentMethod, note, fromCart, orderItemRequests
-        );
+                addressId, paymentMethod, note, fromCart, orderItemRequests);
 
         orderApi.createOrder(request).enqueue(new Callback<ApiResponse<Order>>() {
             @Override

@@ -20,6 +20,7 @@ import com.furniture.app.data.remote.RetrofitClient;
 import com.furniture.app.data.remote.api.UserApi;
 import com.furniture.app.ui.auth.LoginActivity;
 import com.furniture.app.ui.auth.RegisterActivity;
+import com.furniture.app.ui.customer.CustomerMainActivity;
 import com.furniture.app.ui.customer.chat.ChatActivity;
 import com.furniture.app.ui.customer.order.OrderHistoryActivity;
 import com.furniture.app.ui.customer.profile.AddressListActivity;
@@ -132,13 +133,12 @@ public class ProfileFragment extends Fragment {
         if (sessionManager.isLoggedIn()) {
             action.run();
         } else {
-            startActivity(new Intent(requireContext(), LoginActivity.class));
+            startLoginForReturn();
         }
     }
 
     private void setupListeners() {
-        btnLogin.setOnClickListener(v ->
-                startActivity(new Intent(requireContext(), LoginActivity.class)));
+        btnLogin.setOnClickListener(v -> startLoginForReturn());
 
         btnRegister.setOnClickListener(v ->
                 startActivity(new Intent(requireContext(), RegisterActivity.class)));
@@ -162,13 +162,19 @@ public class ProfileFragment extends Fragment {
 
         menuChat.setOnClickListener(v -> requireLogin(() -> {
             Intent intent = new Intent(requireContext(), ChatActivity.class);
-            intent.putExtra(ChatActivity.EXTRA_SHOP_ID, 1);
-            intent.putExtra(ChatActivity.EXTRA_SHOP_NAME, "Hỗ trợ Shop");
+            intent.putExtra(ChatActivity.EXTRA_SUPPORT_ID, 1);
+            intent.putExtra(ChatActivity.EXTRA_SUPPORT_NAME, "Hỗ trợ Shop");
             intent.putExtra(ChatActivity.EXTRA_IS_ADMIN, false);
             startActivity(intent);
         }));
 
         btnLogout.setOnClickListener(v -> handleLogout());
+    }
+
+    private void startLoginForReturn() {
+        Intent intent = new Intent(requireContext(), LoginActivity.class);
+        intent.putExtra(LoginActivity.EXTRA_RETURN_AFTER_LOGIN, true);
+        startActivity(intent);
     }
 
     @Override
@@ -181,7 +187,7 @@ public class ProfileFragment extends Fragment {
     private void handleLogout() {
         sessionManager.clearSession();
         RetrofitClient.resetInstance();
-        Intent intent = new Intent(requireContext(), LoginActivity.class);
+        Intent intent = new Intent(requireContext(), CustomerMainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         if (getActivity() != null) {

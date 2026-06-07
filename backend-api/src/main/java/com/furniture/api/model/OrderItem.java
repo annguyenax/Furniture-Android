@@ -23,8 +23,8 @@ public class OrderItem {
     @Column(name = "order_item_id")
     private Integer orderItemId;
 
-    @Column(name = "sub_order_id", nullable = false)
-    private Integer subOrderId;
+    @Column(name = "order_id", nullable = false)
+    private Integer orderId;
 
     @Column(name = "product_id", nullable = false)
     private Integer productId;
@@ -58,9 +58,9 @@ public class OrderItem {
     private LocalDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sub_order_id", insertable = false, updatable = false)
+    @JoinColumn(name = "order_id", insertable = false, updatable = false)
     @ToString.Exclude
-    private SubOrder subOrder;
+    private Order order;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", insertable = false, updatable = false)

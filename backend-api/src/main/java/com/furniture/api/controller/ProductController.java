@@ -54,17 +54,6 @@ public class ProductController {
         return ResponseEntity.ok(ApiResponse.success(products));
     }
 
-    @GetMapping("/shop/{shopId}")
-    public ResponseEntity<ApiResponse<Page<ProductResponse>>> getProductsByShop(
-            @PathVariable Integer shopId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-
-        Pageable pageable = PageRequest.of(page, size);
-        Page<ProductResponse> products = productService.getProductsByShop(shopId, pageable);
-        return ResponseEntity.ok(ApiResponse.success(products));
-    }
-
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<Page<ProductResponse>>> searchProducts(
             @RequestParam String keyword,

@@ -30,8 +30,6 @@ public class CartResponse {
         private String productImage;
         private Integer variantId;
         private String variantName;
-        private Integer shopId;
-        private String shopName;
         private BigDecimal price;
         private Integer quantity;
         private BigDecimal subtotal;

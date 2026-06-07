@@ -3,6 +3,7 @@ package com.furniture.api.service.impl;
 import com.furniture.api.dto.request.AddToCartRequest;
 import com.furniture.api.dto.request.UpdateCartItemRequest;
 import com.furniture.api.dto.response.CartResponse;
+import com.furniture.api.exception.BadRequestException;
 import com.furniture.api.model.Cart;
 import com.furniture.api.model.CartItem;
 import com.furniture.api.model.Product;
@@ -46,45 +47,46 @@ public class CartServiceImpl implements CartService {
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        ProductVariant variant = null;
-        if (request.getVariantId() != null) {
-            variant = productVariantRepository.findById(request.getVariantId()).orElse(null);
+        int quantityToAdd = normaliseQuantity(request.getQuantity());
+        ProductVariant variant = resolveVariant(product.getProductId(), request.getVariantId());
+        Integer variantId = variant != null ? variant.getVariantId() : null;
+        int availableStock = variant != null ? variant.getStock() : (product.getStock() != null ? product.getStock() : 0);
+        if (availableStock < quantityToAdd) {
+            throw new BadRequestException("Sản phẩm không đủ hàng");
         }
 
         // Check if item already exists in cart
         Optional<CartItem> existingItem = cart.getItems().stream()
                 .filter(item -> item.getProductId().equals(request.getProductId())
-                        && (request.getVariantId() == null ? item.getProductVariantId() == null
-                        : request.getVariantId().equals(item.getProductVariantId())))
+                        && (variantId == null ? item.getProductVariantId() == null
+                        : variantId.equals(item.getProductVariantId())))
                 .findFirst();
 
         if (existingItem.isPresent()) {
             // Update quantity
             CartItem item = existingItem.get();
-            item.setQuantity(item.getQuantity() + (request.getQuantity() != null ? request.getQuantity() : 1));
+            int newQuantity = item.getQuantity() + quantityToAdd;
+            if (availableStock < newQuantity) {
+                throw new BadRequestException("Sản phẩm không đủ hàng");
+            }
+            item.setQuantity(newQuantity);
             item.setTotalPrice(item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
             cartItemRepository.save(item);
         } else {
             // Add new item - get price from variant or first variant of product
-            BigDecimal price;
-            if (variant != null) {
-                price = variant.getPrice();
-            } else if (product.getVariants() != null && !product.getVariants().isEmpty()) {
-                price = product.getVariants().get(0).getPrice();
-            } else {
+            if (variant == null) {
                 throw new RuntimeException("Product has no price information");
             }
-            int quantity = request.getQuantity() != null ? request.getQuantity() : 1;
+            BigDecimal price = variant.getPrice();
 
             CartItem newItem = CartItem.builder()
                     .cartId(cart.getCartId())
                     .productId(product.getProductId())
-                    .productVariantId(request.getVariantId())
-                    .shopId(product.getShopId())
-                    .quantity(quantity)
+                    .productVariantId(variantId)
+                    .quantity(quantityToAdd)
                     .price(price)
-                    .totalPrice(price.multiply(BigDecimal.valueOf(quantity)))
-                    .variantInfo(variant != null ? getVariantInfo(variant) : null)
+                    .totalPrice(price.multiply(BigDecimal.valueOf(quantityToAdd)))
+                    .variantInfo(getVariantInfo(variant))
                     .build();
 
             cartItemRepository.save(newItem);
@@ -109,8 +111,14 @@ public class CartServiceImpl implements CartService {
             throw new RuntimeException("Cart item does not belong to user's cart");
         }
 
-        item.setQuantity(request.getQuantity());
-        item.setTotalPrice(item.getPrice().multiply(BigDecimal.valueOf(request.getQuantity())));
+        int quantity = normaliseQuantity(request.getQuantity());
+        int availableStock = resolveStock(item);
+        if (availableStock < quantity) {
+            throw new BadRequestException("Sản phẩm không đủ hàng");
+        }
+
+        item.setQuantity(quantity);
+        item.setTotalPrice(item.getPrice().multiply(BigDecimal.valueOf(quantity)));
         cartItemRepository.save(item);
 
         updateCartTotal(cart);
@@ -151,6 +159,44 @@ public class CartServiceImpl implements CartService {
                             .build();
                     return cartRepository.save(newCart);
                 });
+    }
+
+    private int normaliseQuantity(Integer quantity) {
+        if (quantity == null) {
+            return 1;
+        }
+        if (quantity < 1) {
+            throw new BadRequestException("Số lượng sản phẩm phải lớn hơn 0");
+        }
+        return quantity;
+    }
+
+    private ProductVariant resolveVariant(Integer productId, Integer requestedVariantId) {
+        if (requestedVariantId != null) {
+            ProductVariant variant = productVariantRepository.findById(requestedVariantId)
+                    .orElseThrow(() -> new BadRequestException("Phân loại sản phẩm không tồn tại"));
+            if (!productId.equals(variant.getProductId())) {
+                throw new BadRequestException("Phân loại sản phẩm không thuộc sản phẩm đã chọn");
+            }
+            return variant;
+        }
+
+        List<ProductVariant> variants = productVariantRepository.findByProductId(productId);
+        if (variants.isEmpty()) {
+            return null;
+        }
+        return variants.get(0);
+    }
+
+    private int resolveStock(CartItem item) {
+        if (item.getProductVariantId() != null) {
+            return productVariantRepository.findById(item.getProductVariantId())
+                    .map(ProductVariant::getStock)
+                    .orElseThrow(() -> new BadRequestException("Phân loại sản phẩm không tồn tại"));
+        }
+        Product product = productRepository.findById(item.getProductId())
+                .orElseThrow(() -> new BadRequestException("Sản phẩm không tồn tại"));
+        return product.getStock() != null ? product.getStock() : 0;
     }
 
     private void updateCartTotal(Cart cart) {
@@ -217,8 +263,6 @@ public class CartServiceImpl implements CartService {
                 .productImage(productImage)
                 .variantId(item.getProductVariantId())
                 .variantName(item.getVariantInfo())
-                .shopId(item.getShopId())
-                .shopName(product != null && product.getShop() != null ? product.getShop().getShopName() : null)
                 .price(item.getPrice())
                 .quantity(item.getQuantity())
                 .subtotal(item.getTotalPrice())

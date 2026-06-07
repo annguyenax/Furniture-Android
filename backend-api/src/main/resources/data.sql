@@ -1,5 +1,5 @@
 -- ============================================================
--- Seed data cơ bản — chỉ chứa những gì DataInitializer không xử lý
--- Dữ liệu mẫu (categories, shops, products) được tạo tự động
--- bởi DataInitializer.java khi ứng dụng khởi động lần đầu
+-- Basic seed data placeholder.
+-- Demo categories and products are created by DataInitializer.java
+-- when the application starts with an empty database.
 -- ============================================================

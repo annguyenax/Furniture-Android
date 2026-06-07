@@ -1,17 +1,20 @@
 package com.furniture.app.data.repository;
 
 import android.content.Context;
+
+import com.furniture.app.data.model.ApiResponse;
 import com.furniture.app.data.model.AuthResponse;
 import com.furniture.app.data.model.ForgotPasswordRequest;
 import com.furniture.app.data.model.LoginRequest;
 import com.furniture.app.data.model.RegisterRequest;
-import com.furniture.app.data.model.ApiResponse;
 import com.furniture.app.data.model.ResetPasswordRequest;
 import com.furniture.app.data.remote.RetrofitClient;
 import com.furniture.app.data.remote.api.AuthApi;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
 import java.lang.reflect.Type;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -20,7 +23,7 @@ public class AuthRepository {
     private final AuthApi authApi;
 
     public AuthRepository(Context context) {
-        authApi = RetrofitClient.getInstance().create(AuthApi.class);
+        authApi = RetrofitClient.getPublicRetrofit().create(AuthApi.class);
     }
 
     private String parseErrorMessage(Response<?> response, String fallback) {
@@ -38,12 +41,13 @@ public class AuthRepository {
                     }
                 }
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         return fallback;
     }
 
     public void register(String username, String email, String password, String firstName, String lastName, String phone,
-                        final AuthCallback callback) {
+                         final AuthCallback callback) {
         RegisterRequest request = new RegisterRequest(username, email, password);
         request.setFirstName(firstName);
         request.setLastName(lastName);
@@ -94,15 +98,15 @@ public class AuthRepository {
             public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     String message = response.body().getMessage();
-                    callback.onSuccess(message != null ? message : "Da gui email dat lai mat khau");
+                    callback.onSuccess(message != null ? message : "Đã gửi email đặt lại mật khẩu");
                 } else {
-                    callback.onError(parseErrorMessage(response, "Khong the gui email dat lai mat khau"));
+                    callback.onError(parseErrorMessage(response, "Không thể gửi email đặt lại mật khẩu"));
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
-                callback.onError("Khong the ket noi den may chu");
+                callback.onError("Không thể kết nối đến máy chủ");
             }
         });
     }
@@ -115,15 +119,15 @@ public class AuthRepository {
             public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     String message = response.body().getMessage();
-                    callback.onSuccess(message != null ? message : "Dat lai mat khau thanh cong");
+                    callback.onSuccess(message != null ? message : "Đặt lại mật khẩu thành công");
                 } else {
-                    callback.onError(parseErrorMessage(response, "Khong the dat lai mat khau"));
+                    callback.onError(parseErrorMessage(response, "Không thể đặt lại mật khẩu"));
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
-                callback.onError("Khong the ket noi den may chu");
+                callback.onError("Không thể kết nối đến máy chủ");
             }
         });
     }

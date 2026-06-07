@@ -356,21 +356,16 @@ public class CheckoutActivity extends AppCompatActivity {
             return;
         }
 
-        String recipientName = selectedAddress.getRecipientName();
-        String phone = selectedAddress.getPhone();
-        String full = selectedAddress.getFullAddress();
-        if (full == null || full.isEmpty()) full = buildFullAddress(selectedAddress);
-
-        String paymentMethod = rgPaymentMethod.getCheckedRadioButtonId() == R.id.rb_cod ? "COD" : "BANK";
+        String paymentMethod = rgPaymentMethod.getCheckedRadioButtonId() == R.id.rb_bank
+                ? "BANK_TRANSFER"
+                : "COD";
         String note = etNote.getText() != null ? etNote.getText().toString().trim() : "";
 
         progressBar.setVisibility(View.VISIBLE);
         btnPlaceOrder.setEnabled(false);
 
         orderViewModel.createOrder(
-                recipientName,
-                phone,
-                full,
+                selectedAddress.getAddressId(),
                 paymentMethod,
                 note,
                 isFromCart ? null : orderItems

@@ -1,5 +1,9 @@
 package com.furniture.api.dto.request;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -7,37 +11,36 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class CreateOrderRequest {
-    private String recipientName;
-    private String recipientPhone;
-    private String shippingAddress;
-    private String paymentMethod; // COD, VNPAY, MOMO
+    @NotNull(message = "Vui long chon dia chi giao hang")
+    private Integer addressId;
+    private String paymentMethod; // COD, VNPAY, MOMO, BANK_TRANSFER
     private String note;
-    private Boolean fromCart; // If true, create order from cart items
-    
-    @NotEmpty(message = "Danh sách sản phẩm không được trống")
+    private Boolean fromCart;
+
     @Valid
-    private List<OrderItemRequest> items; // If fromCart is false, use these items
+    private List<OrderItemRequest> items;
+
+    @AssertTrue(message = "Danh sach san pham khong duoc trong")
+    public boolean isCartOrHasItems() {
+        return Boolean.TRUE.equals(fromCart) || (items != null && !items.isEmpty());
+    }
 
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
     public static class OrderItemRequest {
-        @NotNull(message = "ID sản phẩm không được để trống")
+        @NotNull(message = "ID san pham khong duoc de trong")
         private Integer productId;
         private Integer variantId;
-        @NotNull(message = "Số lượng không được để trống")
-        @Min(value = 1, message = "Số lượng sản phẩm phải lớn hơn 0")
+
+        @NotNull(message = "So luong khong duoc de trong")
+        @Min(value = 1, message = "So luong san pham phai lon hon 0")
         private Integer quantity;
     }
 }

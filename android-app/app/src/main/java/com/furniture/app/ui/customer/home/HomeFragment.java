@@ -83,7 +83,7 @@ public class HomeFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         sessionManager = new SessionManager(requireContext());
-        categoryApi = RetrofitClient.getInstance(sessionManager.getToken()).create(CategoryApi.class);
+        categoryApi = RetrofitClient.getPublicRetrofit().create(CategoryApi.class);
 
         initViews(view);
         setupViewModel();
@@ -170,23 +170,29 @@ public class HomeFragment extends Fragment {
 
         if (btnChatHome != null) btnChatHome.setOnClickListener(v -> {
             if (!sessionManager.isLoggedIn()) {
-                startActivity(new Intent(requireContext(), LoginActivity.class));
+                startLoginForReturn();
                 return;
             }
             Intent intent = new Intent(requireContext(), ChatActivity.class);
-            intent.putExtra(ChatActivity.EXTRA_SHOP_ID, 1);
-            intent.putExtra(ChatActivity.EXTRA_SHOP_NAME, "Hỗ trợ Shop");
+            intent.putExtra(ChatActivity.EXTRA_SUPPORT_ID, 1);
+            intent.putExtra(ChatActivity.EXTRA_SUPPORT_NAME, "Hỗ trợ Shop");
             intent.putExtra(ChatActivity.EXTRA_IS_ADMIN, false);
             startActivity(intent);
         });
 
         if (btnNotificationHome != null) btnNotificationHome.setOnClickListener(v -> {
             if (!sessionManager.isLoggedIn()) {
-                startActivity(new Intent(requireContext(), LoginActivity.class));
+                startLoginForReturn();
             } else {
                 Toast.makeText(requireContext(), "Chưa có thông báo mới", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void startLoginForReturn() {
+        Intent intent = new Intent(requireContext(), LoginActivity.class);
+        intent.putExtra(LoginActivity.EXTRA_RETURN_AFTER_LOGIN, true);
+        startActivity(intent);
     }
 
     private void setupBanner() {

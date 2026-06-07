@@ -51,7 +51,6 @@ public class SecurityConfig {
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/products/**").permitAll()
                 .requestMatchers("/categories/**").permitAll()
-                .requestMatchers("/shops/**").permitAll()
                 .requestMatchers("/reviews/product/**").permitAll()
 
                 // Authenticated endpoints

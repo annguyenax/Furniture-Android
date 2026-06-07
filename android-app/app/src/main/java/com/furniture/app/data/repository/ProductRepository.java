@@ -8,7 +8,6 @@ import com.furniture.app.data.model.Product;
 import com.furniture.app.data.remote.RetrofitClient;
 import com.furniture.app.data.remote.api.ProductApi;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -19,7 +18,7 @@ public class ProductRepository {
     private final ProductApi productApi;
 
     public ProductRepository(Context context) {
-        productApi = RetrofitClient.getInstance().create(ProductApi.class);
+        productApi = RetrofitClient.getPublicRetrofit().create(ProductApi.class);
     }
 
     public void getAllProducts(int page, int size, final ProductCallback callback) {
@@ -27,7 +26,7 @@ public class ProductRepository {
                 .enqueue(new Callback<ApiResponse<PageResponse<Product>>>() {
                     @Override
                     public void onResponse(Call<ApiResponse<PageResponse<Product>>> call,
-                                         Response<ApiResponse<PageResponse<Product>>> response) {
+                                           Response<ApiResponse<PageResponse<Product>>> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             PageResponse<Product> pageResponse = response.body().getData();
                             callback.onSuccess(pageResponse.getContent());
@@ -66,32 +65,12 @@ public class ProductRepository {
                 .enqueue(new Callback<ApiResponse<PageResponse<Product>>>() {
                     @Override
                     public void onResponse(Call<ApiResponse<PageResponse<Product>>> call,
-                                         Response<ApiResponse<PageResponse<Product>>> response) {
+                                           Response<ApiResponse<PageResponse<Product>>> response) {
                         if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
                             PageResponse<Product> pageResponse = response.body().getData();
                             callback.onSuccess(pageResponse.getContent());
                         } else {
                             callback.onError("No products found");
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<ApiResponse<PageResponse<Product>>> call, Throwable t) {
-                        callback.onError(t.getMessage());
-                    }
-                });
-    }
-
-    public void getProductsByShop(int shopId, int page, int size, final ProductCallback callback) {
-        productApi.getProductsByShop(shopId, page, size)
-                .enqueue(new Callback<ApiResponse<PageResponse<Product>>>() {
-                    @Override
-                    public void onResponse(Call<ApiResponse<PageResponse<Product>>> call,
-                                           Response<ApiResponse<PageResponse<Product>>> response) {
-                        if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
-                            callback.onSuccess(response.body().getData().getContent());
-                        } else {
-                            callback.onError("Không tải được sản phẩm shop");
                         }
                     }
 

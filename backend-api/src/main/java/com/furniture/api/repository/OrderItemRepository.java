@@ -9,14 +9,14 @@ import java.util.List;
 @Repository
 public interface OrderItemRepository extends JpaRepository<OrderItem, Integer> {
 
-    List<OrderItem> findBySubOrderId(Integer subOrderId);
+    List<OrderItem> findByOrderId(Integer orderId);
 
-    void deleteBySubOrderId(Integer subOrderId);
+    void deleteByOrderId(Integer orderId);
 
     @org.springframework.data.jpa.repository.Query(
         "SELECT CASE WHEN COUNT(oi) > 0 THEN true ELSE false END " +
-        "FROM OrderItem oi JOIN oi.subOrder so " +
-        "WHERE so.orderId = :orderId AND oi.productId = :productId")
+        "FROM OrderItem oi " +
+        "WHERE oi.orderId = :orderId AND oi.productId = :productId")
     boolean existsByOrderIdAndProductId(
             @org.springframework.data.repository.query.Param("orderId") Integer orderId,
             @org.springframework.data.repository.query.Param("productId") Integer productId);
@@ -24,8 +24,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Integer> {
     @org.springframework.data.jpa.repository.Query(
         value = "SELECT p.product_name, SUM(oi.total) as revenue " +
                 "FROM Order_Items oi " +
-                "JOIN Sub_Orders so ON oi.sub_order_id = so.sub_order_id " +
-                "JOIN Orders o ON so.order_id = o.order_id " +
+                "JOIN Orders o ON oi.order_id = o.order_id " +
                 "JOIN Products p ON oi.product_id = p.product_id " +
                 "WHERE o.status = 'DELIVERED' " +
                 "GROUP BY oi.product_id, p.product_name " +
@@ -36,8 +35,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Integer> {
     @org.springframework.data.jpa.repository.Query(
         value = "SELECT c.category_name, SUM(oi.total) as revenue " +
                 "FROM Order_Items oi " +
-                "JOIN Sub_Orders so ON oi.sub_order_id = so.sub_order_id " +
-                "JOIN Orders o ON so.order_id = o.order_id " +
+                "JOIN Orders o ON oi.order_id = o.order_id " +
                 "JOIN Products p ON oi.product_id = p.product_id " +
                 "JOIN Categories c ON p.category_id = c.category_id " +
                 "WHERE o.status = 'DELIVERED' " +

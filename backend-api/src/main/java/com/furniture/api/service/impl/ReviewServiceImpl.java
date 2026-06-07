@@ -116,8 +116,18 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional(readOnly = true)
     public Page<ReviewResponse> getProductReviews(Integer productId, Pageable pageable) {
-        return reviewRepository.findByProductId(productId, pageable)
-                .map(r -> ReviewResponse.fromEntity(r, resolveUserName(r.getUserId())));
+        return reviewRepository.findReviewSummariesByProductId(productId, pageable)
+                .map(r -> ReviewResponse.builder()
+                        .reviewId(r.getReviewId())
+                        .productId(r.getProductId())
+                        .userId(r.getUserId())
+                        .userName(r.getUserName())
+                        .rating(r.getRating())
+                        .comment(r.getComment())
+                        .images(r.getImages())
+                        .isVerified(r.getIsVerified())
+                        .createdAt(r.getCreatedAt())
+                        .build());
     }
 
     private String resolveUserName(Integer userId) {

@@ -12,7 +12,6 @@ public class CartItem implements Serializable {
     private String productImage;
     private Integer variantId;
     private String variantName;
-    private Integer shopId;
     private String shopName;
     private Integer quantity;
     private BigDecimal price;
@@ -69,14 +68,6 @@ public class CartItem implements Serializable {
 
     public void setVariantName(String variantName) {
         this.variantName = variantName;
-    }
-
-    public Integer getShopId() {
-        return shopId;
-    }
-
-    public void setShopId(Integer shopId) {
-        this.shopId = shopId;
     }
 
     public String getShopName() {

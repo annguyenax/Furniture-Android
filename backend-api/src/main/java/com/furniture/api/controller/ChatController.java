@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ChatController {
 
-    private static final int SHOP_ID = 1;
+    private static final int SUPPORT_ID = 1;
 
     private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
@@ -60,8 +60,8 @@ public class ChatController {
                 return ResponseEntity.badRequest().body(ApiResponse.error("Thiếu recipientUserId"));
             }
             msg = ChatMessage.builder()
-                    .chatId(ChatMessage.createChatId(request.getRecipientUserId(), SHOP_ID))
-                    .senderId(SHOP_ID)
+                    .chatId(ChatMessage.createChatId(request.getRecipientUserId(), SUPPORT_ID))
+                    .senderId(SUPPORT_ID)
                     .senderType(ChatMessage.SenderType.SHOP)
                     .receiverId(request.getRecipientUserId())
                     .receiverType(ChatMessage.SenderType.USER)
@@ -71,10 +71,10 @@ public class ChatController {
                     .build();
         } else {
             msg = ChatMessage.builder()
-                    .chatId(ChatMessage.createChatId(me.getUserId(), SHOP_ID))
+                    .chatId(ChatMessage.createChatId(me.getUserId(), SUPPORT_ID))
                     .senderId(me.getUserId())
                     .senderType(ChatMessage.SenderType.USER)
-                    .receiverId(SHOP_ID)
+                    .receiverId(SUPPORT_ID)
                     .receiverType(ChatMessage.SenderType.SHOP)
                     .message(request.getMessage().trim())
                     .messageType(ChatMessage.MessageType.TEXT)
@@ -111,18 +111,18 @@ public class ChatController {
                 return ResponseEntity.badRequest().body(ApiResponse.error("Thiếu recipientUserId"));
             }
             msg = builder
-                    .chatId(ChatMessage.createChatId(recipientUserId, SHOP_ID))
-                    .senderId(SHOP_ID)
+                    .chatId(ChatMessage.createChatId(recipientUserId, SUPPORT_ID))
+                    .senderId(SUPPORT_ID)
                     .senderType(ChatMessage.SenderType.SHOP)
                     .receiverId(recipientUserId)
                     .receiverType(ChatMessage.SenderType.USER)
                     .build();
         } else {
             msg = builder
-                    .chatId(ChatMessage.createChatId(me.getUserId(), SHOP_ID))
+                    .chatId(ChatMessage.createChatId(me.getUserId(), SUPPORT_ID))
                     .senderId(me.getUserId())
                     .senderType(ChatMessage.SenderType.USER)
-                    .receiverId(SHOP_ID)
+                    .receiverId(SUPPORT_ID)
                     .receiverType(ChatMessage.SenderType.SHOP)
                     .build();
         }
@@ -140,7 +140,7 @@ public class ChatController {
         boolean adminMode = isAdmin(authentication);
         User me = adminMode ? null : getCurrentUser(authentication);
 
-        int receiverId = adminMode ? SHOP_ID : me.getUserId();
+        int receiverId = adminMode ? SUPPORT_ID : me.getUserId();
         chatMessageRepository.markAsRead(chatId, receiverId);
 
         List<ChatMessage> messages = chatMessageRepository.findByChatIdOrderByCreatedAtAsc(chatId);
@@ -157,7 +157,7 @@ public class ChatController {
         User me = adminMode ? null : getCurrentUser(authentication);
 
         List<String> chatIds = adminMode
-                ? chatMessageRepository.findChatIdsByShopId(SHOP_ID)
+                ? chatMessageRepository.findChatIdsBySupportId(SUPPORT_ID)
                 : chatMessageRepository.findChatIdsByUserId(me.getUserId());
 
         List<ChatRoomResponse> rooms = chatIds.stream()
@@ -194,7 +194,7 @@ public class ChatController {
         long unread;
         if (adminMode) {
             unread = chatMessageRepository.countByChatIdAndIsReadFalseAndReceiverIdAndReceiverType(
-                    chatId, SHOP_ID, ChatMessage.SenderType.SHOP);
+                    chatId, SUPPORT_ID, ChatMessage.SenderType.SHOP);
         } else {
             unread = chatMessageRepository.countByChatIdAndIsReadFalseAndReceiverIdAndReceiverType(
                     chatId, userId, ChatMessage.SenderType.USER);

@@ -3,6 +3,7 @@ package com.furniture.api.service.impl;
 import com.furniture.api.dto.request.CreateOrderRequest;
 import com.furniture.api.dto.response.OrderResponse;
 import com.furniture.api.exception.BadRequestException;
+import com.furniture.api.exception.ResourceNotFoundException;
 import com.furniture.api.model.*;
 import com.furniture.api.model.ReturnRequest;
 import com.furniture.api.repository.*;
@@ -26,7 +27,6 @@ import java.util.stream.Collectors;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
-    private final SubOrderRepository subOrderRepository;
     private final OrderItemRepository orderItemRepository;
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
@@ -41,8 +41,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderResponse createOrder(Integer userId, CreateOrderRequest request) {
-        // Create or find address
-        Address address = createOrFindAddress(userId, request);
+        Address address = resolveShippingAddress(userId, request);
 
         // Get items to order
         List<CartItem> itemsToOrder;
@@ -82,16 +81,15 @@ public class OrderServiceImpl implements OrderService {
                 .map(CartItem::getTotalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Group items by shop
-        Map<Integer, List<CartItem>> itemsByShop = itemsToOrder.stream()
-                .collect(Collectors.groupingBy(CartItem::getShopId));
-
-        BigDecimal totalShippingFee = DEFAULT_SHIPPING_FEE.multiply(BigDecimal.valueOf(itemsByShop.size()));
+        BigDecimal totalShippingFee = DEFAULT_SHIPPING_FEE;
 
         // Create main order
         Order order = Order.builder()
                 .userId(userId)
                 .shippingAddressId(address.getAddressId())
+                .recipientName(address.getRecipientName())
+                .recipientPhone(address.getPhone())
+                .shippingAddressText(address.getFullAddress())
                 .totalPrice(subtotal.add(totalShippingFee))
                 .shippingFee(totalShippingFee)
                 .paymentMethod(parsePaymentMethod(request.getPaymentMethod()))
@@ -102,54 +100,32 @@ public class OrderServiceImpl implements OrderService {
 
         order = orderRepository.save(order);
 
-        // Create sub-orders for each shop
         List<OrderItem> allOrderItems = new ArrayList<>();
-        for (Map.Entry<Integer, List<CartItem>> entry : itemsByShop.entrySet()) {
-            Integer shopId = entry.getKey();
-            List<CartItem> shopItems = entry.getValue();
-
-            BigDecimal shopSubtotal = shopItems.stream()
-                    .map(CartItem::getTotalPrice)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-            SubOrder subOrder = SubOrder.builder()
+        for (CartItem cartItem : itemsToOrder) {
+            OrderItem orderItem = OrderItem.builder()
                     .orderId(order.getOrderId())
-                    .shopId(shopId)
-                    .totalPrice(shopSubtotal)
-                    .shippingFee(DEFAULT_SHIPPING_FEE)
-                    .status(SubOrder.SubOrderStatus.PENDING)
+                    .productId(cartItem.getProductId())
+                    .variantId(cartItem.getProductVariantId())
+                    .quantity(cartItem.getQuantity())
+                    .price(cartItem.getPrice())
+                    .discount(BigDecimal.ZERO)
+                    .total(cartItem.getTotalPrice())
+                    .variantInfo(cartItem.getVariantInfo())
                     .build();
 
-            subOrder = subOrderRepository.save(subOrder);
+            orderItem = orderItemRepository.save(orderItem);
+            allOrderItems.add(orderItem);
 
-            // Create order items and reduce stock
-            for (CartItem cartItem : shopItems) {
-                OrderItem orderItem = OrderItem.builder()
-                        .subOrderId(subOrder.getSubOrderId())
-                        .productId(cartItem.getProductId())
-                        .variantId(cartItem.getProductVariantId())
-                        .quantity(cartItem.getQuantity())
-                        .price(cartItem.getPrice())
-                        .discount(BigDecimal.ZERO)
-                        .total(cartItem.getTotalPrice())
-                        .variantInfo(cartItem.getVariantInfo())
-                        .build();
-
-                orderItem = orderItemRepository.save(orderItem);
-                allOrderItems.add(orderItem);
-
-                // Reduce stock on variant first, then on product
-                if (cartItem.getProductVariantId() != null) {
-                    productVariantRepository.findById(cartItem.getProductVariantId()).ifPresent(v -> {
-                        v.setStock(Math.max(0, v.getStock() - cartItem.getQuantity()));
-                        productVariantRepository.save(v);
-                    });
-                }
-                productRepository.findById(cartItem.getProductId()).ifPresent(p -> {
-                    p.setStock(Math.max(0, p.getStock() - cartItem.getQuantity()));
-                    productRepository.save(p);
+            if (cartItem.getProductVariantId() != null) {
+                productVariantRepository.findById(cartItem.getProductVariantId()).ifPresent(v -> {
+                    v.setStock(Math.max(0, v.getStock() - cartItem.getQuantity()));
+                    productVariantRepository.save(v);
                 });
             }
+            productRepository.findById(cartItem.getProductId()).ifPresent(p -> {
+                p.setStock(Math.max(0, p.getStock() - cartItem.getQuantity()));
+                productRepository.save(p);
+            });
         }
 
         // Clear cart if ordered from cart
@@ -170,7 +146,7 @@ public class OrderServiceImpl implements OrderService {
             throw new RuntimeException("Order does not belong to user");
         }
 
-        Address address = addressRepository.findById(order.getShippingAddressId()).orElse(null);
+        Address address = findOrderAddress(order);
         List<OrderItem> items = getOrderItems(orderId);
 
         return mapToOrderResponse(order, address, items);
@@ -274,13 +250,7 @@ public class OrderServiceImpl implements OrderService {
         order.setPaymentStatus(Order.PaymentStatus.CANCELLED);
         order = orderRepository.save(order);
 
-        // Cancel sub-orders and restore stock
-        List<SubOrder> subOrders = subOrderRepository.findByOrderId(orderId);
-        for (SubOrder subOrder : subOrders) {
-            subOrder.setStatus(SubOrder.SubOrderStatus.CANCELLED);
-            subOrderRepository.save(subOrder);
-        }
-
+        // Restore stock for cancelled order items.
         List<OrderItem> items = getOrderItems(orderId);
         for (OrderItem item : items) {
             if (item.getVariantId() != null) {
@@ -295,7 +265,7 @@ public class OrderServiceImpl implements OrderService {
             });
         }
 
-        Address address = addressRepository.findById(order.getShippingAddressId()).orElse(null);
+        Address address = findOrderAddress(order);
 
         return mapToOrderResponse(order, address, items);
     }
@@ -318,31 +288,28 @@ public class OrderServiceImpl implements OrderService {
         order.setPaymentStatus(Order.PaymentStatus.PAID);
         order = orderRepository.save(order);
 
-        List<SubOrder> subOrders = subOrderRepository.findByOrderId(orderId);
-        for (SubOrder subOrder : subOrders) {
-            subOrder.setStatus(SubOrder.SubOrderStatus.DELIVERED);
-            subOrderRepository.save(subOrder);
-        }
-
-        Address address = addressRepository.findById(order.getShippingAddressId()).orElse(null);
+        Address address = findOrderAddress(order);
         List<OrderItem> items = getOrderItems(orderId);
         return mapToOrderResponse(order, address, items);
     }
 
-    private Address createOrFindAddress(Integer userId, CreateOrderRequest request) {
-        // Create a new address for this order
-        Address address = Address.builder()
-                .userId(userId)
-                .recipientName(request.getRecipientName())
-                .phone(request.getRecipientPhone())
-                .addressLine(request.getShippingAddress())
-                .city("Vietnam")
-                .district("District")
-                .ward("Ward")
-                .isDefault(false)
-                .build();
+    private Address findOrderAddress(Order order) {
+        if (order.getShippingAddressId() == null) {
+            return null;
+        }
+        return addressRepository.findById(order.getShippingAddressId()).orElse(null);
+    }
 
-        return addressRepository.save(address);
+    private Address resolveShippingAddress(Integer userId, CreateOrderRequest request) {
+        if (request.getAddressId() == null) {
+            throw new BadRequestException("Vui long chon dia chi giao hang");
+        }
+        Address address = addressRepository.findById(request.getAddressId())
+                .orElseThrow(() -> new ResourceNotFoundException("Address", "id", request.getAddressId()));
+        if (!address.getUserId().equals(userId)) {
+            throw new BadRequestException("Dia chi giao hang khong thuoc tai khoan nay");
+        }
+        return address;
     }
 
     private List<CartItem> convertRequestItemsToCartItems(List<CreateOrderRequest.OrderItemRequest> items) {
@@ -357,24 +324,38 @@ public class OrderServiceImpl implements OrderService {
 
             ProductVariant variant = null;
             if (item.getVariantId() != null) {
-                variant = productVariantRepository.findById(item.getVariantId()).orElse(null);
+                variant = productVariantRepository.findById(item.getVariantId())
+                        .orElseThrow(() -> new BadRequestException("Phân loại sản phẩm không tồn tại"));
+                if (!product.getProductId().equals(variant.getProductId())) {
+                    throw new BadRequestException("Phân loại sản phẩm không thuộc sản phẩm đã chọn");
+                }
             }
 
             // Get price from variant or first variant of product
             BigDecimal price;
             if (variant != null) {
                 price = variant.getPrice();
-            } else if (product.getVariants() != null && !product.getVariants().isEmpty()) {
-                price = product.getVariants().get(0).getPrice();
             } else {
-                throw new RuntimeException("Product has no price information");
+                List<ProductVariant> variants = productVariantRepository.findByProductId(product.getProductId());
+                if (variants.isEmpty()) {
+                    throw new RuntimeException("Product has no price information");
+                }
+                variant = variants.get(0);
+                price = variant.getPrice();
+                item.setVariantId(variant.getVariantId());
             }
+
             int quantity = item.getQuantity() != null ? item.getQuantity() : 1;
+            if (quantity < 1) {
+                throw new BadRequestException("Số lượng sản phẩm phải lớn hơn 0");
+            }
+            if (variant.getStock() < quantity) {
+                throw new BadRequestException("Sản phẩm không đủ hàng");
+            }
 
             CartItem cartItem = CartItem.builder()
                     .productId(product.getProductId())
                     .productVariantId(item.getVariantId())
-                    .shopId(product.getShopId())
                     .quantity(quantity)
                     .price(price)
                     .totalPrice(price.multiply(BigDecimal.valueOf(quantity)))
@@ -402,23 +383,19 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private List<OrderItem> getOrderItems(Integer orderId) {
-        List<SubOrder> subOrders = subOrderRepository.findByOrderId(orderId);
-        List<OrderItem> items = new ArrayList<>();
-        for (SubOrder subOrder : subOrders) {
-            items.addAll(orderItemRepository.findBySubOrderId(subOrder.getSubOrderId()));
-        }
-        return items;
+        return orderItemRepository.findByOrderId(orderId);
     }
 
     private Order.PaymentMethod parsePaymentMethod(String method) {
-        if (method == null) {
+        if (method == null || method.isBlank()) {
             return Order.PaymentMethod.COD;
         }
-        try {
-            return Order.PaymentMethod.valueOf(method.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return Order.PaymentMethod.COD;
+
+        String normalized = method.trim().toUpperCase();
+        if ("BANK_TRANSFER".equals(normalized)) {
+            return Order.PaymentMethod.BANK_TRANSFER;
         }
+        return Order.PaymentMethod.COD;
     }
 
     /** Single-order mapping — computes returnStatus with individual DB queries. */
@@ -447,9 +424,9 @@ public class OrderServiceImpl implements OrderService {
                 .orderId(order.getOrderId())
                 .orderCode("ORD" + String.format("%08d", order.getOrderId()))
                 .userId(order.getUserId())
-                .recipientName(address != null ? address.getRecipientName() : null)
-                .recipientPhone(address != null ? address.getPhone() : null)
-                .shippingAddress(address != null ? address.getFullAddress() : null)
+                .recipientName(order.getRecipientName() != null ? order.getRecipientName() : address != null ? address.getRecipientName() : null)
+                .recipientPhone(order.getRecipientPhone() != null ? order.getRecipientPhone() : address != null ? address.getPhone() : null)
+                .shippingAddress(order.getShippingAddressText() != null ? order.getShippingAddressText() : address != null ? address.getFullAddress() : null)
                 .subtotal(subtotal)
                 .shippingFee(shippingFee)
                 .totalAmount(subtotal.add(shippingFee))

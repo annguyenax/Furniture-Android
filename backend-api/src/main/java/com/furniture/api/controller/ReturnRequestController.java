@@ -6,13 +6,11 @@ import com.furniture.api.exception.ResourceNotFoundException;
 import com.furniture.api.model.Order;
 import com.furniture.api.model.OrderItem;
 import com.furniture.api.model.ReturnRequest;
-import com.furniture.api.model.SubOrder;
 import com.furniture.api.model.User;
 import com.furniture.api.repository.OrderItemRepository;
 import com.furniture.api.repository.OrderRepository;
 import com.furniture.api.repository.ProductRepository;
 import com.furniture.api.repository.ReturnRequestRepository;
-import com.furniture.api.repository.SubOrderRepository;
 import com.furniture.api.repository.UserRepository;
 import com.furniture.api.service.CloudinaryService;
 import lombok.AllArgsConstructor;
@@ -40,7 +38,6 @@ public class ReturnRequestController {
     private final ReturnRequestRepository returnRequestRepository;
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
-    private final SubOrderRepository subOrderRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final CloudinaryService cloudinaryService;
@@ -184,9 +181,7 @@ public class ReturnRequestController {
     }
 
     private void validateOrderItemBelongsToOrder(OrderItem item, Integer orderId) {
-        SubOrder subOrder = subOrderRepository.findById(item.getSubOrderId())
-                .orElseThrow(() -> new ResourceNotFoundException("Sub order", "id", item.getSubOrderId()));
-        if (!subOrder.getOrderId().equals(orderId)) {
+        if (!orderId.equals(item.getOrderId())) {
             throw new BadRequestException("San pham khong thuoc don hang nay");
         }
     }

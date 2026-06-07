@@ -3,9 +3,7 @@ package com.furniture.app.data.model.request;
 import java.util.List;
 
 public class CreateOrderRequest {
-    private String recipientName;
-    private String recipientPhone;
-    private String shippingAddress;
+    private Integer addressId;
     private String paymentMethod;
     private String note;
     private Boolean fromCart;
@@ -13,26 +11,17 @@ public class CreateOrderRequest {
 
     public CreateOrderRequest() {}
 
-    public CreateOrderRequest(String recipientName, String recipientPhone,
-                              String shippingAddress, String paymentMethod,
+    public CreateOrderRequest(Integer addressId, String paymentMethod,
                               String note, Boolean fromCart, List<OrderItemRequest> items) {
-        this.recipientName = recipientName;
-        this.recipientPhone = recipientPhone;
-        this.shippingAddress = shippingAddress;
+        this.addressId = addressId;
         this.paymentMethod = paymentMethod;
         this.note = note;
         this.fromCart = fromCart;
         this.items = items;
     }
 
-    public String getRecipientName() { return recipientName; }
-    public void setRecipientName(String recipientName) { this.recipientName = recipientName; }
-
-    public String getRecipientPhone() { return recipientPhone; }
-    public void setRecipientPhone(String recipientPhone) { this.recipientPhone = recipientPhone; }
-
-    public String getShippingAddress() { return shippingAddress; }
-    public void setShippingAddress(String shippingAddress) { this.shippingAddress = shippingAddress; }
+    public Integer getAddressId() { return addressId; }
+    public void setAddressId(Integer addressId) { this.addressId = addressId; }
 
     public String getPaymentMethod() { return paymentMethod; }
     public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }

@@ -59,12 +59,11 @@ public class OrderViewModel extends ViewModel {
         });
     }
 
-    public void createOrder(String recipientName, String phone, String address,
-                            String paymentMethod, String note, List<CartItem> items) {
+    public void createOrder(Integer addressId, String paymentMethod, String note, List<CartItem> items) {
         boolean fromCart = (items == null);
         isLoading.setValue(true);
         LiveData<ApiResponse<Order>> source = orderRepository.createOrder(
-                recipientName, phone, address, paymentMethod, note, fromCart, items);
+                addressId, paymentMethod, note, fromCart, items);
         source.observeForever(new Observer<ApiResponse<Order>>() {
             @Override
             public void onChanged(ApiResponse<Order> response) {

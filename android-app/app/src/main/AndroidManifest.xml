@@ -130,12 +130,6 @@
             android:exported="false"
             android:theme="@style/Theme.FurnitureApp" />
 
-        <!-- Shop Activities -->
-        <activity
-            android:name=".ui.customer.shop.ShopDetailActivity"
-            android:exported="false"
-            android:theme="@style/Theme.FurnitureApp" />
-
         <!-- Chat Activities -->
         <activity
             android:name=".ui.customer.chat.ChatActivity"

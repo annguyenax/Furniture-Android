@@ -3,6 +3,7 @@ package com.furniture.app.ui.customer.product;
 import android.content.Intent;
 import android.graphics.Paint;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -58,6 +59,7 @@ public class ProductDetailActivity extends AppCompatActivity {
 
     public static final String EXTRA_PRODUCT_ID = "product_id";
     public static final String EXTRA_PRODUCT = "product";
+    private static final String TAG = "ProductDetail";
 
     private ProductViewModel productViewModel;
     private CartViewModel cartViewModel;
@@ -95,8 +97,8 @@ public class ProductDetailActivity extends AppCompatActivity {
 
         sessionManager = new SessionManager(this);
         currencyFormat = NumberFormat.getInstance(new Locale("vi", "VN"));
-        productApi = RetrofitClient.getInstance().create(ProductApi.class);
-        reviewApi = RetrofitClient.getInstance(sessionManager.getToken()).create(ReviewApi.class);
+        productApi = RetrofitClient.getPublicRetrofit().create(ProductApi.class);
+        reviewApi = RetrofitClient.getPublicRetrofit().create(ReviewApi.class);
         wishlistApi = RetrofitClient.getInstance(sessionManager.getToken()).create(WishlistApi.class);
 
         initViews();
@@ -250,6 +252,12 @@ public class ProductDetailActivity extends AppCompatActivity {
     private void setupWishlistButton(int productId) {
         ImageButton btnWishlist = findViewById(R.id.btn_wishlist);
         if (btnWishlist == null) return;
+        if (!sessionManager.isLoggedIn()) {
+            isWishlisted = false;
+            updateWishlistIcon(btnWishlist);
+            btnWishlist.setOnClickListener(v -> requireLogin(() -> toggleWishlist(productId, btnWishlist)));
+            return;
+        }
         wishlistApi.checkWishlist(productId).enqueue(new Callback<ApiResponse<Boolean>>() {
             @Override
             public void onResponse(Call<ApiResponse<Boolean>> call, Response<ApiResponse<Boolean>> response) {
@@ -378,15 +386,18 @@ public class ProductDetailActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<ApiResponse<PageResponse<ReviewModel>>> call,
                                    Response<ApiResponse<PageResponse<ReviewModel>>> response) {
-                if (!response.isSuccessful() || response.body() == null || response.body().getData() == null) return;
+                if (!response.isSuccessful() || response.body() == null || response.body().getData() == null) {
+                    Log.w(TAG, "Cannot load reviews for product " + productId + ", code=" + response.code());
+                    showNoReviews("Chưa tải được đánh giá");
+                    return;
+                }
                 PageResponse<ReviewModel> page = response.body().getData();
                 List<ReviewModel> reviews = page.getContent();
                 runOnUiThread(() -> {
                     int total = (int) page.getTotalElements();
                     tvReviewCount.setText(total > 0 ? total + " đánh giá" : "");
                     if (reviews == null || reviews.isEmpty()) {
-                        tvNoReviews.setVisibility(View.VISIBLE);
-                        rvReviews.setVisibility(View.GONE);
+                        showNoReviews("Chưa có đánh giá nào");
                     } else {
                         tvNoReviews.setVisibility(View.GONE);
                         rvReviews.setVisibility(View.VISIBLE);
@@ -397,8 +408,18 @@ public class ProductDetailActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<ApiResponse<PageResponse<ReviewModel>>> call, Throwable t) {
-                // silently fail — reviews are non-critical
+                Log.w(TAG, "Cannot load reviews for product " + productId, t);
+                showNoReviews("Chưa tải được đánh giá");
             }
+        });
+    }
+
+    private void showNoReviews(String message) {
+        runOnUiThread(() -> {
+            tvReviewCount.setText("");
+            tvNoReviews.setText(message);
+            tvNoReviews.setVisibility(View.VISIBLE);
+            rvReviews.setVisibility(View.GONE);
         });
     }
 
@@ -559,7 +580,9 @@ public class ProductDetailActivity extends AppCompatActivity {
             action.run();
         } else {
             Toast.makeText(this, "Vui lòng đăng nhập để tiếp tục", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(this, com.furniture.app.ui.auth.LoginActivity.class));
+            Intent intent = new Intent(this, com.furniture.app.ui.auth.LoginActivity.class);
+            intent.putExtra(com.furniture.app.ui.auth.LoginActivity.EXTRA_RETURN_AFTER_LOGIN, true);
+            startActivity(intent);
         }
     }
 

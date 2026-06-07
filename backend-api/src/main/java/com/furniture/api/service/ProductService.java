@@ -14,8 +14,6 @@ public interface ProductService {
 
     Page<ProductResponse> getProductsByCategory(Integer categoryId, Pageable pageable);
 
-    Page<ProductResponse> getProductsByShop(Integer shopId, Pageable pageable);
-
     Page<ProductResponse> searchProducts(String keyword, Pageable pageable);
 
     List<ProductResponse> getFeaturedProducts(int limit);

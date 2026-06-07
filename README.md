@@ -180,8 +180,8 @@ API Base URL: http://localhost:8080/api
 
 | Email | Vai trò |
 |-------|---------|
-| `customer@furniture.com` | CUSTOMER |
-| `admin@furniture.com` | ADMIN |
+| `customer@fur.vn` | CUSTOMER |
+| `admin@fur.vn` | ADMIN |
 
 ---
 

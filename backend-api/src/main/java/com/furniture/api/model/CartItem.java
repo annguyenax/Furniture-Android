@@ -32,9 +32,6 @@ public class CartItem {
     @Column(name = "product_variant_id")
     private Integer productVariantId;
 
-    @Column(name = "shop_id", nullable = false)
-    private Integer shopId;
-
     @Column(name = "quantity", nullable = false)
     @Builder.Default
     private Integer quantity = 1;
@@ -71,8 +68,4 @@ public class CartItem {
     @ToString.Exclude
     private ProductVariant variant;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "shop_id", insertable = false, updatable = false)
-    @ToString.Exclude
-    private Shop shop;
 }

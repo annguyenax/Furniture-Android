@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 public class AdminController {
 
     private final OrderRepository orderRepository;
-    private final SubOrderRepository subOrderRepository;
     private final OrderItemRepository orderItemRepository;
     private final AddressRepository addressRepository;
     private final ProductRepository productRepository;
@@ -127,7 +126,6 @@ public class AdminController {
                 .stock(request.getStock() != null ? request.getStock() : 0)
                 .discount(request.getDiscount() != null ? request.getDiscount() : java.math.BigDecimal.ZERO)
                 .status(Product.ProductStatus.ACTIVE)
-                .shopId(request.getShopId() != null ? request.getShopId() : 1)
                 .categoryId(request.getCategoryId())
                 .sold(0)
                 .build();
@@ -471,9 +469,7 @@ public class AdminController {
                 ? addressRepository.findById(order.getShippingAddressId()).orElse(null)
                 : null;
 
-        List<OrderItem> items = subOrderRepository.findByOrderId(order.getOrderId()).stream()
-                .flatMap(sub -> orderItemRepository.findBySubOrderId(sub.getSubOrderId()).stream())
-                .collect(Collectors.toList());
+        List<OrderItem> items = orderItemRepository.findByOrderId(order.getOrderId());
 
         List<OrderResponse.OrderItemResponse> itemResponses = items.stream()
                 .map(item -> OrderResponse.OrderItemResponse.builder()
@@ -491,9 +487,9 @@ public class AdminController {
                 .orderId(order.getOrderId())
                 .orderCode("ORD" + String.format("%08d", order.getOrderId()))
                 .userId(order.getUserId())
-                .recipientName(address != null ? address.getRecipientName() : null)
-                .recipientPhone(address != null ? address.getPhone() : null)
-                .shippingAddress(address != null ? address.getFullAddress() : null)
+                .recipientName(order.getRecipientName() != null ? order.getRecipientName() : address != null ? address.getRecipientName() : null)
+                .recipientPhone(order.getRecipientPhone() != null ? order.getRecipientPhone() : address != null ? address.getPhone() : null)
+                .shippingAddress(order.getShippingAddressText() != null ? order.getShippingAddressText() : address != null ? address.getFullAddress() : null)
                 .totalAmount(order.getTotalPrice())
                 .shippingFee(order.getShippingFee())
                 .paymentMethod(order.getPaymentMethod() != null ? order.getPaymentMethod().name() : null)
@@ -528,7 +524,6 @@ public class AdminController {
         private Integer stock;
         private BigDecimal discount;
         private Integer categoryId;
-        private Integer shopId;
         private String imageUrl;
 
         public String getProductName() { return productName; }
@@ -537,7 +532,6 @@ public class AdminController {
         public Integer getStock() { return stock; }
         public BigDecimal getDiscount() { return discount; }
         public Integer getCategoryId() { return categoryId; }
-        public Integer getShopId() { return shopId; }
         public String getImageUrl() { return imageUrl; }
     }
 

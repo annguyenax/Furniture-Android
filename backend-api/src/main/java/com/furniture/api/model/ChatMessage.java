@@ -74,7 +74,7 @@ public class ChatMessage {
     }
 
     // Helper method to create chat_id
-    public static String createChatId(Integer userId, Integer shopId) {
-        return userId + "-" + shopId;
+    public static String createChatId(Integer userId, Integer supportId) {
+        return userId + "-" + supportId;
     }
 }

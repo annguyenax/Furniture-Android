@@ -28,8 +28,17 @@ public class Order {
     @Column(name = "user_id", nullable = false)
     private Integer userId;
 
-    @Column(name = "shipping_address_id", nullable = false)
+    @Column(name = "shipping_address_id")
     private Integer shippingAddressId;
+
+    @Column(name = "recipient_name", length = 100)
+    private String recipientName;
+
+    @Column(name = "recipient_phone", length = 15)
+    private String recipientPhone;
+
+    @Column(name = "shipping_address_text", length = 500)
+    private String shippingAddressText;
 
     @Column(name = "total_price", nullable = false, precision = 15, scale = 2)
     private BigDecimal totalPrice;
@@ -73,11 +82,6 @@ public class Order {
     @JoinColumn(name = "shipping_address_id", insertable = false, updatable = false)
     @ToString.Exclude
     private Address shippingAddress;
-
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
-    @ToString.Exclude
-    @Builder.Default
-    private List<SubOrder> subOrders = new ArrayList<>();
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     @ToString.Exclude

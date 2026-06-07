@@ -44,6 +44,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity {
+    public static final String EXTRA_RETURN_AFTER_LOGIN = "return_after_login";
 
     private EditText emailEditText;
     private EditText passwordEditText;
@@ -244,7 +245,7 @@ public class LoginActivity extends AppCompatActivity {
                 role
         );
         Toast.makeText(this, "Dang nhap thanh cong!", Toast.LENGTH_SHORT).show();
-        navigateToHome();
+        finishAfterLogin();
     }
 
     private void observeViewModel() {
@@ -263,7 +264,7 @@ public class LoginActivity extends AppCompatActivity {
         authViewModel.getAuthResponse().observe(this, response -> {
             if (response != null) {
                 Toast.makeText(this, "Dang nhap thanh cong!", Toast.LENGTH_SHORT).show();
-                navigateToHome();
+                finishAfterLogin();
             }
         });
     }
@@ -288,7 +289,18 @@ public class LoginActivity extends AppCompatActivity {
         Class<?> targetActivity = sessionManager.isAdmin()
                 ? AdminMainActivity.class
                 : CustomerMainActivity.class;
-        startActivity(new Intent(this, targetActivity));
+        Intent intent = new Intent(this, targetActivity);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
         finish();
+    }
+
+    private void finishAfterLogin() {
+        if (getIntent().getBooleanExtra(EXTRA_RETURN_AFTER_LOGIN, false)) {
+            setResult(RESULT_OK);
+            finish();
+            return;
+        }
+        navigateToHome();
     }
 }

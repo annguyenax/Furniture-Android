@@ -21,6 +21,7 @@ public class RetrofitClient {
     private static final int TIMEOUT = 30; // seconds
 
     private static volatile RetrofitClient instance;
+    private static volatile Retrofit publicRetrofit;
     private final Retrofit retrofit;
     private final AuthInterceptor authInterceptor;
 
@@ -69,8 +70,35 @@ public class RetrofitClient {
         return getInstance(null);
     }
 
+    public static synchronized Retrofit getPublicRetrofit() {
+        if (publicRetrofit == null) {
+            HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+            loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+            OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                    .addInterceptor(loggingInterceptor)
+                    .connectTimeout(TIMEOUT, TimeUnit.SECONDS)
+                    .readTimeout(TIMEOUT, TimeUnit.SECONDS)
+                    .writeTimeout(TIMEOUT, TimeUnit.SECONDS)
+                    .build();
+
+            Gson gson = new GsonBuilder()
+                    .setDateFormat("yyyy-MM-dd'T'HH:mm:ss")
+                    .setLenient()
+                    .create();
+
+            publicRetrofit = new Retrofit.Builder()
+                    .baseUrl(BASE_URL)
+                    .client(okHttpClient)
+                    .addConverterFactory(GsonConverterFactory.create(gson))
+                    .build();
+        }
+        return publicRetrofit;
+    }
+
     public static synchronized void resetInstance() {
         instance = null;
+        publicRetrofit = null;
     }
 
     public <T> T create(Class<T> serviceClass) {

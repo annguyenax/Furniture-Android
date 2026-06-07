@@ -13,8 +13,6 @@ import java.util.List;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Integer> {
 
-    Page<Product> findByShopId(Integer shopId, Pageable pageable);
-
     Page<Product> findByCategoryId(Integer categoryId, Pageable pageable);
 
     Page<Product> findByStatus(Product.ProductStatus status, Pageable pageable);
@@ -44,8 +42,6 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     List<Product> findBestDeals(Pageable pageable);
 
     List<Product> findByCategoryIdAndStatusAndProductIdNot(Integer categoryId, Product.ProductStatus status, Integer productId, Pageable pageable);
-
-    Long countByShopId(Integer shopId);
 
     boolean existsByCategoryId(Integer categoryId);
 }

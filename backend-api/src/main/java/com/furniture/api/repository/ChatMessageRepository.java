@@ -22,9 +22,9 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Intege
            "OR c.receiverId = :userId AND c.receiverType = 'USER'")
     List<String> findChatIdsByUserId(@Param("userId") Integer userId);
 
-    @Query("SELECT DISTINCT c.chatId FROM ChatMessage c WHERE c.senderId = :shopId AND c.senderType = 'SHOP' " +
-           "OR c.receiverId = :shopId AND c.receiverType = 'SHOP'")
-    List<String> findChatIdsByShopId(@Param("shopId") Integer shopId);
+    @Query("SELECT DISTINCT c.chatId FROM ChatMessage c WHERE c.senderId = :supportId AND c.senderType = 'SHOP' " +
+           "OR c.receiverId = :supportId AND c.receiverType = 'SHOP'")
+    List<String> findChatIdsBySupportId(@Param("supportId") Integer supportId);
 
     Long countByChatIdAndIsReadFalseAndReceiverIdAndReceiverType(
         String chatId, Integer receiverId, ChatMessage.SenderType receiverType);
