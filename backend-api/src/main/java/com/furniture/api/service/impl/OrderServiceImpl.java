@@ -300,6 +300,35 @@ public class OrderServiceImpl implements OrderService {
         return mapToOrderResponse(order, address, items);
     }
 
+    @Override
+    @Transactional
+    public OrderResponse confirmReceived(Integer userId, Integer orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        if (!order.getUserId().equals(userId)) {
+            throw new RuntimeException("Order does not belong to user");
+        }
+
+        if (order.getStatus() != Order.OrderStatus.SHIPPED) {
+            throw new BadRequestException("Chỉ có thể xác nhận nhận hàng khi đơn đang giao");
+        }
+
+        order.setStatus(Order.OrderStatus.DELIVERED);
+        order.setPaymentStatus(Order.PaymentStatus.PAID);
+        order = orderRepository.save(order);
+
+        List<SubOrder> subOrders = subOrderRepository.findByOrderId(orderId);
+        for (SubOrder subOrder : subOrders) {
+            subOrder.setStatus(SubOrder.SubOrderStatus.DELIVERED);
+            subOrderRepository.save(subOrder);
+        }
+
+        Address address = addressRepository.findById(order.getShippingAddressId()).orElse(null);
+        List<OrderItem> items = getOrderItems(orderId);
+        return mapToOrderResponse(order, address, items);
+    }
+
     private Address createOrFindAddress(Integer userId, CreateOrderRequest request) {
         // Create a new address for this order
         Address address = Address.builder()

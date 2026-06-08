@@ -3,14 +3,17 @@ package com.furniture.app.ui.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.furniture.app.R;
 import com.furniture.app.data.model.Order;
+import com.furniture.app.data.model.OrderItem;
 import com.google.android.material.button.MaterialButton;
 
 import java.math.BigDecimal;
@@ -31,6 +34,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         void onOrderClick(Order order);
         void onCancelOrder(Order order);
         void onReviewOrder(Order order);
+        void onConfirmReceived(Order order);
         void onReturnOrder(Order order);
     }
 
@@ -103,10 +107,14 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         private final TextView tvOrderCode;
         private final TextView tvOrderDate;
         private final TextView tvStatus;
+        private final ImageView productImage;
+        private final TextView tvProductName;
+        private final TextView tvVariantName;
         private final TextView tvItemCount;
         private final TextView tvTotalAmount;
         private final MaterialButton btnCancel;
         private final MaterialButton btnReview;
+        private final MaterialButton btnReceive;
         private final MaterialButton btnReturn;
         private final MaterialButton btnViewDetail;
 
@@ -115,10 +123,14 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             tvOrderCode = itemView.findViewById(R.id.tv_order_code);
             tvOrderDate = itemView.findViewById(R.id.tv_order_date);
             tvStatus = itemView.findViewById(R.id.tv_status);
+            productImage = itemView.findViewById(R.id.product_image);
+            tvProductName = itemView.findViewById(R.id.tv_product_name);
+            tvVariantName = itemView.findViewById(R.id.tv_variant_name);
             tvItemCount = itemView.findViewById(R.id.tv_item_count);
             tvTotalAmount = itemView.findViewById(R.id.tv_total_amount);
             btnCancel = itemView.findViewById(R.id.btn_cancel);
             btnReview = itemView.findViewById(R.id.btn_review);
+            btnReceive = itemView.findViewById(R.id.btn_receive);
             btnReturn = itemView.findViewById(R.id.btn_return);
             btnViewDetail = itemView.findViewById(R.id.btn_view_detail);
         }
@@ -146,7 +158,8 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             }
 
             int itemCount = order.getItems() != null ? order.getItems().size() : 0;
-            tvItemCount.setText(String.format("%d sản phẩm", itemCount));
+            bindProductSummary(order, itemCount);
+            bindProductImage(order);
 
             BigDecimal total = order.getTotalAmount();
             if (total != null) {
@@ -156,11 +169,19 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             // Cancel: only for PENDING
             btnCancel.setVisibility("PENDING".equals(status) ? View.VISIBLE : View.GONE);
             btnCancel.setOnClickListener(v -> listener.onCancelOrder(order));
+            btnReceive.setVisibility(View.GONE);
 
             // Đã hoàn hàng — ẩn review và return
             if ("APPROVED".equals(returnStatus)) {
                 btnReview.setVisibility(View.GONE);
                 if (btnReturn != null) btnReturn.setVisibility(View.GONE);
+            } else if ("SHIPPED".equals(status)) {
+                btnReview.setVisibility(View.GONE);
+                if (btnReturn != null) btnReturn.setVisibility(View.GONE);
+                btnReceive.setVisibility(View.VISIBLE);
+                btnReceive.setEnabled(true);
+                btnReceive.setAlpha(1f);
+                btnReceive.setOnClickListener(v -> listener.onConfirmReceived(order));
             } else if ("DELIVERED".equals(status)) {
                 // Review: chỉ khi đã giao và chưa hoàn hàng
                 btnReview.setVisibility(View.VISIBLE);
@@ -196,6 +217,51 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
             btnViewDetail.setOnClickListener(v -> listener.onOrderClick(order));
             itemView.setOnClickListener(v -> listener.onOrderClick(order));
+        }
+
+        private void bindProductImage(Order order) {
+            OrderItem firstItem = order.getItems() != null && !order.getItems().isEmpty()
+                    ? order.getItems().get(0) : null;
+            String imageUrl = firstItem != null ? firstItem.getProductImage() : null;
+            if (imageUrl != null && !imageUrl.isEmpty()) {
+                Glide.with(itemView.getContext())
+                        .load(imageUrl)
+                        .placeholder(R.drawable.placeholder_product)
+                        .error(R.drawable.placeholder_product)
+                        .centerCrop()
+                        .into(productImage);
+            } else {
+                productImage.setImageResource(R.drawable.placeholder_product);
+            }
+        }
+
+        private void bindProductSummary(Order order, int itemCount) {
+            OrderItem firstItem = order.getItems() != null && !order.getItems().isEmpty()
+                    ? order.getItems().get(0) : null;
+            if (firstItem == null) {
+                tvProductName.setText("Sản phẩm");
+                tvVariantName.setVisibility(View.GONE);
+                tvItemCount.setText(String.format("%d sản phẩm", itemCount));
+                return;
+            }
+
+            tvProductName.setText(firstItem.getProductName() != null
+                    ? firstItem.getProductName() : "Sản phẩm #" + firstItem.getProductId());
+
+            if (firstItem.getVariantName() != null && !firstItem.getVariantName().isEmpty()) {
+                tvVariantName.setVisibility(View.VISIBLE);
+                tvVariantName.setText(firstItem.getVariantName());
+            } else {
+                tvVariantName.setVisibility(View.GONE);
+            }
+
+            String quantityText = firstItem.getQuantity() != null
+                    ? "x" + firstItem.getQuantity() : "";
+            if (itemCount > 1) {
+                tvItemCount.setText(quantityText + "  +" + (itemCount - 1) + " sản phẩm khác");
+            } else {
+                tvItemCount.setText(quantityText.isEmpty() ? "1 sản phẩm" : quantityText);
+            }
         }
     }
 }

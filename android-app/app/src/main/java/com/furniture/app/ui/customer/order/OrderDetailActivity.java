@@ -47,6 +47,7 @@ public class OrderDetailActivity extends AppCompatActivity {
     public static final String RESULT_EXTRA_ORDER_ID = "result_order_id";
     public static final String RESULT_EXTRA_REVIEWED = "result_reviewed";
     public static final String RESULT_EXTRA_RETURNED = "result_returned";
+    public static final String RESULT_EXTRA_RECEIVED = "result_received";
 
     private static final int REQUEST_REVIEW = 2001;
     private static final int REQUEST_RETURN = 2002;
@@ -64,13 +65,16 @@ public class OrderDetailActivity extends AppCompatActivity {
     private MaterialButton btnReview;
     private MaterialButton btnCancel;
     private MaterialButton btnReturn;
+    private MaterialButton btnConfirmReceived;
 
     private int currentOrderId = -1;
     private boolean autoOpenReview = false;
     private boolean resultReviewed = false;
     private boolean resultReturned = false;
+    private boolean resultReceived = false;
     private final Set<Integer> reviewedProductIds = new HashSet<>();
     private String returnStatus = null;
+    private String currentStatus = null;
 
     private final NumberFormat currencyFormat = NumberFormat.getInstance(new Locale("vi", "VN"));
     private List<OrderItem> currentItems;
@@ -114,6 +118,7 @@ public class OrderDetailActivity extends AppCompatActivity {
         btnReview = cardReview != null ? cardReview.findViewById(R.id.btn_review) : null;
         btnCancel = findViewById(R.id.btn_cancel_order);
         btnReturn = findViewById(R.id.btn_return_order);
+        btnConfirmReceived = findViewById(R.id.btn_confirm_received);
 
         rvOrderItems.setLayoutManager(new LinearLayoutManager(this));
     }
@@ -147,6 +152,17 @@ public class OrderDetailActivity extends AppCompatActivity {
             }
         });
 
+        orderViewModel.getConfirmReceivedResult().observe(this, response -> {
+            if (response != null && response.isSuccess()) {
+                resultReceived = true;
+                propagateResult();
+                Toast.makeText(this, "Đã xác nhận nhận hàng", Toast.LENGTH_SHORT).show();
+                orderViewModel.loadOrderById(currentOrderId);
+            } else if (response != null && !response.isSuccess()) {
+                Toast.makeText(this, response.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
         orderViewModel.loadOrderById(orderId);
     }
 
@@ -158,6 +174,7 @@ public class OrderDetailActivity extends AppCompatActivity {
         tvStatus.setText(order.getStatusDisplay());
 
         String status = order.getStatus();
+        currentStatus = status;
         String orderReturnStatus = order.getReturnStatus();
         if ("APPROVED".equals(orderReturnStatus)) {
             tvStatus.setTextColor(0xFF9C27B0);
@@ -202,6 +219,13 @@ public class OrderDetailActivity extends AppCompatActivity {
             boolean canCancel = "PENDING".equals(status) || "PROCESSING".equals(status);
             btnCancel.setVisibility(canCancel ? View.VISIBLE : View.GONE);
             btnCancel.setOnClickListener(v -> confirmCancel());
+        }
+
+        if (btnConfirmReceived != null) {
+            boolean canConfirmReceived = "SHIPPED".equals(status);
+            btnConfirmReceived.setVisibility(canConfirmReceived ? View.VISIBLE : View.GONE);
+            btnConfirmReceived.setEnabled(canConfirmReceived);
+            btnConfirmReceived.setOnClickListener(v -> confirmReceived());
         }
 
         if ("DELIVERED".equals(status)) {
@@ -326,6 +350,10 @@ public class OrderDetailActivity extends AppCompatActivity {
     }
 
     private void showProductPicker(List<OrderItem> items) {
+        if (!"DELIVERED".equals(currentStatus)) {
+            Toast.makeText(this, "Chỉ có thể đánh giá sau khi đã nhận hàng", Toast.LENGTH_SHORT).show();
+            return;
+        }
         if (items == null || items.isEmpty()) return;
 
         // Filter out already-reviewed products
@@ -384,7 +412,20 @@ public class OrderDetailActivity extends AppCompatActivity {
         result.putExtra(RESULT_EXTRA_ORDER_ID, currentOrderId);
         result.putExtra(RESULT_EXTRA_REVIEWED, resultReviewed);
         result.putExtra(RESULT_EXTRA_RETURNED, resultReturned);
+        result.putExtra(RESULT_EXTRA_RECEIVED, resultReceived);
         setResult(RESULT_OK, result);
+    }
+
+    private void confirmReceived() {
+        new AlertDialog.Builder(this)
+                .setTitle("Xác nhận nhận hàng")
+                .setMessage("Bạn đã nhận được đơn hàng này?")
+                .setPositiveButton("Đã nhận hàng", (d, w) -> {
+                    if (btnConfirmReceived != null) btnConfirmReceived.setEnabled(false);
+                    orderViewModel.confirmReceived(currentOrderId);
+                })
+                .setNegativeButton("Chưa", null)
+                .show();
     }
 
     private void confirmCancel() {

@@ -97,6 +97,11 @@ public class AdminController {
                     .body(ApiResponse.error("Trạng thái không hợp lệ: " + status));
         }
 
+        if (newStatus == Order.OrderStatus.DELIVERED) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Khách hàng cần xác nhận đã nhận hàng để hoàn tất đơn"));
+        }
+
         order.setStatus(newStatus);
         order = orderRepository.save(order);
         return ResponseEntity.ok(ApiResponse.success("Đã cập nhật trạng thái", mapOrder(order)));

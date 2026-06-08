@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep \"^INSERT INTO \\\\`user_roles\\\\`\" furniture_db.sql)"
+    ]
+  }
+}

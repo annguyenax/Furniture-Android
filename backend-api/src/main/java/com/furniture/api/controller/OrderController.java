@@ -1,16 +1,26 @@
 package com.furniture.api.controller;
 
-import com.furniture.api.dto.request.CreateOrderRequest;
-import com.furniture.api.dto.response.ApiResponse;
-import com.furniture.api.dto.response.OrderResponse;
-import com.furniture.api.service.OrderService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.furniture.api.dto.request.CreateOrderRequest;
+import com.furniture.api.dto.response.ApiResponse;
+import com.furniture.api.dto.response.OrderResponse;
+import com.furniture.api.service.OrderService;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/orders")
@@ -22,7 +32,7 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<ApiResponse<OrderResponse>> createOrder(
             @RequestAttribute("userId") Integer userId,
-            @RequestBody CreateOrderRequest request) {
+            @Valid @RequestBody CreateOrderRequest request) {
 
         OrderResponse order = orderService.createOrder(userId, request);
         return ResponseEntity.ok(ApiResponse.success("Order created successfully", order));
@@ -67,5 +77,14 @@ public class OrderController {
 
         OrderResponse order = orderService.cancelOrder(userId, orderId);
         return ResponseEntity.ok(ApiResponse.success("Order cancelled successfully", order));
+    }
+
+    @PostMapping("/{orderId}/confirm-received")
+    public ResponseEntity<ApiResponse<OrderResponse>> confirmReceived(
+            @RequestAttribute("userId") Integer userId,
+            @PathVariable Integer orderId) {
+
+        OrderResponse order = orderService.confirmReceived(userId, orderId);
+        return ResponseEntity.ok(ApiResponse.success("Order received successfully", order));
     }
 }

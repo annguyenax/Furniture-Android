@@ -140,12 +140,12 @@ public class AdminOrderListActivity extends AppCompatActivity {
     }
 
     private void onUpdateStatus(Order order) {
-        String[] statuses = {"PENDING", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"};
-        String[] labels = {"Chờ xác nhận", "Đang xử lý", "Đang giao", "Đã giao", "Đã hủy"};
+        String[] statuses = {"PENDING", "PROCESSING", "SHIPPED", "CANCELLED"};
+        String[] selectableLabels = {"Chờ xác nhận", "Đang xử lý", "Đang giao", "Đã hủy"};
 
         new AlertDialog.Builder(this)
                 .setTitle("Cập nhật trạng thái: " + (order.getOrderCode() != null ? order.getOrderCode() : ""))
-                .setItems(labels, (dialog, which) -> {
+                .setItems(selectableLabels, (dialog, which) -> {
                     String newStatus = statuses[which];
                     LoadingDialog loading = LoadingDialog.show(AdminOrderListActivity.this, "Đang cập nhật trạng thái...");
                     adminOrderApi.updateOrderStatus(order.getOrderId(), newStatus)
@@ -157,7 +157,7 @@ public class AdminOrderListActivity extends AppCompatActivity {
                                     if (response.isSuccessful() && response.body() != null
                                             && response.body().isSuccess()) {
                                         Toast.makeText(AdminOrderListActivity.this,
-                                                "Đã cập nhật → " + labels[which], Toast.LENGTH_SHORT).show();
+                                                "Đã cập nhật → " + selectableLabels[which], Toast.LENGTH_SHORT).show();
                                         loadOrders();
                                     } else {
                                         Toast.makeText(AdminOrderListActivity.this, "Cập nhật thất bại", Toast.LENGTH_SHORT).show();

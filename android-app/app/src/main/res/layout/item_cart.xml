@@ -15,12 +15,14 @@
         android:padding="12dp"
         android:gravity="center_vertical">
 
-        <CheckBox
+        <com.google.android.material.checkbox.MaterialCheckBox
             android:id="@+id/cb_select"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="4dp"
-            android:buttonTint="@color/primary" />
+            app:buttonIconTint="@color/cart_checkbox_icon_tint"
+            app:buttonTint="@color/cart_checkbox_button_tint"
+            app:useMaterialThemeColors="false" />
 
         <!-- Product Image -->
         <ImageView

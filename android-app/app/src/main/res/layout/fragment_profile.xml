@@ -167,7 +167,7 @@
                     <ImageView
                         android:layout_width="22dp"
                         android:layout_height="22dp"
-                        android:src="@android:drawable/btn_star_big_on"
+                        android:src="@drawable/ic_heart_filled"
                         android:tint="#E53935"
                         android:contentDescription="Yêu thích" />
 

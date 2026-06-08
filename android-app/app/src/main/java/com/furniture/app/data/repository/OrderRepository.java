@@ -145,4 +145,32 @@ public class OrderRepository {
 
         return resultLiveData;
     }
+
+    public LiveData<ApiResponse<Order>> confirmReceived(Integer orderId) {
+        MutableLiveData<ApiResponse<Order>> resultLiveData = new MutableLiveData<>();
+
+        orderApi.confirmReceived(orderId).enqueue(new Callback<ApiResponse<Order>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Order>> call, Response<ApiResponse<Order>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    resultLiveData.setValue(response.body());
+                } else {
+                    ApiResponse<Order> errorResponse = new ApiResponse<>();
+                    errorResponse.setSuccess(false);
+                    errorResponse.setMessage("Xác nhận nhận hàng thất bại");
+                    resultLiveData.setValue(errorResponse);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Order>> call, Throwable t) {
+                ApiResponse<Order> errorResponse = new ApiResponse<>();
+                errorResponse.setSuccess(false);
+                errorResponse.setMessage("Lỗi kết nối: " + t.getMessage());
+                resultLiveData.setValue(errorResponse);
+            }
+        });
+
+        return resultLiveData;
+    }
 }

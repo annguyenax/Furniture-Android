@@ -82,7 +82,7 @@ public class EditProfileActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayShowTitleEnabled(true);
-            getSupportActionBar().setTitle("Chinh sua ho so");
+            getSupportActionBar().setTitle("Chỉnh sửa hồ sơ");
         }
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
     }

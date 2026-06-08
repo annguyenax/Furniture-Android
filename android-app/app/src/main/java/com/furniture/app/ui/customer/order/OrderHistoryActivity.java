@@ -4,7 +4,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.ViewModelProvider;
@@ -122,6 +124,15 @@ public class OrderHistoryActivity extends AppCompatActivity implements OrderAdap
         orderViewModel.getCancelOrderResult().observe(this, response -> {
             // Orders list is reloaded automatically inside ViewModel.cancelOrder
         });
+
+        orderViewModel.getConfirmReceivedResult().observe(this, response -> {
+            if (response != null && response.isSuccess()) {
+                Toast.makeText(this, "Đã xác nhận nhận hàng", Toast.LENGTH_SHORT).show();
+                loadOrders();
+            } else if (response != null && !response.isSuccess()) {
+                Toast.makeText(this, response.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void setupListeners() {
@@ -196,6 +207,17 @@ public class OrderHistoryActivity extends AppCompatActivity implements OrderAdap
     }
 
     @Override
+    public void onConfirmReceived(Order order) {
+        new AlertDialog.Builder(this)
+                .setTitle("Xác nhận nhận hàng")
+                .setMessage("Bạn đã nhận được đơn hàng này?")
+                .setPositiveButton("Đã nhận hàng", (dialog, which) ->
+                        orderViewModel.confirmReceived(order.getOrderId()))
+                .setNegativeButton("Chưa", null)
+                .show();
+    }
+
+    @Override
     public void onReturnOrder(Order order) {
         Intent intent = new Intent(this, ReturnRequestActivity.class);
         intent.putExtra(ReturnRequestActivity.EXTRA_ORDER_ID, order.getOrderId());
@@ -215,6 +237,10 @@ public class OrderHistoryActivity extends AppCompatActivity implements OrderAdap
             }
             if (data.getBooleanExtra(OrderDetailActivity.RESULT_EXTRA_RETURNED, false)) {
                 returnedOrderIds.add(orderId);
+            }
+            if (data.getBooleanExtra(OrderDetailActivity.RESULT_EXTRA_RECEIVED, false)) {
+                loadOrders();
+                return;
             }
             orderAdapter.notifyDataSetChanged();
         } else if (requestCode == REQUEST_RETURN) {

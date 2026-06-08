@@ -256,10 +256,10 @@ public class ProductDetailActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null
                         && Boolean.TRUE.equals(response.body().getData())) {
                     isWishlisted = true;
-                    btnWishlist.setImageResource(android.R.drawable.btn_star_big_on);
+                    updateWishlistIcon(btnWishlist);
                 } else {
                     isWishlisted = false;
-                    btnWishlist.setImageResource(android.R.drawable.btn_star_big_off);
+                    updateWishlistIcon(btnWishlist);
                 }
             }
             @Override public void onFailure(Call<ApiResponse<Boolean>> call, Throwable t) {}
@@ -273,7 +273,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                 @Override
                 public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
                     isWishlisted = false;
-                    btn.setImageResource(android.R.drawable.btn_star_big_off);
+                    updateWishlistIcon(btn);
                     Toast.makeText(ProductDetailActivity.this, "Đã xóa khỏi yêu thích", Toast.LENGTH_SHORT).show();
                 }
                 @Override public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {}
@@ -284,7 +284,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                 public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
                     if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                         isWishlisted = true;
-                        btn.setImageResource(android.R.drawable.btn_star_big_on);
+                        updateWishlistIcon(btn);
                         Toast.makeText(ProductDetailActivity.this, "Đã thêm vào yêu thích", Toast.LENGTH_SHORT).show();
                     } else if (response.body() != null) {
                         Toast.makeText(ProductDetailActivity.this, response.body().getMessage(), Toast.LENGTH_SHORT).show();
@@ -293,6 +293,11 @@ public class ProductDetailActivity extends AppCompatActivity {
                 @Override public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {}
             });
         }
+    }
+
+    private void updateWishlistIcon(ImageButton btn) {
+        btn.setImageResource(isWishlisted ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
+        btn.setColorFilter(isWishlisted ? 0xFFE53935 : 0xFFFFFFFF);
     }
 
     private void loadProduct(int productId) {
