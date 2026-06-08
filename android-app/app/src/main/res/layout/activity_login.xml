@@ -38,6 +38,19 @@
             android:textSize="12sp" />
     </LinearLayout>
 
+    <ImageButton
+        android:id="@+id/home_button"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="18dp"
+        android:background="@drawable/bg_avatar_light"
+        android:contentDescription="Home"
+        android:padding="12dp"
+        android:src="@drawable/ic_home"
+        app:tint="@color/primary" />
+
     <!-- Form card overlapping header -->
     <ScrollView
         android:layout_width="match_parent"
