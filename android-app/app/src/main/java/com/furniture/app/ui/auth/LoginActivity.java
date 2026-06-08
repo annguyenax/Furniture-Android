@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,6 +44,7 @@ public class LoginActivity extends AppCompatActivity {
     private EditText emailEditText;
     private EditText passwordEditText;
     private Button loginButton, btnGoogleLogin, btnFacebookLogin;
+    private ImageButton homeButton;
     private TextView signupButton, forgotPasswordButton;
     private ProgressBar progressBar;
     private TextView errorTextView;
@@ -69,6 +71,7 @@ public class LoginActivity extends AppCompatActivity {
         loginButton = findViewById(R.id.login_button);
         btnGoogleLogin = findViewById(R.id.btn_google_login);
         btnFacebookLogin = findViewById(R.id.btn_facebook_login);
+        homeButton = findViewById(R.id.home_button);
         signupButton = findViewById(R.id.signup_button);
         forgotPasswordButton = findViewById(R.id.tv_forgot_password);
         progressBar = findViewById(R.id.progress_bar);
@@ -94,6 +97,7 @@ public class LoginActivity extends AppCompatActivity {
         observeViewModel();
 
         loginButton.setOnClickListener(v -> handleLogin());
+        homeButton.setOnClickListener(v -> navigateToCustomerHome());
         signupButton.setOnClickListener(v -> navigateToSignup());
         forgotPasswordButton.setOnClickListener(v -> Toast.makeText(this,
                 "Quên mật khẩu chưa cấu hình dịch vụ email", Toast.LENGTH_SHORT).show());
@@ -217,6 +221,13 @@ public class LoginActivity extends AppCompatActivity {
 
     private void navigateToSignup() {
         startActivity(new Intent(this, RegisterActivity.class));
+        finish();
+    }
+
+    private void navigateToCustomerHome() {
+        Intent intent = new Intent(this, CustomerMainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        startActivity(intent);
         finish();
     }
 
