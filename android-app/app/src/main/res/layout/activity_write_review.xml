@@ -95,8 +95,9 @@
                         android:numStars="5"
                         android:rating="5"
                         android:stepSize="1"
-                        android:progressTint="@color/primary"
-                        android:secondaryProgressTint="@color/primary" />
+                        android:progressTint="#FFC107"
+                        android:secondaryProgressTint="#FFC107"
+                        android:progressBackgroundTint="#E0E0E0" />
 
                     <TextView
                         android:id="@+id/tv_rating_label"

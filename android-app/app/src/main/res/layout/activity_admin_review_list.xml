@@ -3,61 +3,218 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#F5F5F5">
+    android:background="#F5F5F5"
+    android:orientation="vertical">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
-        app:elevation="2dp">
+        android:background="@color/primary"
+        app:elevation="4dp">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             app:navigationIcon="@drawable/ic_back"
             app:title="Quản lý đánh giá"
-            app:titleTextColor="#212121" />
+            app:titleTextColor="@android:color/white" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <FrameLayout
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="12dp"
+        android:layout_marginTop="12dp"
+        android:hint="Lọc theo sản phẩm"
+        app:boxCornerRadiusBottomEnd="24dp"
+        app:boxCornerRadiusBottomStart="24dp"
+        app:boxCornerRadiusTopEnd="24dp"
+        app:boxCornerRadiusTopStart="24dp"
+        app:boxStrokeColor="@color/primary">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_reviews"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_product_filter"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
-            android:clipToPadding="false" />
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:maxLines="1"
+            android:paddingVertical="10dp" />
 
-        <ProgressBar
-            android:id="@+id/progress_bar"
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="8dp"
+        android:paddingTop="8dp"
+        android:scrollbars="none">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chip_group_rating"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:visibility="gone" />
+            app:selectionRequired="true"
+            app:singleSelection="true">
 
-        <LinearLayout
-            android:id="@+id/empty_state"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:visibility="gone">
-
-            <TextView
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_rating_all"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Chưa có đánh giá nào"
-                android:textColor="#757575"
-                android:textSize="16sp" />
+                android:checked="true"
+                android:textColor="@color/chip_filter_text"
+                android:text="Tất cả sao"
+                app:checkedIconVisible="false"
+                app:chipBackgroundColor="@color/chip_filter_background" />
 
-        </LinearLayout>
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_rating_5"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/chip_filter_text"
+                android:text="5 sao"
+                app:checkedIconVisible="false"
+                app:chipBackgroundColor="@color/chip_filter_background" />
 
-    </FrameLayout>
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_rating_4"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/chip_filter_text"
+                android:text="4 sao"
+                app:checkedIconVisible="false"
+                app:chipBackgroundColor="@color/chip_filter_background" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_rating_3"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/chip_filter_text"
+                android:text="3 sao"
+                app:checkedIconVisible="false"
+                app:chipBackgroundColor="@color/chip_filter_background" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_rating_2"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/chip_filter_text"
+                android:text="2 sao"
+                app:checkedIconVisible="false"
+                app:chipBackgroundColor="@color/chip_filter_background" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_rating_1"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/chip_filter_text"
+                android:text="1 sao"
+                app:checkedIconVisible="false"
+                app:chipBackgroundColor="@color/chip_filter_background" />
+
+        </com.google.android.material.chip.ChipGroup>
+    </HorizontalScrollView>
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="8dp"
+        android:paddingBottom="4dp"
+        android:scrollbars="none">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chip_group_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_time_all"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:textColor="@color/chip_filter_text"
+                android:text="Tất cả thời gian"
+                app:checkedIconVisible="false"
+                app:chipBackgroundColor="@color/chip_filter_background" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_time_7"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/chip_filter_text"
+                android:text="7 ngày"
+                app:checkedIconVisible="false"
+                app:chipBackgroundColor="@color/chip_filter_background" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_time_30"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/chip_filter_text"
+                android:text="30 ngày"
+                app:checkedIconVisible="false"
+                app:chipBackgroundColor="@color/chip_filter_background" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_time_year"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/chip_filter_text"
+                android:text="Năm nay"
+                app:checkedIconVisible="false"
+                app:chipBackgroundColor="@color/chip_filter_background" />
+
+        </com.google.android.material.chip.ChipGroup>
+    </HorizontalScrollView>
+
+    <TextView
+        android:id="@+id/tv_result_summary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="12dp"
+        android:paddingBottom="4dp"
+        android:text="0 đánh giá"
+        android:textColor="#757575"
+        android:textSize="13sp" />
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/empty_state"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="Không tìm thấy đánh giá phù hợp"
+        android:textColor="#9E9E9E"
+        android:textSize="15sp"
+        android:visibility="gone" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_reviews"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:padding="8dp" />
 
 </LinearLayout>

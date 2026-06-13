@@ -24,6 +24,15 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Integer> {
     boolean existsByVariantId(Integer variantId);
 
     @org.springframework.data.jpa.repository.Query(
+        value = "SELECT COALESCE(SUM(oi.quantity), 0) " +
+                "FROM Order_Items oi " +
+                "JOIN Orders o ON oi.order_id = o.order_id " +
+                "WHERE oi.product_id = :productId AND o.status = 'DELIVERED'",
+        nativeQuery = true)
+    Long sumDeliveredQuantityByProductId(
+            @org.springframework.data.repository.query.Param("productId") Integer productId);
+
+    @org.springframework.data.jpa.repository.Query(
         value = "SELECT p.product_name, SUM(oi.total) as revenue " +
                 "FROM Order_Items oi " +
                 "JOIN Orders o ON oi.order_id = o.order_id " +

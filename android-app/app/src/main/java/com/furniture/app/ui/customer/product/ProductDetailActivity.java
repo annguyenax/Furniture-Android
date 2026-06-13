@@ -78,7 +78,7 @@ public class ProductDetailActivity extends AppCompatActivity {
     private TextView tvDimensions, tvWeight, tvCategory, tvStock;
     private TextView tvDescription;
     private android.widget.EditText tvQuantity;
-    private TextView tvReviewCount, tvNoReviews;
+    private TextView tvReviewCount, tvNoReviews, btnViewAllReviews;
     private RatingBar ratingBar;
     private RecyclerView rvVariants, rvReviews, rvRelatedProducts;
     private View relatedProductsSection;
@@ -139,6 +139,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         tvQuantity = findViewById(R.id.tv_quantity);
         tvReviewCount = findViewById(R.id.tv_review_count);
         tvNoReviews = findViewById(R.id.tv_no_reviews);
+        btnViewAllReviews = findViewById(R.id.btn_view_all_reviews);
         rvVariants = findViewById(R.id.rv_variants);
         rvReviews = findViewById(R.id.rv_reviews);
         rvRelatedProducts = findViewById(R.id.rv_related_products);
@@ -382,7 +383,7 @@ public class ProductDetailActivity extends AppCompatActivity {
     }
 
     private void loadReviews(int productId) {
-        reviewApi.getProductReviews(productId, 0, 20).enqueue(new Callback<ApiResponse<PageResponse<ReviewModel>>>() {
+        reviewApi.getProductReviews(productId, 0, 3).enqueue(new Callback<ApiResponse<PageResponse<ReviewModel>>>() {
             @Override
             public void onResponse(Call<ApiResponse<PageResponse<ReviewModel>>> call,
                                    Response<ApiResponse<PageResponse<ReviewModel>>> response) {
@@ -402,6 +403,12 @@ public class ProductDetailActivity extends AppCompatActivity {
                         tvNoReviews.setVisibility(View.GONE);
                         rvReviews.setVisibility(View.VISIBLE);
                         rvReviews.setAdapter(new ReviewAdapter(reviews));
+                        if (total > 3) {
+                            btnViewAllReviews.setVisibility(View.VISIBLE);
+                            btnViewAllReviews.setOnClickListener(v -> openReviewsPage(productId));
+                        } else {
+                            btnViewAllReviews.setVisibility(View.GONE);
+                        }
                     }
                 });
             }
@@ -420,7 +427,17 @@ public class ProductDetailActivity extends AppCompatActivity {
             tvNoReviews.setText(message);
             tvNoReviews.setVisibility(View.VISIBLE);
             rvReviews.setVisibility(View.GONE);
+            btnViewAllReviews.setVisibility(View.GONE);
         });
+    }
+
+    private void openReviewsPage(int productId) {
+        Intent intent = new Intent(this, ProductReviewsActivity.class);
+        intent.putExtra(ProductReviewsActivity.EXTRA_PRODUCT_ID, productId);
+        if (currentProduct != null) {
+            intent.putExtra(ProductReviewsActivity.EXTRA_PRODUCT_NAME, currentProduct.getProductName());
+        }
+        startActivity(intent);
     }
 
     private void loadRelatedProducts(int productId) {

@@ -66,6 +66,7 @@ public class HomeFragment extends Fragment {
     private CategoryAdapter categoryAdapter;
     private CategoryApi categoryApi;
     private SessionManager sessionManager;
+    private boolean refreshProductsOnResume = false;
 
     private final Handler bannerHandler = new Handler(Looper.getMainLooper());
     private Runnable bannerRunnable;
@@ -239,6 +240,15 @@ public class HomeFragment extends Fragment {
             }
         };
         bannerHandler.postDelayed(bannerRunnable, BANNER_INTERVAL_MS);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (refreshProductsOnResume) {
+            loadProducts();
+        }
+        refreshProductsOnResume = true;
     }
 
     @Override

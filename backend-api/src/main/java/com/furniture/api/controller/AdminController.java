@@ -17,7 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.Normalizer;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -210,6 +212,7 @@ public class AdminController {
     }
 
     @PutMapping("/products/{productId}")
+    @Transactional
     public ResponseEntity<ApiResponse<ProductResponse>> updateProduct(
             @PathVariable Integer productId,
             @RequestBody UpdateProductRequest request) {
@@ -428,10 +431,21 @@ public class AdminController {
     @Transactional(readOnly = true)
     public ResponseEntity<ApiResponse<Page<AdminReviewDto>>> getReviews(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String product,
+            @RequestParam(required = false) Integer rating,
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<ProductReview> reviews = reviewRepository.findAll(pageable);
-        Page<AdminReviewDto> result = reviews.map(r -> {
+        LocalDateTime fromDate = parseStartDate(from);
+        LocalDateTime toDate = parseEndDate(to);
+
+        List<AdminReviewDto> filtered = reviewRepository.findAll(Sort.by("createdAt").descending()).stream()
+                .filter(r -> rating == null || rating <= 0 || rating.equals(r.getRating()))
+                .filter(r -> fromDate == null || (r.getCreatedAt() != null && !r.getCreatedAt().isBefore(fromDate)))
+                .filter(r -> toDate == null || (r.getCreatedAt() != null && !r.getCreatedAt().isAfter(toDate)))
+                .map(r -> {
             String productName = productRepository.findById(r.getProductId())
                     .map(Product::getProductName).orElse("?");
             User user = userRepository.findById(r.getUserId()).orElse(null);
@@ -444,7 +458,19 @@ public class AdminController {
             return new AdminReviewDto(r.getReviewId(), r.getProductId(), productName,
                     r.getUserId(), userName, user != null ? user.getEmail() : null,
                     r.getRating(), r.getComment(), r.getImages(), r.getIsVerified(), r.getCreatedAt());
-        });
+        })
+                .filter(r -> product == null || product.isBlank()
+                        || normalize(r.getProductName()).contains(normalize(product)))
+                .filter(r -> search == null || search.isBlank() || reviewMatches(r, normalize(search)))
+                .collect(Collectors.toList());
+
+        int total = filtered.size();
+        int fromIndex = Math.min(page * size, total);
+        int toIndex = Math.min(fromIndex + size, total);
+        Page<AdminReviewDto> result = new PageImpl<>(
+                fromIndex < total ? filtered.subList(fromIndex, toIndex) : java.util.Collections.emptyList(),
+                pageable,
+                total);
         return ResponseEntity.ok(ApiResponse.success(result));
     }
 
@@ -454,7 +480,10 @@ public class AdminController {
         if (!reviewRepository.existsById(id)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Không tìm thấy đánh giá"));
         }
+        ProductReview review = reviewRepository.findById(id).orElseThrow();
+        Integer productId = review.getProductId();
         reviewRepository.deleteById(id);
+        refreshProductReviewSummary(productId);
         return ResponseEntity.ok(ApiResponse.success("Đã xóa đánh giá", null));
     }
 
@@ -562,6 +591,45 @@ public class AdminController {
         String lower = s.toLowerCase().replace("đ", "d");
         return Normalizer.normalize(lower, Normalizer.Form.NFD)
                 .replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
+    }
+
+    private static boolean reviewMatches(AdminReviewDto r, String q) {
+        return normalize(r.getProductName()).contains(q)
+                || normalize(r.getUserName()).contains(q)
+                || normalize(r.getUserEmail()).contains(q)
+                || normalize(r.getComment()).contains(q)
+                || normalize(r.getRating() != null ? r.getRating().toString() : "").contains(q);
+    }
+
+    private static LocalDateTime parseStartDate(String value) {
+        if (value == null || value.isBlank()) return null;
+        try {
+            return LocalDate.parse(value).atStartOfDay();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static LocalDateTime parseEndDate(String value) {
+        if (value == null || value.isBlank()) return null;
+        try {
+            return LocalDate.parse(value).atTime(23, 59, 59);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private void refreshProductReviewSummary(Integer productId) {
+        if (productId == null) return;
+        productRepository.findById(productId).ifPresent(product -> {
+            Double averageRating = reviewRepository.getAverageRatingByProductId(productId);
+            Long reviewCount = reviewRepository.countByProductId(productId);
+            product.setAverageRating(averageRating != null
+                    ? BigDecimal.valueOf(averageRating).setScale(2, RoundingMode.HALF_UP)
+                    : BigDecimal.ZERO);
+            product.setReviewCount(reviewCount != null ? reviewCount.intValue() : 0);
+            productRepository.save(product);
+        });
     }
 
     private OrderResponse mapOrder(Order order) {

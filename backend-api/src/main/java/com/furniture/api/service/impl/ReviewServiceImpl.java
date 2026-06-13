@@ -5,6 +5,7 @@ import com.furniture.api.dto.response.ReviewResponse;
 import com.furniture.api.exception.BadRequestException;
 import com.furniture.api.exception.ResourceNotFoundException;
 import com.furniture.api.model.Order;
+import com.furniture.api.model.Product;
 import com.furniture.api.model.ProductReview;
 import com.furniture.api.repository.OrderItemRepository;
 import com.furniture.api.repository.OrderRepository;
@@ -20,6 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 @Service
@@ -69,7 +72,23 @@ public class ReviewServiceImpl implements ReviewService {
                 .build();
 
         review = reviewRepository.save(review);
+        updateProductSummary(request.getProductId());
         return ReviewResponse.fromEntity(review, resolveUserName(userId));
+    }
+
+    private void updateProductSummary(Integer productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", productId));
+        Double averageRating = reviewRepository.getAverageRatingByProductId(productId);
+        Long reviewCount = reviewRepository.countByProductId(productId);
+        Long sold = orderItemRepository.sumDeliveredQuantityByProductId(productId);
+
+        product.setAverageRating(averageRating != null
+                ? BigDecimal.valueOf(averageRating).setScale(2, RoundingMode.HALF_UP)
+                : BigDecimal.ZERO);
+        product.setReviewCount(reviewCount != null ? reviewCount.intValue() : 0);
+        product.setSold(sold != null ? sold.intValue() : 0);
+        productRepository.save(product);
     }
 
     private void validateReviewOrder(ReviewRequest request, Integer userId) {

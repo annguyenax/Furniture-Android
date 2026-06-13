@@ -19,7 +19,12 @@ public interface AdminApi {
     @GET("admin/reviews")
     Call<ApiResponse<PageResponse<AdminReviewItem>>> getReviews(
             @Query("page") int page,
-            @Query("size") int size);
+            @Query("size") int size,
+            @Query("search") String search,
+            @Query("product") String product,
+            @Query("rating") Integer rating,
+            @Query("from") String from,
+            @Query("to") String to);
 
     @DELETE("admin/reviews/{id}")
     Call<ApiResponse<Void>> deleteReview(@Path("id") int id);

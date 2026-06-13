@@ -429,6 +429,17 @@
                     android:layout_height="wrap_content"
                     android:nestedScrollingEnabled="false" />
 
+                <TextView
+                    android:id="@+id/btn_view_all_reviews"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:gravity="center"
+                    android:text="Xem tất cả đánh giá"
+                    android:textColor="@color/primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
+
             </LinearLayout>
 
             <View
