@@ -40,9 +40,23 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Page<ProductResponse> getProductsByCategory(Integer categoryId, Pageable pageable) {
-        return productRepository.findByCategoryIdAndStatus(categoryId, Product.ProductStatus.ACTIVE, pageable)
-            .map(ProductResponse::fromEntity);
+    public Page<ProductResponse> getProductsByCategory(Integer categoryId, String keyword, Pageable pageable) {
+        if (keyword == null || keyword.isBlank()) {
+            return productRepository.findByCategoryIdAndStatus(categoryId, Product.ProductStatus.ACTIVE, pageable)
+                .map(ProductResponse::fromEntity);
+        }
+        String q = normalizeVi(keyword);
+        // Fetch up to 500 active products in this category then filter in-memory for accent-insensitive Vietnamese matching
+        List<Product> all = productRepository.findByCategoryIdAndStatusActiveFetch(categoryId, PageRequest.of(0, 500));
+        List<ProductResponse> filtered = all.stream()
+                .filter(p -> normalizeVi(p.getProductName()).contains(q)
+                        || normalizeVi(p.getDescription()).contains(q))
+                .map(ProductResponse::fromEntity)
+                .collect(Collectors.toList());
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), filtered.size());
+        List<ProductResponse> page = (start < filtered.size()) ? filtered.subList(start, end) : java.util.Collections.emptyList();
+        return new PageImpl<>(page, pageable, filtered.size());
     }
 
     @Override

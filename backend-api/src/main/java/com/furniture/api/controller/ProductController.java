@@ -46,11 +46,12 @@ public class ProductController {
     @GetMapping("/category/{categoryId}")
     public ResponseEntity<ApiResponse<Page<ProductResponse>>> getProductsByCategory(
             @PathVariable Integer categoryId,
+            @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<ProductResponse> products = productService.getProductsByCategory(categoryId, pageable);
+        Page<ProductResponse> products = productService.getProductsByCategory(categoryId, keyword, pageable);
         return ResponseEntity.ok(ApiResponse.success(products));
     }
 

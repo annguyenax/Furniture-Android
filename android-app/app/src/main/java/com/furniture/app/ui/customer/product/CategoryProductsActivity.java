@@ -70,7 +70,7 @@ public class CategoryProductsActivity extends AppCompatActivity {
 
     private void loadProducts(int categoryId) {
         progressBar.setVisibility(View.VISIBLE);
-        productApi.getProductsByCategory(categoryId, 0, 50)
+        productApi.getProductsByCategory(categoryId, null, 0, 50)
                 .enqueue(new Callback<ApiResponse<PageResponse<Product>>>() {
                     @Override
                     public void onResponse(Call<ApiResponse<PageResponse<Product>>> call,
