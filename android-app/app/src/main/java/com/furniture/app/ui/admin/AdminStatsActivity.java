@@ -137,7 +137,7 @@ public class AdminStatsActivity extends AppCompatActivity {
 
     private void exportCsv() {
         if (latestStats == null) {
-            Toast.makeText(this, "Chua co du lieu de xuat", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Chưa có dữ liệu để xuất", Toast.LENGTH_SHORT).show();
             return;
         }
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
@@ -152,9 +152,9 @@ public class AdminStatsActivity extends AppCompatActivity {
             if (out == null) throw new IllegalStateException("Cannot open output");
             String csv = buildCsv(latestStats);
             out.write(csv.getBytes(StandardCharsets.UTF_8));
-            Toast.makeText(this, "Da xuat file CSV", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Đã xuất file CSV", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
-            Toast.makeText(this, "Khong the xuat file", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Không thể xuất file", Toast.LENGTH_SHORT).show();
         }
     }
 

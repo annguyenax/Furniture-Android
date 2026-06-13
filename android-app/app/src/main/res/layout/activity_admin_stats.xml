@@ -42,7 +42,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="12dp"
-                    android:text="Xuat file CSV"
+                    android:text="Xuất file CSV"
                     android:textColor="@color/primary"
                     app:cornerRadius="8dp"
                     app:strokeColor="@color/primary" />

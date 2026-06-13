@@ -54,7 +54,7 @@ public class SessionManager {
                                String username, String email, String phone, String firstName,
                                String lastName, String profilePicture, String role) {
         sharedPreferences.edit()
-                .putString(KEY_USER_ROLE, role != null ? role : "CUSTOMER")
+                .putString(KEY_USER_ROLE, normalizeRole(role))
                 .putString(KEY_ACCESS_TOKEN, accessToken)
                 .putString(KEY_REFRESH_TOKEN, refreshToken)
                 .putInt(KEY_USER_ID, userId)
@@ -172,7 +172,16 @@ public class SessionManager {
     }
 
     public boolean isAdmin() {
-        return "ADMIN".equals(getUserRole());
+        return "ADMIN".equals(normalizeRole(getUserRole()));
+    }
+
+    private String normalizeRole(String role) {
+        if (role == null) return "CUSTOMER";
+        String normalized = role.trim().toUpperCase();
+        if (normalized.startsWith("ROLE_")) {
+            normalized = normalized.substring("ROLE_".length());
+        }
+        return normalized.isEmpty() ? "CUSTOMER" : normalized;
     }
 
     public void updateUserInfo(String firstName, String lastName, String phone) {

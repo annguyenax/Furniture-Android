@@ -51,7 +51,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:text="Minh chung:"
+            android:text="Minh chứng:"
             android:textColor="#757575"
             android:textSize="12sp"
             android:visibility="gone" />
@@ -77,7 +77,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Tu choi"
+                android:text="Từ chối"
                 android:textColor="#E53935"
                 app:strokeColor="#E53935" />
 
@@ -87,7 +87,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_weight="1"
-                android:text="Xac nhan"
+                android:text="Xác nhận"
                 app:backgroundTint="@color/primary" />
 
         </LinearLayout>

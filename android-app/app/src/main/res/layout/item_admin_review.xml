@@ -91,7 +91,7 @@
             android:layout_marginBottom="6dp"
             android:scaleType="centerCrop"
             android:visibility="gone"
-            android:contentDescription="Anh danh gia" />
+            android:contentDescription="Ảnh đánh giá" />
 
         <TextView
             android:id="@+id/tv_verified"

@@ -161,7 +161,7 @@ public class AdminReviewListActivity extends AppCompatActivity {
                 h.tvDate.setText(item.getCreatedAt().substring(0, 10));
             }
             if (Boolean.TRUE.equals(item.getIsVerified())) {
-                h.tvVerified.setText("Da xac minh mua hang");
+                h.tvVerified.setText("Đã xác minh mua hàng");
                 h.tvVerified.setVisibility(View.VISIBLE);
             } else {
                 h.tvVerified.setVisibility(View.GONE);

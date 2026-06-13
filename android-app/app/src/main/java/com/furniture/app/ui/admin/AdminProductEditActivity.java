@@ -304,15 +304,15 @@ public class AdminProductEditActivity extends AppCompatActivity {
             price = new BigDecimal(priceStr);
             stock = Integer.parseInt(stockStr);
         } catch (NumberFormatException e) {
-            Toast.makeText(this, "Gia hoac so luong khong hop le", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Giá hoặc số lượng không hợp lệ", Toast.LENGTH_SHORT).show();
             return;
         }
         if (price.compareTo(BigDecimal.ZERO) <= 0) {
-            Toast.makeText(this, "Gia phan loai phai lon hon 0", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Giá phân loại phải lớn hơn 0", Toast.LENGTH_SHORT).show();
             return;
         }
         if (stock < 0) {
-            Toast.makeText(this, "So luong ton kho khong duoc am", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Số lượng tồn kho không được âm", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -413,15 +413,15 @@ public class AdminProductEditActivity extends AppCompatActivity {
             stock = Integer.parseInt(stockStr);
             discount = discountStr.isEmpty() ? BigDecimal.ZERO : new BigDecimal(discountStr);
         } catch (NumberFormatException e) {
-            Toast.makeText(this, "So luong hoac giam gia khong hop le", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Số lượng hoặc giảm giá không hợp lệ", Toast.LENGTH_SHORT).show();
             return;
         }
         if (stock < 0) {
-            Toast.makeText(this, "So luong ton kho khong duoc am", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Số lượng tồn kho không được âm", Toast.LENGTH_SHORT).show();
             return;
         }
         if (discount.compareTo(BigDecimal.ZERO) < 0 || discount.compareTo(BigDecimal.valueOf(100)) > 0) {
-            Toast.makeText(this, "Giam gia phai tu 0 den 100", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Giảm giá phải từ 0 đến 100", Toast.LENGTH_SHORT).show();
             return;
         }
         String status = spinnerStatus.getSelectedItem().toString();
@@ -478,13 +478,13 @@ public class AdminProductEditActivity extends AppCompatActivity {
             } catch (NumberFormatException e) {
                 saving.dismiss();
                 btnSave.setEnabled(true);
-                Toast.makeText(this, "Gia ban khong hop le", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Giá bán không hợp lệ", Toast.LENGTH_SHORT).show();
                 return;
             }
             if (price.compareTo(BigDecimal.ZERO) <= 0) {
                 saving.dismiss();
                 btnSave.setEnabled(true);
-                Toast.makeText(this, "Gia ban phai lon hon 0", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Giá bán phải lớn hơn 0", Toast.LENGTH_SHORT).show();
                 return;
             }
             AdminProductApi.CreateProductRequest request =

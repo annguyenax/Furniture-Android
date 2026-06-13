@@ -107,7 +107,7 @@ public class LoginActivity extends AppCompatActivity {
         signupButton.setOnClickListener(v -> navigateToSignup());
         forgotPasswordButton.setOnClickListener(v -> showForgotPasswordDialog());
         btnFacebookLogin.setOnClickListener(v -> Toast.makeText(this,
-                "Facebook login chua duoc ho tro", Toast.LENGTH_SHORT).show());
+                "Facebook login chưa được hỗ trợ", Toast.LENGTH_SHORT).show());
 
         setupGoogleSignIn();
         btnGoogleLogin.setOnClickListener(v -> signInWithGoogle());
@@ -196,10 +196,10 @@ public class LoginActivity extends AppCompatActivity {
             if (idToken != null) {
                 sendGoogleTokenToBackend(idToken);
             } else {
-                Toast.makeText(this, "Khong lay duoc token Google", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Không lấy được token Google", Toast.LENGTH_SHORT).show();
             }
         } catch (ApiException e) {
-            Toast.makeText(this, "Dang nhap Google that bai (ma loi: " + e.getStatusCode() + ")", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Đăng nhập Google thất bại (mã lỗi: " + e.getStatusCode() + ")", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -218,7 +218,7 @@ public class LoginActivity extends AppCompatActivity {
                     AuthResponse authResponse = response.body().getData();
                     saveSessionAndNavigate(authResponse);
                 } else {
-                    String msg = response.body() != null ? response.body().getMessage() : "Dang nhap Google that bai";
+                    String msg = response.body() != null ? response.body().getMessage() : "Đăng nhập Google thất bại";
                     Toast.makeText(LoginActivity.this, msg, Toast.LENGTH_LONG).show();
                 }
             }
@@ -227,7 +227,7 @@ public class LoginActivity extends AppCompatActivity {
             public void onFailure(Call<ApiResponse<AuthResponse>> call, Throwable t) {
                 progressBar.setVisibility(View.GONE);
                 btnGoogleLogin.setEnabled(true);
-                Toast.makeText(LoginActivity.this, "Loi ket noi", Toast.LENGTH_SHORT).show();
+                Toast.makeText(LoginActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -248,7 +248,7 @@ public class LoginActivity extends AppCompatActivity {
                 user.getProfilePicture(),
                 role
         );
-        Toast.makeText(this, "Dang nhap thanh cong!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
         finishAfterLogin();
     }
 
@@ -267,7 +267,7 @@ public class LoginActivity extends AppCompatActivity {
 
         authViewModel.getAuthResponse().observe(this, response -> {
             if (response != null) {
-                Toast.makeText(this, "Dang nhap thanh cong!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
                 finishAfterLogin();
             }
         });
@@ -285,7 +285,10 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void navigateToSignup() {
-        startActivity(new Intent(this, RegisterActivity.class));
+        Intent intent = new Intent(this, RegisterActivity.class);
+        intent.putExtra(EXTRA_RETURN_AFTER_LOGIN,
+                getIntent().getBooleanExtra(EXTRA_RETURN_AFTER_LOGIN, false));
+        startActivity(intent);
         finish();
     }
 
@@ -307,6 +310,10 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void finishAfterLogin() {
+        if (sessionManager.isAdmin()) {
+            navigateToHome();
+            return;
+        }
         if (getIntent().getBooleanExtra(EXTRA_RETURN_AFTER_LOGIN, false)) {
             setResult(RESULT_OK);
             finish();

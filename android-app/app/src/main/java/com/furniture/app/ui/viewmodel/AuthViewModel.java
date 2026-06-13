@@ -41,7 +41,7 @@ public class AuthViewModel extends ViewModel {
             public void onSuccess(AuthResponse response) {
                 User user = response.getUser();
                 String role = (user.getRoles() != null && !user.getRoles().isEmpty())
-                        ? user.getRoles().get(0) : "CUSTOMER";
+                        ? (user.hasRole("ADMIN") || user.hasRole("ROLE_ADMIN") ? "ADMIN" : user.getRoles().get(0)) : "CUSTOMER";
                 sessionManager.saveUserSession(
                         response.getAccessToken(),
                         response.getRefreshToken(),
@@ -73,7 +73,7 @@ public class AuthViewModel extends ViewModel {
             public void onSuccess(AuthResponse response) {
                 User user = response.getUser();
                 String role = (user.getRoles() != null && !user.getRoles().isEmpty())
-                        ? user.getRoles().get(0) : "CUSTOMER";
+                        ? (user.hasRole("ADMIN") || user.hasRole("ROLE_ADMIN") ? "ADMIN" : user.getRoles().get(0)) : "CUSTOMER";
                 sessionManager.saveUserSession(
                         response.getAccessToken(),
                         response.getRefreshToken(),

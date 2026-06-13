@@ -43,4 +43,15 @@
 
     <!-- Ripple effect -->
     <color name="ripple">#1F8B4513</color>
+
+    <!-- Admin dashboard icon colors -->
+    <color name="icon_products">#8B4513</color>
+    <color name="icon_orders">#2196F3</color>
+    <color name="icon_categories">#FF9800</color>
+    <color name="icon_users">#9C27B0</color>
+    <color name="icon_chat">#4CAF50</color>
+    <color name="icon_reviews">#FFC107</color>
+    <color name="icon_stats">#009688</color>
+    <color name="icon_returns">#F44336</color>
+    <color name="icon_admin_profile">#5D2E0F</color>
 </resources>

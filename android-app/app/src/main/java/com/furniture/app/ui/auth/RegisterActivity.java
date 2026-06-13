@@ -90,7 +90,7 @@ public class RegisterActivity extends AppCompatActivity {
         authViewModel.getAuthResponse().observe(this, response -> {
             if (response != null) {
                 Toast.makeText(this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
-                navigateToHome();
+                finishAfterAuth();
             }
         });
     }
@@ -126,7 +126,10 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void navigateToLogin() {
-        startActivity(new Intent(this, LoginActivity.class));
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.putExtra(LoginActivity.EXTRA_RETURN_AFTER_LOGIN,
+                getIntent().getBooleanExtra(LoginActivity.EXTRA_RETURN_AFTER_LOGIN, false));
+        startActivity(intent);
         finish();
     }
 
@@ -135,5 +138,14 @@ public class RegisterActivity extends AppCompatActivity {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
+    }
+
+    private void finishAfterAuth() {
+        if (getIntent().getBooleanExtra(LoginActivity.EXTRA_RETURN_AFTER_LOGIN, false)) {
+            setResult(RESULT_OK);
+            finish();
+            return;
+        }
+        navigateToHome();
     }
 }

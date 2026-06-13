@@ -79,7 +79,7 @@ public class AdminCategoryListActivity extends AppCompatActivity {
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) getSupportActionBar().setTitle("Quan ly danh muc");
+        if (getSupportActionBar() != null) getSupportActionBar().setTitle("Quản lý danh mục");
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
         rvCategories = findViewById(R.id.rv_categories);
@@ -120,7 +120,7 @@ public class AdminCategoryListActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ApiResponse<List<Category>>> call, Throwable t) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(AdminCategoryListActivity.this, "Loi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(AdminCategoryListActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -155,21 +155,21 @@ public class AdminCategoryListActivity extends AppCompatActivity {
         EditText etImage = layout.findViewWithTag("image");
 
         new AlertDialog.Builder(this)
-                .setTitle("Them danh muc")
+                .setTitle("Thêm danh mục")
                 .setView(layout)
-                .setPositiveButton("Them", (dialog, which) -> {
+                .setPositiveButton("Thêm", (dialog, which) -> {
                     String name = etName.getText().toString().trim();
                     if (name.isEmpty()) {
-                        Toast.makeText(this, "Vui long nhap ten danh muc", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Vui lòng nhập tên danh mục", Toast.LENGTH_SHORT).show();
                         return;
                     }
                     String desc = etDesc.getText().toString().trim();
                     String image = etImage.getText().toString().trim();
                     LoadingDialog loading = LoadingDialog.show(this, "Đang thêm danh mục...");
                     adminCategoryApi.createCategory(new AdminCategoryApi.CategoryRequest(name, desc, image.isEmpty() ? null : image))
-                            .enqueue(new SaveCategoryCallback("Da them danh muc", "Them that bai", loading));
+                            .enqueue(new SaveCategoryCallback("Đã thêm danh mục", "Thêm thất bại", loading));
                 })
-                .setNegativeButton("Huy", null)
+                .setNegativeButton("Hủy", null)
                 .show();
     }
 
@@ -183,12 +183,12 @@ public class AdminCategoryListActivity extends AppCompatActivity {
         EditText etImage = layout.findViewWithTag("image");
 
         new AlertDialog.Builder(this)
-                .setTitle("Sua danh muc")
+                .setTitle("Sửa danh mục")
                 .setView(layout)
-                .setPositiveButton("Luu", (dialog, which) -> {
+                .setPositiveButton("Lưu", (dialog, which) -> {
                     String name = etName.getText().toString().trim();
                     if (name.isEmpty()) {
-                        Toast.makeText(this, "Ten khong duoc trong", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Tên không được trống", Toast.LENGTH_SHORT).show();
                         return;
                     }
                     String desc = etDesc.getText().toString().trim();
@@ -196,9 +196,9 @@ public class AdminCategoryListActivity extends AppCompatActivity {
                     LoadingDialog loading = LoadingDialog.show(this, "Đang lưu danh mục...");
                     adminCategoryApi.updateCategory(category.getCategoryId(),
                                     new AdminCategoryApi.CategoryRequest(name, desc, image.isEmpty() ? null : image))
-                            .enqueue(new SaveCategoryCallback("Da cap nhat danh muc", "Cap nhat that bai", loading));
+                            .enqueue(new SaveCategoryCallback("Đã cập nhật danh mục", "Cập nhật thất bại", loading));
                 })
-                .setNegativeButton("Huy", null)
+                .setNegativeButton("Hủy", null)
                 .show();
     }
 
@@ -209,20 +209,20 @@ public class AdminCategoryListActivity extends AppCompatActivity {
 
         EditText etName = new EditText(this);
         etName.setTag("name");
-        etName.setHint("Ten danh muc *");
+        etName.setHint("Tên danh mục *");
         etName.setText(name != null ? name : "");
 
         EditText etDesc = new EditText(this);
         etDesc.setTag("desc");
-        etDesc.setHint("Mo ta");
+        etDesc.setHint("Mô tả");
         etDesc.setText(desc != null ? desc : "");
 
         EditText etImage = new EditText(this);
         etImage.setTag("image");
-        etImage.setHint("URL hinh anh danh muc");
+        etImage.setHint("URL hình ảnh danh mục");
         etImage.setText(image != null ? image : "");
         MaterialButton btnUpload = new MaterialButton(this);
-        btnUpload.setText("Chon anh tu may");
+        btnUpload.setText("Chọn ảnh từ máy");
         btnUpload.setOnClickListener(v -> {
             activeImageInput = etImage;
             categoryImagePicker.launch("image/*");
@@ -247,21 +247,21 @@ public class AdminCategoryListActivity extends AppCompatActivity {
                     loading.dismiss();
                     if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                         target.setText(response.body().getData());
-                        Toast.makeText(AdminCategoryListActivity.this, "Da upload anh", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(AdminCategoryListActivity.this, "Đã upload ảnh", Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(AdminCategoryListActivity.this,
-                                "Upload anh that bai. Kiem tra Cloudinary.", Toast.LENGTH_LONG).show();
+                                "Upload ảnh thất bại. Kiểm tra Cloudinary.", Toast.LENGTH_LONG).show();
                     }
                 }
 
                 @Override
                 public void onFailure(Call<ApiResponse<String>> call, Throwable t) {
                     loading.dismiss();
-                    Toast.makeText(AdminCategoryListActivity.this, "Loi ket noi khi upload anh", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AdminCategoryListActivity.this, "Lỗi kết nối khi upload ảnh", Toast.LENGTH_SHORT).show();
                 }
             });
         } catch (Exception e) {
-            Toast.makeText(this, "Khong the doc anh da chon", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Không thể đọc ảnh đã chọn", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -283,9 +283,9 @@ public class AdminCategoryListActivity extends AppCompatActivity {
 
     private void showDeleteConfirm(Category category) {
         new AlertDialog.Builder(this)
-                .setTitle("Xoa danh muc")
-                .setMessage("Xoa danh muc \"" + category.getCategoryName() + "\"?")
-                .setPositiveButton("Xoa", (dialog, which) -> {
+                .setTitle("Xóa danh mục")
+                .setMessage("Xóa danh mục \"" + category.getCategoryName() + "\"?")
+                .setPositiveButton("Xóa", (dialog, which) -> {
                     LoadingDialog loading = LoadingDialog.show(this, "Đang xóa danh mục...");
                     adminCategoryApi.deleteCategory(category.getCategoryId())
                             .enqueue(new Callback<ApiResponse<Void>>() {
@@ -295,15 +295,15 @@ public class AdminCategoryListActivity extends AppCompatActivity {
                                     loading.dismiss();
                                     if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                                         Toast.makeText(AdminCategoryListActivity.this,
-                                                "Da xoa danh muc", Toast.LENGTH_SHORT).show();
+                                                "Đã xóa danh mục", Toast.LENGTH_SHORT).show();
                                         loadCategories();
                                     } else {
-                                        String msg = "Xoa that bai";
+                                        String msg = "Xóa thất bại";
                                         try {
                                             if (response.errorBody() != null) {
                                                 String err = response.errorBody().string();
                                                 if (err.contains("san pham") || err.contains("sản phẩm")) {
-                                                    msg = "Danh muc dang co san pham, khong the xoa";
+                                                    msg = "Danh mục đang có sản phẩm, không thể xóa";
                                                 }
                                             }
                                         } catch (Exception ignored) {}
@@ -314,11 +314,11 @@ public class AdminCategoryListActivity extends AppCompatActivity {
                                 @Override
                                 public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
                                     loading.dismiss();
-                                    Toast.makeText(AdminCategoryListActivity.this, "Loi ket noi", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(AdminCategoryListActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
                                 }
                             });
                 })
-                .setNegativeButton("Huy", null)
+                .setNegativeButton("Hủy", null)
                 .show();
     }
 
@@ -352,7 +352,7 @@ public class AdminCategoryListActivity extends AppCompatActivity {
         @Override
         public void onFailure(Call<ApiResponse<Category>> call, Throwable t) {
             loading.dismiss();
-            Toast.makeText(AdminCategoryListActivity.this, "Loi ket noi", Toast.LENGTH_SHORT).show();
+            Toast.makeText(AdminCategoryListActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
         }
     }
 

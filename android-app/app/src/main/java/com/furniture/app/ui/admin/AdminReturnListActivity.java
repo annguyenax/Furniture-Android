@@ -81,18 +81,18 @@ public class AdminReturnListActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ApiResponse<PageResponse<ReturnRequestItem>>> call, Throwable t) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(AdminReturnListActivity.this, "Loi tai yeu cau hoan tra", Toast.LENGTH_SHORT).show();
+                Toast.makeText(AdminReturnListActivity.this, "Lỗi tải yêu cầu hoàn trả", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void confirmUpdate(ReturnRequestItem item, String status) {
-        String title = "APPROVED".equals(status) ? "Xac nhan hoan tra" : "Tu choi hoan tra";
+        String title = "APPROVED".equals(status) ? "Xác nhận hoàn trả" : "Từ chối hoàn trả";
         new AlertDialog.Builder(this)
                 .setTitle(title)
-                .setMessage("Cap nhat yeu cau #" + item.getReturnId() + "?")
-                .setPositiveButton("Dong y", (d, w) -> updateStatus(item, status))
-                .setNegativeButton("Huy", null)
+                .setMessage("Cập nhật yêu cầu #" + item.getReturnId() + "?")
+                .setPositiveButton("Đồng ý", (d, w) -> updateStatus(item, status))
+                .setNegativeButton("Hủy", null)
                 .show();
     }
 
@@ -104,12 +104,12 @@ public class AdminReturnListActivity extends AppCompatActivity {
                                    Response<ApiResponse<ReturnRequestItem>> response) {
                 loading.dismiss();
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    Toast.makeText(AdminReturnListActivity.this, "Da cap nhat", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AdminReturnListActivity.this, "Đã cập nhật", Toast.LENGTH_SHORT).show();
                     loadReturns();
                 } else {
                     String msg = response.body() != null && response.body().getMessage() != null
                             ? response.body().getMessage()
-                            : "Cap nhat that bai";
+                            : "Cập nhật thất bại";
                     Toast.makeText(AdminReturnListActivity.this, msg, Toast.LENGTH_SHORT).show();
                 }
             }
@@ -117,7 +117,7 @@ public class AdminReturnListActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ApiResponse<ReturnRequestItem>> call, Throwable t) {
                 loading.dismiss();
-                Toast.makeText(AdminReturnListActivity.this, "Loi ket noi", Toast.LENGTH_SHORT).show();
+                Toast.makeText(AdminReturnListActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -146,8 +146,8 @@ public class AdminReturnListActivity extends AppCompatActivity {
         public void onBindViewHolder(@NonNull VH h, int position) {
             ReturnRequestItem item = list.get(position);
             h.tvTitle.setText((item.getOrderCode() != null ? item.getOrderCode() : "#" + item.getOrderId())
-                    + " - " + (item.getProductName() != null ? item.getProductName() : "Toan bo don hang"));
-            h.tvUser.setText((item.getUserName() != null ? item.getUserName() : "Khach hang")
+                    + " - " + (item.getProductName() != null ? item.getProductName() : "Toàn bộ đơn hàng"));
+            h.tvUser.setText((item.getUserName() != null ? item.getUserName() : "Khách hàng")
                     + (item.getUserEmail() != null ? " - " + item.getUserEmail() : ""));
             h.tvReason.setText(item.getReason() != null ? item.getReason() : "");
             h.tvStatus.setText(item.getStatusDisplay());

@@ -46,9 +46,9 @@
             android:text="Đăng xuất"
             android:textSize="13sp"
             app:cornerRadius="20dp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            style="@style/Widget.MaterialComponents.Button"
             android:textColor="@android:color/white"
-            app:strokeColor="@android:color/white" />
+            app:backgroundTint="@color/error" />
 
     </LinearLayout>
 
@@ -98,11 +98,20 @@
                         android:gravity="center"
                         android:padding="16dp">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="📦"
-                            android:textSize="36sp" />
+                        <FrameLayout
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:background="@drawable/bg_icon_circle"
+                            android:backgroundTint="@color/icon_products">
+
+                            <ImageView
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_inventory"
+                                android:contentDescription="@null" />
+
+                        </FrameLayout>
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -136,11 +145,20 @@
                         android:gravity="center"
                         android:padding="16dp">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="🧾"
-                            android:textSize="36sp" />
+                        <FrameLayout
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:background="@drawable/bg_icon_circle"
+                            android:backgroundTint="@color/icon_orders">
+
+                            <ImageView
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_orders"
+                                android:contentDescription="@null" />
+
+                        </FrameLayout>
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -183,11 +201,20 @@
                         android:gravity="center"
                         android:padding="16dp">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="🗂️"
-                            android:textSize="36sp" />
+                        <FrameLayout
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:background="@drawable/bg_icon_circle"
+                            android:backgroundTint="@color/icon_categories">
+
+                            <ImageView
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_category"
+                                android:contentDescription="@null" />
+
+                        </FrameLayout>
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -221,11 +248,20 @@
                         android:gravity="center"
                         android:padding="16dp">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="👥"
-                            android:textSize="36sp" />
+                        <FrameLayout
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:background="@drawable/bg_icon_circle"
+                            android:backgroundTint="@color/icon_users">
+
+                            <ImageView
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_users"
+                                android:contentDescription="@null" />
+
+                        </FrameLayout>
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -268,11 +304,21 @@
                         android:gravity="center"
                         android:padding="16dp">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="💬"
-                            android:textSize="36sp" />
+                        <FrameLayout
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:background="@drawable/bg_icon_circle"
+                            android:backgroundTint="@color/icon_chat">
+
+                            <ImageView
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_chat"
+                                app:tint="@android:color/white"
+                                android:contentDescription="@null" />
+
+                        </FrameLayout>
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -306,11 +352,20 @@
                         android:gravity="center"
                         android:padding="16dp">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="★"
-                            android:textSize="36sp" />
+                        <FrameLayout
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:background="@drawable/bg_icon_circle"
+                            android:backgroundTint="@color/icon_reviews">
+
+                            <ImageView
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_star"
+                                android:contentDescription="@null" />
+
+                        </FrameLayout>
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -353,11 +408,20 @@
                         android:gravity="center"
                         android:padding="16dp">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="▥"
-                            android:textSize="36sp" />
+                        <FrameLayout
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:background="@drawable/bg_icon_circle"
+                            android:backgroundTint="@color/icon_stats">
+
+                            <ImageView
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_bar_chart"
+                                android:contentDescription="@null" />
+
+                        </FrameLayout>
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -391,16 +455,25 @@
                         android:gravity="center"
                         android:padding="16dp">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="R"
-                            android:textSize="36sp" />
+                        <FrameLayout
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:background="@drawable/bg_icon_circle"
+                            android:backgroundTint="@color/icon_returns">
+
+                            <ImageView
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_assignment_return"
+                                android:contentDescription="@null" />
+
+                        </FrameLayout>
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Hoan tra"
+                            android:text="Hoàn trả"
                             android:textColor="#212121"
                             android:textSize="14sp"
                             android:textStyle="bold"
@@ -438,16 +511,25 @@
                         android:gravity="center"
                         android:padding="16dp">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="A"
-                            android:textSize="36sp" />
+                        <FrameLayout
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:background="@drawable/bg_icon_circle"
+                            android:backgroundTint="@color/icon_admin_profile">
+
+                            <ImageView
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_admin_profile"
+                                android:contentDescription="@null" />
+
+                        </FrameLayout>
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Ho so admin"
+                            android:text="Hồ sơ admin"
                             android:textColor="#212121"
                             android:textSize="14sp"
                             android:textStyle="bold"

@@ -13,7 +13,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -62,7 +61,6 @@ public class AdminUserListActivity extends AppCompatActivity {
 
         adapter = new UserAdapter(users, this::confirmToggle);
         rvUsers.setLayoutManager(new LinearLayoutManager(this));
-        rvUsers.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         rvUsers.setAdapter(adapter);
 
         etSearch.addTextChangedListener(new TextWatcher() {
@@ -152,33 +150,71 @@ public class AdminUserListActivity extends AppCompatActivity {
             AdminUser u = list.get(position);
             h.tvName.setText(u.getDisplayName());
             h.tvEmail.setText(u.getEmail() != null ? u.getEmail() : "");
-            h.tvPhone.setText(u.getPhone() != null ? "📞 " + u.getPhone() : "");
+            if (u.getPhone() != null && !u.getPhone().isEmpty()) {
+                h.tvPhone.setText("📞 " + u.getPhone());
+                h.tvPhone.setVisibility(View.VISIBLE);
+            } else {
+                h.tvPhone.setVisibility(View.GONE);
+            }
 
             String initial = u.getDisplayName().isEmpty() ? "U"
                     : String.valueOf(u.getDisplayName().charAt(0)).toUpperCase();
             h.tvAvatar.setText(initial);
 
+            int roleColor = roleColor(u);
+            h.tvRoleBadge.setText(roleLabel(u));
+            h.tvRoleBadge.setBackgroundTintList(android.content.res.ColorStateList.valueOf(roleColor));
+            h.tvAvatar.setBackgroundTintList(android.content.res.ColorStateList.valueOf(roleColor));
+
             if (u.isActive()) {
                 h.tvStatus.setText("Hoạt động");
-                h.tvStatus.setBackgroundResource(R.drawable.bg_status_active);
+                h.tvStatus.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFF4CAF50));
                 h.btnToggle.setText("Khóa");
-                h.btnToggle.setBackgroundTintList(
-                        android.content.res.ColorStateList.valueOf(0xFFF44336));
+                h.btnToggle.setStrokeColor(android.content.res.ColorStateList.valueOf(0xFFF44336));
+                h.btnToggle.setTextColor(0xFFF44336);
             } else {
                 h.tvStatus.setText("Đã khóa");
-                h.tvStatus.setBackgroundResource(R.drawable.bg_status_banned);
+                h.tvStatus.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFFF44336));
                 h.btnToggle.setText("Mở khóa");
-                h.btnToggle.setBackgroundTintList(
-                        android.content.res.ColorStateList.valueOf(0xFF4CAF50));
+                h.btnToggle.setStrokeColor(android.content.res.ColorStateList.valueOf(0xFF4CAF50));
+                h.btnToggle.setTextColor(0xFF4CAF50);
             }
 
             h.btnToggle.setOnClickListener(v -> listener.onToggle(u));
         }
 
+        private String roleLabel(AdminUser u) {
+            String role = primaryRole(u);
+            switch (role) {
+                case "ADMIN": return "Quản trị viên";
+                case "STAFF":
+                case "OPERATOR":
+                case "OPS": return "Nhân viên";
+                default: return "Khách hàng";
+            }
+        }
+
+        private int roleColor(AdminUser u) {
+            String role = primaryRole(u);
+            switch (role) {
+                case "ADMIN": return 0xFF9C27B0;
+                case "STAFF":
+                case "OPERATOR":
+                case "OPS": return 0xFFFF9800;
+                default: return 0xFF8B4513;
+            }
+        }
+
+        private String primaryRole(AdminUser u) {
+            List<String> roles = u.getRoles();
+            if (roles == null || roles.isEmpty()) return "CUSTOMER";
+            return roles.get(0).toUpperCase().replace("ROLE_", "");
+        }
+
         @Override public int getItemCount() { return list.size(); }
 
         static class VH extends RecyclerView.ViewHolder {
-            TextView tvAvatar, tvName, tvEmail, tvPhone, tvStatus;
+            TextView tvAvatar, tvName, tvEmail, tvPhone, tvStatus, tvRoleBadge;
             MaterialButton btnToggle;
 
             VH(@NonNull View v) {
@@ -188,6 +224,7 @@ public class AdminUserListActivity extends AppCompatActivity {
                 tvEmail = v.findViewById(R.id.tv_email);
                 tvPhone = v.findViewById(R.id.tv_phone);
                 tvStatus = v.findViewById(R.id.tv_status_badge);
+                tvRoleBadge = v.findViewById(R.id.tv_role_badge);
                 btnToggle = v.findViewById(R.id.btn_toggle_status);
             }
         }

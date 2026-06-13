@@ -146,7 +146,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progress_bar);
 
         // Setup variants RecyclerView
-        rvVariants.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        rvVariants.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         rvReviews.setLayoutManager(new LinearLayoutManager(this));
         rvReviews.setNestedScrollingEnabled(false);
         rvRelatedProducts.setLayoutManager(

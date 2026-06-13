@@ -86,7 +86,7 @@ public class AdminProductListActivity extends AppCompatActivity implements Admin
 
         ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_dropdown_item,
-                new String[]{"Tat ca trang thai", "ACTIVE", "INACTIVE"});
+                new String[]{"Tất cả trạng thái", "Đang bán", "Ngừng bán"});
         spinnerStatusFilter.setAdapter(statusAdapter);
         spinnerStatusFilter.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
             @Override public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
@@ -132,17 +132,16 @@ public class AdminProductListActivity extends AppCompatActivity implements Admin
         String keyword = etSearchProduct != null && etSearchProduct.getText() != null
                 ? etSearchProduct.getText().toString().trim().toLowerCase()
                 : "";
-        String status = spinnerStatusFilter != null && spinnerStatusFilter.getSelectedItem() != null
-                ? spinnerStatusFilter.getSelectedItem().toString()
-                : "Tat ca trang thai";
+        int statusPosition = spinnerStatusFilter != null ? spinnerStatusFilter.getSelectedItemPosition() : 0;
+        String statusValue = statusPosition == 1 ? "ACTIVE" : statusPosition == 2 ? "INACTIVE" : null;
 
         products.clear();
         for (Product product : allProducts) {
             boolean matchText = keyword.isEmpty()
                     || (product.getProductName() != null && product.getProductName().toLowerCase().contains(keyword))
                     || (product.getCategoryName() != null && product.getCategoryName().toLowerCase().contains(keyword));
-            boolean matchStatus = "Tat ca trang thai".equals(status)
-                    || (product.getStatus() != null && product.getStatus().equalsIgnoreCase(status));
+            boolean matchStatus = statusValue == null
+                    || (product.getStatus() != null && product.getStatus().equalsIgnoreCase(statusValue));
             if (matchText && matchStatus) products.add(product);
         }
         adapter.notifyDataSetChanged();

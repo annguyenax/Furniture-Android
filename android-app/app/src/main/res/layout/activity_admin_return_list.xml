@@ -17,7 +17,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:navigationIcon="@drawable/ic_back"
-            app:title="Quan ly hoan tra"
+            app:title="Quản lý hoàn trả"
             app:titleTextColor="#212121" />
 
     </com.google.android.material.appbar.AppBarLayout>
