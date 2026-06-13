@@ -48,6 +48,9 @@ public class AdminProductAdapter extends RecyclerView.Adapter<AdminProductAdapte
         Product product = products.get(position);
 
         holder.tvName.setText(product.getProductName());
+        holder.tvCreatedAt.setText(formatDate(product.getCreatedAt()));
+        holder.tvCreatedAt.setVisibility(product.getCreatedAt() != null && product.getCreatedAt().length() >= 10
+                ? View.VISIBLE : View.GONE);
         holder.tvStock.setText("Kho: " + product.getStock() + "  •  Đã bán: " + product.getSold());
         holder.tvCategory.setText(product.getCategoryName() != null ? product.getCategoryName() : "");
 
@@ -82,15 +85,20 @@ public class AdminProductAdapter extends RecyclerView.Adapter<AdminProductAdapte
         return products != null ? products.size() : 0;
     }
 
+    private String formatDate(String createdAt) {
+        return createdAt != null && createdAt.length() >= 10 ? createdAt.substring(0, 10) : "";
+    }
+
     static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView ivImage;
-        TextView tvName, tvCategory, tvStock, tvPrice, tvStatus;
+        TextView tvName, tvCreatedAt, tvCategory, tvStock, tvPrice, tvStatus;
         MaterialButton btnEdit, btnDelete;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
             ivImage = itemView.findViewById(R.id.iv_product_image);
             tvName = itemView.findViewById(R.id.tv_product_name);
+            tvCreatedAt = itemView.findViewById(R.id.tv_created_at);
             tvCategory = itemView.findViewById(R.id.tv_category);
             tvStock = itemView.findViewById(R.id.tv_stock);
             tvPrice = itemView.findViewById(R.id.tv_price);

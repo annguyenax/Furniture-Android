@@ -24,7 +24,6 @@ import com.furniture.app.data.model.PageResponse;
 import com.furniture.app.data.model.Product;
 import com.furniture.app.data.remote.RetrofitClient;
 import com.furniture.app.data.remote.api.AdminProductApi;
-import com.furniture.app.data.remote.api.ProductApi;
 import com.furniture.app.ui.adapter.AdminProductAdapter;
 import com.furniture.app.util.SessionManager;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -44,7 +43,6 @@ public class AdminProductListActivity extends AppCompatActivity implements Admin
     private AdminProductAdapter adapter;
     private List<Product> products = new ArrayList<>();
     private final List<Product> allProducts = new ArrayList<>();
-    private ProductApi productApi;
     private AdminProductApi adminProductApi;
     private EditText etSearchProduct;
     private Spinner spinnerStatusFilter;
@@ -55,7 +53,6 @@ public class AdminProductListActivity extends AppCompatActivity implements Admin
         setContentView(R.layout.activity_admin_product_list);
 
         SessionManager sessionManager = new SessionManager(this);
-        productApi = RetrofitClient.getInstance(sessionManager.getToken()).create(ProductApi.class);
         adminProductApi = RetrofitClient.getInstance(sessionManager.getToken()).create(AdminProductApi.class);
 
         initViews();
@@ -104,7 +101,7 @@ public class AdminProductListActivity extends AppCompatActivity implements Admin
 
     private void loadProducts() {
         progressBar.setVisibility(View.VISIBLE);
-        productApi.getAllProducts(0, 100, "createdAt", "DESC")
+        adminProductApi.getAllProducts(0, 100, "createdAt", "DESC")
                 .enqueue(new Callback<ApiResponse<PageResponse<Product>>>() {
                     @Override
                     public void onResponse(Call<ApiResponse<PageResponse<Product>>> call,
