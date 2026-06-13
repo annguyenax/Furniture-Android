@@ -96,28 +96,39 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void handleRegister() {
-        String username = usernameEditText.getText().toString().trim();
         String email = emailEditText.getText().toString().trim();
         String password = passwordEditText.getText().toString().trim();
         String firstName = firstNameEditText.getText().toString().trim();
         String lastName = lastNameEditText.getText().toString().trim();
         String phone = phoneEditText.getText().toString().trim();
 
-        if (validateInput(username, email, password, firstName, lastName, phone)) {
+        if (validateInput(email, password, firstName, lastName, phone)) {
             errorTextView.setVisibility(View.GONE);
-            authViewModel.register(username, email, password, firstName, lastName, phone);
+            authViewModel.register(buildUsernameFromEmail(email), email, password, firstName, lastName, phone);
         }
     }
 
-    private boolean validateInput(String username, String email, String password,
-                                  String firstName, String lastName, String phone) {
+    private boolean validateInput(String email, String password, String firstName, String lastName, String phone) {
         if (!InputValidator.validateRequired(firstNameEditText, "họ")) return false;
         if (!InputValidator.validateRequired(lastNameEditText, "tên")) return false;
-        if (!InputValidator.validateMinLength(usernameEditText, "Tên đăng nhập", 3)) return false;
         if (!InputValidator.validateEmail(emailEditText)) return false;
         if (!InputValidator.validatePhone(phoneEditText)) return false;
         if (!InputValidator.validatePassword(passwordEditText, 6)) return false;
         return true;
+    }
+
+    private String buildUsernameFromEmail(String email) {
+        String base = email != null ? email.trim() : "";
+        if (base.length() <= 50) return base;
+
+        int atIndex = base.indexOf('@');
+        String prefix = atIndex > 0 ? base.substring(0, atIndex) : "user";
+        String suffix = "_" + Integer.toHexString(base.hashCode());
+        int maxPrefixLength = Math.max(3, 50 - suffix.length());
+        if (prefix.length() > maxPrefixLength) {
+            prefix = prefix.substring(0, maxPrefixLength);
+        }
+        return prefix + suffix;
     }
 
     private void showSocialTodo(String provider) {
