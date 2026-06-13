@@ -163,7 +163,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
             BigDecimal total = order.getTotalAmount();
             if (total != null) {
-                tvTotalAmount.setText(String.format("₫%s", currencyFormat.format(total)));
+                tvTotalAmount.setText(String.format("%s đ", currencyFormat.format(total)));
             }
 
             // Cancel: match backend rule for PENDING and PROCESSING orders.

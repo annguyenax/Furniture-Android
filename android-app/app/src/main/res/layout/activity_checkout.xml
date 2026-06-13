@@ -297,7 +297,7 @@
                             android:id="@+id/tv_subtotal"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="₫0"
+                            android:text="0 đ"
                             android:textColor="#212121"
                             android:textSize="14sp" />
 
@@ -353,7 +353,7 @@
                             android:id="@+id/tv_total"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="₫0"
+                            android:text="0 đ"
                             android:textColor="#E53935"
                             android:textSize="18sp"
                             android:textStyle="bold" />
@@ -396,7 +396,7 @@
                 android:id="@+id/tv_bottom_total"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="₫0"
+                android:text="0 đ"
                 android:textColor="#E53935"
                 android:textSize="20sp"
                 android:textStyle="bold" />

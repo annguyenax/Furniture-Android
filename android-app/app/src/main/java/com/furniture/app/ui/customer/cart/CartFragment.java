@@ -227,7 +227,7 @@ public class CartFragment extends Fragment implements CartItemAdapter.OnCartItem
                 sum = sum.add(item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
             }
         }
-        totalText.setText(String.format("₫%s", currencyFormat.format(sum)));
+        totalText.setText(String.format("%s đ", currencyFormat.format(sum)));
 
         btnCheckout.setEnabled(selectedCount > 0);
     }

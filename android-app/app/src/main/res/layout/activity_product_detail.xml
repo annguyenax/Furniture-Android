@@ -91,7 +91,7 @@
                     android:id="@+id/tv_price"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="₫0"
+                    android:text="0 đ"
                     android:textColor="#E53935"
                     android:textSize="24sp"
                     android:textStyle="bold" />
@@ -106,7 +106,7 @@
                         android:id="@+id/tv_original_price"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="₫0"
+                        android:text="0 đ"
                         android:textColor="#9E9E9E"
                         android:textSize="14sp"
                         android:visibility="gone" />

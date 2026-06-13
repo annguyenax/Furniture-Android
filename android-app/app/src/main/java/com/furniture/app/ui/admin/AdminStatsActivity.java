@@ -127,7 +127,7 @@ public class AdminStatsActivity extends AppCompatActivity {
     private void bindStats(AdminStatsResponse data) {
         latestStats = data;
         BigDecimal revenue = data.getTotalRevenue() != null ? data.getTotalRevenue() : BigDecimal.ZERO;
-        tvTotalRevenue.setText("₫" + currencyFmt.format(revenue));
+        tvTotalRevenue.setText(String.format("%s đ", currencyFmt.format(revenue)));
         tvTotalOrders.setText(data.getTotalOrders() + " đơn");
 
         updateRevenueChart(data.getRevenueData());
