@@ -572,15 +572,31 @@ public class AdminController {
         List<OrderItem> items = orderItemRepository.findByOrderId(order.getOrderId());
 
         List<OrderResponse.OrderItemResponse> itemResponses = items.stream()
-                .map(item -> OrderResponse.OrderItemResponse.builder()
-                        .orderItemId(item.getOrderItemId())
-                        .productId(item.getProductId())
-                        .variantId(item.getVariantId())
-                        .price(item.getPrice())
-                        .quantity(item.getQuantity())
-                        .subtotal(item.getTotal())
-                        .variantName(item.getVariantInfo())
-                        .build())
+                .map(item -> {
+                    Product product = productRepository.findById(item.getProductId()).orElse(null);
+                    ProductVariant variant = item.getVariantId() != null
+                            ? productVariantRepository.findById(item.getVariantId()).orElse(null)
+                            : null;
+
+                    String productImage = null;
+                    if (variant != null && variant.getImageUrl() != null) {
+                        productImage = variant.getImageUrl();
+                    } else if (product != null && product.getVariants() != null && !product.getVariants().isEmpty()) {
+                        productImage = product.getVariants().get(0).getImageUrl();
+                    }
+
+                    return OrderResponse.OrderItemResponse.builder()
+                            .orderItemId(item.getOrderItemId())
+                            .productId(item.getProductId())
+                            .productName(product != null ? product.getProductName() : "Unknown")
+                            .productImage(productImage)
+                            .variantId(item.getVariantId())
+                            .variantName(item.getVariantInfo())
+                            .price(item.getPrice())
+                            .quantity(item.getQuantity())
+                            .subtotal(item.getTotal())
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         return OrderResponse.builder()

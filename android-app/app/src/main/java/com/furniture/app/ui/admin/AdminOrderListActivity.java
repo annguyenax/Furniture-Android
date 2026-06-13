@@ -8,6 +8,7 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -18,6 +19,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.furniture.app.util.LoadingDialog;
 
 import com.furniture.app.R;
@@ -202,6 +204,8 @@ public class AdminOrderListActivity extends AppCompatActivity {
             h.tvStatus.setText(o.getStatusDisplay());
             h.tvTotal.setText(o.getTotalAmount() != null ? "₫" + fmt.format(o.getTotalAmount()) : "");
 
+            bindProductInfo(h, o);
+
             // Date
             String dateStr = o.getCreatedAt();
             if (dateStr != null && dateStr.length() >= 10) {
@@ -226,10 +230,51 @@ public class AdminOrderListActivity extends AppCompatActivity {
             h.btnUpdate.setOnClickListener(v -> onUpdateStatus.accept(o));
         }
 
+        private void bindProductInfo(VH h, Order o) {
+            List<com.furniture.app.data.model.OrderItem> items = o.getItems();
+            com.furniture.app.data.model.OrderItem firstItem = items != null && !items.isEmpty() ? items.get(0) : null;
+
+            if (firstItem == null) {
+                h.tvProductName.setText("Sản phẩm");
+                h.tvProductMeta.setText("");
+                h.ivProductImage.setImageResource(R.drawable.placeholder_product);
+                return;
+            }
+
+            String name = firstItem.getProductName() != null ? firstItem.getProductName() : "Sản phẩm #" + firstItem.getProductId();
+            if (items.size() > 1) {
+                name = name + "  +" + (items.size() - 1) + " sản phẩm khác";
+            }
+            h.tvProductName.setText(name);
+
+            StringBuilder meta = new StringBuilder();
+            if (firstItem.getVariantName() != null && !firstItem.getVariantName().isEmpty()) {
+                meta.append(firstItem.getVariantName());
+            }
+            if (firstItem.getQuantity() != null) {
+                if (meta.length() > 0) meta.append("  •  ");
+                meta.append("SL: ").append(firstItem.getQuantity());
+            }
+            h.tvProductMeta.setText(meta.toString());
+
+            String imageUrl = firstItem.getProductImage();
+            if (imageUrl != null && !imageUrl.isEmpty()) {
+                Glide.with(h.itemView.getContext())
+                        .load(imageUrl)
+                        .placeholder(R.drawable.placeholder_product)
+                        .error(R.drawable.placeholder_product)
+                        .centerCrop()
+                        .into(h.ivProductImage);
+            } else {
+                h.ivProductImage.setImageResource(R.drawable.placeholder_product);
+            }
+        }
+
         @Override public int getItemCount() { return orders.size(); }
 
         static class VH extends RecyclerView.ViewHolder {
-            TextView tvCode, tvCustomer, tvStatus, tvTotal, tvDate;
+            TextView tvCode, tvCustomer, tvStatus, tvTotal, tvDate, tvProductName, tvProductMeta;
+            ImageView ivProductImage;
             MaterialButton btnUpdate;
 
             VH(View v) {
@@ -239,6 +284,9 @@ public class AdminOrderListActivity extends AppCompatActivity {
                 tvStatus = v.findViewById(R.id.tv_status);
                 tvTotal = v.findViewById(R.id.tv_total);
                 tvDate = v.findViewById(R.id.tv_date);
+                tvProductName = v.findViewById(R.id.tv_product_name);
+                tvProductMeta = v.findViewById(R.id.tv_product_meta);
+                ivProductImage = v.findViewById(R.id.iv_product_image);
                 btnUpdate = v.findViewById(R.id.btn_update_status);
             }
         }
