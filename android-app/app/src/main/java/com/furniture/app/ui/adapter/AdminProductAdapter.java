@@ -27,6 +27,7 @@ public class AdminProductAdapter extends RecyclerView.Adapter<AdminProductAdapte
     public interface OnProductActionListener {
         void onEditProduct(Product product);
         void onDeleteProduct(Product product);
+        void onToggleStatus(Product product);
     }
 
     public AdminProductAdapter(List<Product> products, OnProductActionListener listener) {
@@ -47,25 +48,33 @@ public class AdminProductAdapter extends RecyclerView.Adapter<AdminProductAdapte
         Product product = products.get(position);
 
         holder.tvName.setText(product.getProductName());
-        holder.tvStock.setText("Kho: " + product.getStock());
+        holder.tvStock.setText("Kho: " + product.getStock() + "  •  Đã bán: " + product.getSold());
+        holder.tvCategory.setText(product.getCategoryName() != null ? product.getCategoryName() : "");
 
         String price = product.getLowestPrice() != null
                 ? "₫" + currencyFormat.format(product.getLowestPrice()) : "Chưa có giá";
         holder.tvPrice.setText(price);
 
         String status = product.getStatus();
-        holder.tvStatus.setText("ACTIVE".equals(status) ? "Đang bán" : "Ẩn");
-        holder.tvStatus.setTextColor(holder.itemView.getContext().getResources().getColor(
-                "ACTIVE".equals(status) ? android.R.color.holo_green_dark : android.R.color.darker_gray));
+        boolean active = "ACTIVE".equals(status);
+        holder.tvStatus.setText(active ? "Đang bán" : "Ngừng bán");
+        holder.tvStatus.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
+                active ? 0xFF4CAF50 : 0xFF9E9E9E));
 
         String imageUrl = product.getFirstImageUrl();
         if (imageUrl != null && !imageUrl.isEmpty()) {
             Glide.with(holder.itemView.getContext()).load(imageUrl)
-                    .placeholder(android.R.drawable.ic_menu_gallery).into(holder.ivImage);
+                    .placeholder(android.R.drawable.ic_menu_gallery)
+                    .error(android.R.drawable.ic_menu_gallery)
+                    .centerCrop()
+                    .into(holder.ivImage);
+        } else {
+            holder.ivImage.setImageResource(android.R.drawable.ic_menu_gallery);
         }
 
         holder.btnEdit.setOnClickListener(v -> listener.onEditProduct(product));
         holder.btnDelete.setOnClickListener(v -> listener.onDeleteProduct(product));
+        holder.tvStatus.setOnClickListener(v -> listener.onToggleStatus(product));
     }
 
     @Override
@@ -75,13 +84,14 @@ public class AdminProductAdapter extends RecyclerView.Adapter<AdminProductAdapte
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView ivImage;
-        TextView tvName, tvStock, tvPrice, tvStatus;
+        TextView tvName, tvCategory, tvStock, tvPrice, tvStatus;
         MaterialButton btnEdit, btnDelete;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
             ivImage = itemView.findViewById(R.id.iv_product_image);
             tvName = itemView.findViewById(R.id.tv_product_name);
+            tvCategory = itemView.findViewById(R.id.tv_category);
             tvStock = itemView.findViewById(R.id.tv_stock);
             tvPrice = itemView.findViewById(R.id.tv_price);
             tvStatus = itemView.findViewById(R.id.tv_status);

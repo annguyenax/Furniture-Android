@@ -166,6 +166,45 @@ public class AdminProductListActivity extends AppCompatActivity implements Admin
                 .show();
     }
 
+    @Override
+    public void onToggleStatus(Product product) {
+        boolean toActive = !"ACTIVE".equals(product.getStatus());
+        String newStatus = toActive ? "ACTIVE" : "INACTIVE";
+        new AlertDialog.Builder(this)
+                .setTitle("Cập nhật trạng thái")
+                .setMessage((toActive ? "Mở bán" : "Ngừng bán") + " sản phẩm \"" + product.getProductName() + "\"?")
+                .setPositiveButton("Xác nhận", (dialog, which) -> updateProductStatus(product, newStatus))
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+
+    private void updateProductStatus(Product product, String newStatus) {
+        AdminProductApi.UpdateProductRequest request = new AdminProductApi.UpdateProductRequest(
+                product.getProductName(),
+                product.getDescription(),
+                product.getStock(),
+                product.getDiscount() != null ? product.getDiscount() : java.math.BigDecimal.ZERO,
+                newStatus,
+                product.getFirstImageUrl());
+        adminProductApi.updateProduct(product.getProductId(), request)
+                .enqueue(new Callback<ApiResponse<Product>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<Product>> call, Response<ApiResponse<Product>> response) {
+                        if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                            Toast.makeText(AdminProductListActivity.this, "Đã cập nhật trạng thái", Toast.LENGTH_SHORT).show();
+                            loadProducts();
+                        } else {
+                            Toast.makeText(AdminProductListActivity.this, "Cập nhật thất bại", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ApiResponse<Product>> call, Throwable t) {
+                        Toast.makeText(AdminProductListActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
     private void deleteProduct(Product product) {
         adminProductApi.deleteProduct(product.getProductId()).enqueue(new Callback<ApiResponse<Void>>() {
             @Override

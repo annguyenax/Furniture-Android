@@ -89,7 +89,7 @@
                     android:clickable="true"
                     android:focusable="true"
                     app:cardCornerRadius="12dp"
-                    app:cardElevation="3dp">
+                    app:cardElevation="2dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -136,7 +136,7 @@
                     android:clickable="true"
                     android:focusable="true"
                     app:cardCornerRadius="12dp"
-                    app:cardElevation="3dp">
+                    app:cardElevation="2dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -192,7 +192,7 @@
                     android:clickable="true"
                     android:focusable="true"
                     app:cardCornerRadius="12dp"
-                    app:cardElevation="3dp">
+                    app:cardElevation="2dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -239,7 +239,7 @@
                     android:clickable="true"
                     android:focusable="true"
                     app:cardCornerRadius="12dp"
-                    app:cardElevation="3dp">
+                    app:cardElevation="2dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -295,7 +295,7 @@
                     android:clickable="true"
                     android:focusable="true"
                     app:cardCornerRadius="12dp"
-                    app:cardElevation="3dp">
+                    app:cardElevation="2dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -343,7 +343,7 @@
                     android:clickable="true"
                     android:focusable="true"
                     app:cardCornerRadius="12dp"
-                    app:cardElevation="3dp">
+                    app:cardElevation="2dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -399,7 +399,7 @@
                     android:clickable="true"
                     android:focusable="true"
                     app:cardCornerRadius="12dp"
-                    app:cardElevation="3dp">
+                    app:cardElevation="2dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -446,7 +446,7 @@
                     android:clickable="true"
                     android:focusable="true"
                     app:cardCornerRadius="12dp"
-                    app:cardElevation="3dp">
+                    app:cardElevation="2dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -502,7 +502,7 @@
                     android:clickable="true"
                     android:focusable="true"
                     app:cardCornerRadius="12dp"
-                    app:cardElevation="3dp">
+                    app:cardElevation="2dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
