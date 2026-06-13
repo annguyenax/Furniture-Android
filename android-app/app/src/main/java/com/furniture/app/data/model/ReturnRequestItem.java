@@ -12,6 +12,7 @@ public class ReturnRequestItem {
     @SerializedName("userName") private String userName;
     @SerializedName("userEmail") private String userEmail;
     @SerializedName("productName") private String productName;
+    @SerializedName("productImage") private String productImage;
     @SerializedName("reason") private String reason;
     @SerializedName("evidenceUrl") private String evidenceUrl;
     @SerializedName("evidenceType") private String evidenceType;
@@ -28,6 +29,7 @@ public class ReturnRequestItem {
     public String getUserName() { return userName; }
     public String getUserEmail() { return userEmail; }
     public String getProductName() { return productName; }
+    public String getProductImage() { return productImage; }
     public String getReason() { return reason; }
     public String getEvidenceUrl() { return evidenceUrl; }
     public String getEvidenceType() { return evidenceType; }
@@ -37,8 +39,8 @@ public class ReturnRequestItem {
     public String getUpdatedAt() { return updatedAt; }
 
     public String getStatusDisplay() {
-        if ("APPROVED".equals(status)) return "Da xac nhan";
-        if ("REJECTED".equals(status)) return "Da tu choi";
-        return "Dang cho xu ly";
+        if ("APPROVED".equals(status)) return "Đã xác nhận";
+        if ("REJECTED".equals(status)) return "Đã từ chối";
+        return "Đang chờ xử lý";
     }
 }

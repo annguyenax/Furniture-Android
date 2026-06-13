@@ -221,8 +221,42 @@ public class OrderHistoryActivity extends AppCompatActivity implements OrderAdap
 
     @Override
     public void onReturnOrder(Order order) {
+        List<com.furniture.app.data.model.OrderItem> items = order.getItems();
+        if (items == null || items.isEmpty()) {
+            openReturnRequest(order.getOrderId(), -1);
+            return;
+        }
+        if (items.size() == 1) {
+            Integer orderItemId = items.get(0).getOrderItemId();
+            openReturnRequest(order.getOrderId(), orderItemId != null ? orderItemId : -1);
+            return;
+        }
+
+        String[] options = new String[items.size() + 1];
+        options[0] = "Toàn bộ đơn hàng";
+        for (int i = 0; i < items.size(); i++) {
+            com.furniture.app.data.model.OrderItem item = items.get(i);
+            options[i + 1] = item.getProductName() != null ? item.getProductName() : "Sản phẩm #" + item.getProductId();
+        }
+        new AlertDialog.Builder(this)
+                .setTitle("Chọn phạm vi hoàn trả")
+                .setItems(options, (d, which) -> {
+                    if (which == 0) {
+                        openReturnRequest(order.getOrderId(), -1);
+                    } else {
+                        Integer orderItemId = items.get(which - 1).getOrderItemId();
+                        openReturnRequest(order.getOrderId(), orderItemId != null ? orderItemId : -1);
+                    }
+                })
+                .show();
+    }
+
+    private void openReturnRequest(int orderId, int orderItemId) {
         Intent intent = new Intent(this, ReturnRequestActivity.class);
-        intent.putExtra(ReturnRequestActivity.EXTRA_ORDER_ID, order.getOrderId());
+        intent.putExtra(ReturnRequestActivity.EXTRA_ORDER_ID, orderId);
+        if (orderItemId != -1) {
+            intent.putExtra(ReturnRequestActivity.EXTRA_ORDER_ITEM_ID, orderItemId);
+        }
         startActivityForResult(intent, REQUEST_RETURN);
     }
 

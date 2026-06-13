@@ -22,6 +22,66 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- Status filter chips -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="6dp"
+        android:scrollbars="none">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chip_group_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:singleSelection="true"
+            app:selectionRequired="true">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_all"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="Tất cả"
+                android:textColor="@color/chip_filter_text"
+                app:chipBackgroundColor="@color/chip_filter_background"
+                app:checkedIconVisible="false" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_pending"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Chờ xử lý"
+                android:textColor="@color/chip_filter_text"
+                app:chipBackgroundColor="@color/chip_filter_background"
+                app:checkedIconVisible="false" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_approved"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Đã xác nhận"
+                android:textColor="@color/chip_filter_text"
+                app:chipBackgroundColor="@color/chip_filter_background"
+                app:checkedIconVisible="false" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_rejected"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Đã từ chối"
+                android:textColor="@color/chip_filter_text"
+                app:chipBackgroundColor="@color/chip_filter_background"
+                app:checkedIconVisible="false" />
+
+        </com.google.android.material.chip.ChipGroup>
+
+    </HorizontalScrollView>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_returns"
         android:layout_width="match_parent"
@@ -29,6 +89,17 @@
         android:layout_weight="1"
         android:clipToPadding="false"
         android:padding="12dp" />
+
+    <TextView
+        android:id="@+id/tv_empty"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="Không có yêu cầu hoàn trả nào"
+        android:textColor="#9E9E9E"
+        android:textSize="15sp"
+        android:visibility="gone" />
 
     <ProgressBar
         android:id="@+id/progress_bar"

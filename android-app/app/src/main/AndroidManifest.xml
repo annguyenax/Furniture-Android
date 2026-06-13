@@ -189,6 +189,11 @@
             android:theme="@style/Theme.FurnitureApp" />
 
         <activity
+            android:name=".ui.customer.order.ReturnHistoryActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FurnitureApp" />
+
+        <activity
             android:name=".ui.customer.product.CategoryProductsActivity"
             android:exported="false"
             android:theme="@style/Theme.FurnitureApp" />
