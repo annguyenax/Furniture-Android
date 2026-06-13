@@ -25,6 +25,9 @@ public interface AuthApi {
     @POST("auth/google")
     Call<ApiResponse<AuthResponse>> googleLogin(@Body String idToken);
 
+    @POST("auth/google/register")
+    Call<ApiResponse<AuthResponse>> googleRegister(@Body String idToken);
+
     @POST("auth/refresh-token")
     Call<ApiResponse<AuthResponse>> refreshToken(@Body String refreshToken);
 

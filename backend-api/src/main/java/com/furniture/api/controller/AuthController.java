@@ -55,6 +55,17 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Google login successful", authResponse));
     }
 
+    @PostMapping("/google/register")
+    public ResponseEntity<ApiResponse<AuthResponse>> googleRegister(
+            @RequestBody String googleIdToken,
+            HttpServletResponse response) {
+
+        AuthResponse authResponse = authService.googleRegister(googleIdToken);
+        addTokenCookies(response, authResponse, true);
+
+        return ResponseEntity.ok(ApiResponse.success("Google register successful", authResponse));
+    }
+
     @PostMapping("/refresh-token")
     public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(
             @CookieValue(value = "refreshToken", required = false) String refreshTokenCookie,

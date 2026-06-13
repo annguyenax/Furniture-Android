@@ -12,6 +12,8 @@ public interface AuthService {
 
     AuthResponse googleLogin(String googleIdToken);
 
+    AuthResponse googleRegister(String googleIdToken);
+
     AuthResponse refreshToken(String refreshToken);
 
     void logout(Integer userId);

@@ -18,6 +18,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.furniture.app.BuildConfig;
 import com.furniture.app.R;
 import com.furniture.app.data.model.ApiResponse;
 import com.furniture.app.data.model.AuthResponse;
@@ -61,9 +62,11 @@ public class LoginActivity extends AppCompatActivity {
 
     private final ActivityResultLauncher<Intent> googleSignInLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                if (result.getData() != null) {
                     Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
                     handleGoogleSignInResult(task);
+                } else {
+                    Toast.makeText(this, "Bạn đã hủy đăng nhập Google", Toast.LENGTH_SHORT).show();
                 }
             });
 
@@ -176,13 +179,17 @@ public class LoginActivity extends AppCompatActivity {
 
     private void setupGoogleSignIn() {
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.google_web_client_id))
+                .requestIdToken(BuildConfig.GOOGLE_WEB_CLIENT_ID)
                 .requestEmail()
                 .build();
         googleSignInClient = GoogleSignIn.getClient(this, gso);
     }
 
     private void signInWithGoogle() {
+        if (BuildConfig.GOOGLE_WEB_CLIENT_ID.startsWith("YOUR_WEB_CLIENT_ID")) {
+            Toast.makeText(this, "Chưa cấu hình Google Web Client ID", Toast.LENGTH_LONG).show();
+            return;
+        }
         googleSignInClient.signOut().addOnCompleteListener(this, task -> {
             Intent signInIntent = googleSignInClient.getSignInIntent();
             googleSignInLauncher.launch(signInIntent);
