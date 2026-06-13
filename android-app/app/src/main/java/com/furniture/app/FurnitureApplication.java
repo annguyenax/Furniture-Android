@@ -7,6 +7,7 @@ import android.content.Intent;
 import com.furniture.app.data.remote.RetrofitClient;
 import com.furniture.app.data.remote.interceptor.AuthInterceptor;
 import com.furniture.app.ui.auth.LoginActivity;
+import com.furniture.app.util.SessionManager;
 
 public class FurnitureApplication extends Application {
 
@@ -27,9 +28,9 @@ public class FurnitureApplication extends Application {
         return instance.getApplicationContext();
     }
 
-    // Đăng ký handler tự động logout khi token hết hạn (401)
     private void setupAuthHandler() {
         AuthInterceptor.setUnauthorizedHandler(() -> {
+            new SessionManager(getApplicationContext()).clearSession();
             RetrofitClient.resetInstance();
             Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
