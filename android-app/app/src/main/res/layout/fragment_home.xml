@@ -6,7 +6,7 @@
     android:orientation="vertical"
     android:background="@color/background">
 
-    <!-- Top App Bar — FIXED (does not scroll) -->
+    <!-- Top App Bar -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -38,25 +38,54 @@
                 android:textColor="#CCFFFFFF"
                 android:textSize="12sp" />
         </LinearLayout>
-
-        <ImageView
+        <FrameLayout
             android:id="@+id/btn_chat_home"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:src="@drawable/ic_chat"
-            android:padding="4dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Chat hỗ trợ" />
+            android:background="?attr/selectableItemBackgroundBorderless">
 
-        <ImageView
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="Chat"
+                android:padding="4dp"
+                android:src="@drawable/ic_chat" />
+
+            <View
+                android:id="@+id/badge_chat_home"
+                android:layout_width="9dp"
+                android:layout_height="9dp"
+                android:layout_gravity="top|end"
+                android:layout_marginTop="3dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/bg_badge_dot"
+                android:visibility="gone" />
+        </FrameLayout>
+
+        <FrameLayout
             android:id="@+id/btn_notification_home"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:src="@drawable/ic_notification"
-            android:padding="4dp"
             android:layout_marginStart="4dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Thông báo" />
+            android:background="?attr/selectableItemBackgroundBorderless">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="Thong bao"
+                android:padding="4dp"
+                android:src="@drawable/ic_notification" />
+
+            <View
+                android:id="@+id/badge_notification_home"
+                android:layout_width="9dp"
+                android:layout_height="9dp"
+                android:layout_gravity="top|end"
+                android:layout_marginTop="3dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/bg_badge_dot"
+                android:visibility="gone" />
+        </FrameLayout>
     </LinearLayout>
 
     <!-- Scrollable content area -->
@@ -272,3 +301,4 @@
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
 </LinearLayout>
+
