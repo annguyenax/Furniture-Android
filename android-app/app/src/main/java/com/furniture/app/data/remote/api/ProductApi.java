@@ -36,6 +36,7 @@ public interface ProductApi {
     @GET("products/category/{categoryId}")
     Call<ApiResponse<PageResponse<Product>>> getProductsByCategory(
             @Path("categoryId") int categoryId,
+            @Query("keyword") String keyword,
             @Query("page") int page,
             @Query("size") int size
     );

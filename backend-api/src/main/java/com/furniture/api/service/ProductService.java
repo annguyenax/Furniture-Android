@@ -12,7 +12,7 @@ public interface ProductService {
 
     ProductResponse getProductById(Integer productId);
 
-    Page<ProductResponse> getProductsByCategory(Integer categoryId, Pageable pageable);
+    Page<ProductResponse> getProductsByCategory(Integer categoryId, String keyword, Pageable pageable);
 
     Page<ProductResponse> searchProducts(String keyword, Pageable pageable);
 

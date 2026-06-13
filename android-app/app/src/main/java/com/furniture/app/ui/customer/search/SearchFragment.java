@@ -315,7 +315,7 @@ public class SearchFragment extends Fragment {
 
     private void loadByCategory(int categoryId, String keyword) {
         setLoading(true);
-        productApi.getProductsByCategory(categoryId, 0, 60)
+        productApi.getProductsByCategory(categoryId, keyword.isEmpty() ? null : keyword, 0, 60)
                 .enqueue(new Callback<ApiResponse<PageResponse<Product>>>() {
                     @Override
                     public void onResponse(Call<ApiResponse<PageResponse<Product>>> call,
@@ -324,13 +324,6 @@ public class SearchFragment extends Fragment {
                         if (response.isSuccessful() && response.body() != null
                                 && response.body().getData() != null) {
                             rawResults = new ArrayList<>(response.body().getData().getContent());
-                            if (!keyword.isEmpty()) {
-                                String kw = keyword.toLowerCase();
-                                rawResults = rawResults.stream()
-                                        .filter(p -> p.getProductName() != null
-                                                && p.getProductName().toLowerCase().contains(kw))
-                                        .collect(Collectors.toList());
-                            }
                             applyFilterAndSort();
                         }
                     }

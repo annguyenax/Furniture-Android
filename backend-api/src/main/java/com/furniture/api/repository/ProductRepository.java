@@ -17,6 +17,9 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 
     Page<Product> findByCategoryIdAndStatus(Integer categoryId, Product.ProductStatus status, Pageable pageable);
 
+    @Query(value = "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.variants LEFT JOIN FETCH p.category WHERE p.categoryId = :categoryId AND p.status = 'ACTIVE'")
+    List<Product> findByCategoryIdAndStatusActiveFetch(@Param("categoryId") Integer categoryId, Pageable pageable);
+
     java.util.Optional<Product> findByProductIdAndStatus(Integer productId, Product.ProductStatus status);
 
     Page<Product> findByStatus(Product.ProductStatus status, Pageable pageable);
