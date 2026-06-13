@@ -2,6 +2,7 @@ package com.furniture.app.data.repository;
 
 import android.content.Context;
 
+import com.furniture.app.data.local.ProductCacheStore;
 import com.furniture.app.data.model.ApiResponse;
 import com.furniture.app.data.model.PageResponse;
 import com.furniture.app.data.model.Product;
@@ -16,9 +17,11 @@ import retrofit2.Response;
 
 public class ProductRepository {
     private final ProductApi productApi;
+    private final ProductCacheStore productCacheStore;
 
     public ProductRepository(Context context) {
         productApi = RetrofitClient.getPublicRetrofit().create(ProductApi.class);
+        productCacheStore = new ProductCacheStore(context);
     }
 
     public void getAllProducts(int page, int size, final ProductCallback callback) {
@@ -29,7 +32,9 @@ public class ProductRepository {
                                            Response<ApiResponse<PageResponse<Product>>> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             PageResponse<Product> pageResponse = response.body().getData();
-                            callback.onSuccess(pageResponse.getContent());
+                            List<Product> products = pageResponse.getContent();
+                            productCacheStore.saveHomeProducts(products);
+                            callback.onSuccess(products);
                         } else {
                             callback.onError("Failed to load products");
                         }
@@ -40,6 +45,10 @@ public class ProductRepository {
                         callback.onError(t.getMessage());
                     }
                 });
+    }
+
+    public List<Product> getCachedHomeProducts() {
+        return productCacheStore.getHomeProducts();
     }
 
     public void getProductById(int productId, final ProductDetailCallback callback) {

@@ -65,7 +65,7 @@ public class CartRepository {
             public void onFailure(Call<ApiResponse<Cart>> call, Throwable t) {
                 ApiResponse<Cart> errorResponse = new ApiResponse<>();
                 errorResponse.setSuccess(false);
-                errorResponse.setMessage("Lỗi kết nối: " + t.getMessage());
+                errorResponse.setMessage("Lỗi kết nối mạng");
                 resultLiveData.setValue(errorResponse);
             }
         });
@@ -94,7 +94,7 @@ public class CartRepository {
             public void onFailure(Call<ApiResponse<Cart>> call, Throwable t) {
                 ApiResponse<Cart> errorResponse = new ApiResponse<>();
                 errorResponse.setSuccess(false);
-                errorResponse.setMessage("Lỗi kết nối: " + t.getMessage());
+                errorResponse.setMessage("Lỗi kết nối mạng");
                 resultLiveData.setValue(errorResponse);
             }
         });
@@ -122,7 +122,7 @@ public class CartRepository {
             public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
                 ApiResponse<Void> errorResponse = new ApiResponse<>();
                 errorResponse.setSuccess(false);
-                errorResponse.setMessage("Lỗi kết nối: " + t.getMessage());
+                errorResponse.setMessage("Lỗi kết nối mạng");
                 resultLiveData.setValue(errorResponse);
             }
         });
@@ -150,7 +150,7 @@ public class CartRepository {
             public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
                 ApiResponse<Void> errorResponse = new ApiResponse<>();
                 errorResponse.setSuccess(false);
-                errorResponse.setMessage("Lỗi kết nối: " + t.getMessage());
+                errorResponse.setMessage("Lỗi kết nối mạng");
                 resultLiveData.setValue(errorResponse);
             }
         });

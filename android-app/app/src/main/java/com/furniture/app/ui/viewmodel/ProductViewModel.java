@@ -49,6 +49,11 @@ public class ProductViewModel extends ViewModel {
         });
     }
 
+    public void loadCachedHomeProducts() {
+        productsLiveData.setValue(productRepository.getCachedHomeProducts());
+        loadingLiveData.setValue(false);
+    }
+
     public void searchProducts(String keyword) {
         loadingLiveData.setValue(true);
         productRepository.searchProducts(keyword, 0, 50, new ProductRepository.ProductCallback() {
