@@ -15,6 +15,10 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 
     Page<Product> findByCategoryId(Integer categoryId, Pageable pageable);
 
+    Page<Product> findByCategoryIdAndStatus(Integer categoryId, Product.ProductStatus status, Pageable pageable);
+
+    java.util.Optional<Product> findByProductIdAndStatus(Integer productId, Product.ProductStatus status);
+
     Page<Product> findByStatus(Product.ProductStatus status, Pageable pageable);
 
     // JOIN FETCH để tránh N+1 khi lấy danh sách sản phẩm

@@ -166,8 +166,9 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                 tvTotalAmount.setText(String.format("₫%s", currencyFormat.format(total)));
             }
 
-            // Cancel: only for PENDING
-            btnCancel.setVisibility("PENDING".equals(status) ? View.VISIBLE : View.GONE);
+            // Cancel: match backend rule for PENDING and PROCESSING orders.
+            boolean canCancel = "PENDING".equals(status) || "PROCESSING".equals(status);
+            btnCancel.setVisibility(canCancel ? View.VISIBLE : View.GONE);
             btnCancel.setOnClickListener(v -> listener.onCancelOrder(order));
             btnReceive.setVisibility(View.GONE);
 

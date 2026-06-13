@@ -43,8 +43,12 @@ public class ReviewServiceImpl implements ReviewService {
             throw new BadRequestException("Thiếu mã sản phẩm");
         }
 
-        productRepository.findById(request.getProductId())
+        productRepository.findByProductIdAndStatus(request.getProductId(), com.furniture.api.model.Product.ProductStatus.ACTIVE)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "id", request.getProductId()));
+
+        if (request.getOrderId() == null) {
+            throw new BadRequestException("Chi co the danh gia san pham da mua trong don hang da giao");
+        }
 
         boolean verifiedPurchase = false;
         if (request.getOrderId() != null) {

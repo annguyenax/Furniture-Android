@@ -2,6 +2,7 @@ package com.furniture.api.controller;
 
 import com.furniture.api.dto.response.AddressResponse;
 import com.furniture.api.dto.response.ApiResponse;
+import com.furniture.api.exception.ResourceNotFoundException;
 import com.furniture.api.model.Address;
 import com.furniture.api.repository.AddressRepository;
 import lombok.RequiredArgsConstructor;
@@ -77,7 +78,7 @@ public class AddressController {
         Integer userId = getCurrentUserId(auth);
         Address address = addressRepository.findById(addressId)
                 .filter(a -> a.getUserId().equals(userId))
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy địa chỉ"));
+                .orElseThrow(() -> new ResourceNotFoundException("Address", "id", addressId));
 
         if (Boolean.TRUE.equals(request.getIsDefault())) {
             addressRepository.resetDefaultAddressForUser(userId);
@@ -103,7 +104,7 @@ public class AddressController {
         Integer userId = getCurrentUserId(auth);
         Address address = addressRepository.findById(addressId)
                 .filter(a -> a.getUserId().equals(userId))
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy địa chỉ"));
+                .orElseThrow(() -> new ResourceNotFoundException("Address", "id", addressId));
 
         try {
             addressRepository.delete(address);
@@ -123,7 +124,7 @@ public class AddressController {
         Integer userId = getCurrentUserId(auth);
         Address address = addressRepository.findById(addressId)
                 .filter(a -> a.getUserId().equals(userId))
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy địa chỉ"));
+                .orElseThrow(() -> new ResourceNotFoundException("Address", "id", addressId));
 
         addressRepository.resetDefaultAddressForUser(userId);
         address.setIsDefault(true);

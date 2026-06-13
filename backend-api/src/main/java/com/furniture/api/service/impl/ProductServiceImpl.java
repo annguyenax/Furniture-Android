@@ -34,14 +34,14 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponse getProductById(Integer productId) {
-        Product product = productRepository.findById(productId)
+        Product product = productRepository.findByProductIdAndStatus(productId, Product.ProductStatus.ACTIVE)
             .orElseThrow(() -> new ResourceNotFoundException("Product", "id", productId));
         return ProductResponse.fromEntity(product);
     }
 
     @Override
     public Page<ProductResponse> getProductsByCategory(Integer categoryId, Pageable pageable) {
-        return productRepository.findByCategoryId(categoryId, pageable)
+        return productRepository.findByCategoryIdAndStatus(categoryId, Product.ProductStatus.ACTIVE, pageable)
             .map(ProductResponse::fromEntity);
     }
 
@@ -98,7 +98,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductResponse> getRelatedProducts(Integer productId, int limit) {
-        Product product = productRepository.findById(productId)
+        Product product = productRepository.findByProductIdAndStatus(productId, Product.ProductStatus.ACTIVE)
             .orElseThrow(() -> new ResourceNotFoundException("Product", "id", productId));
 
         if (product.getCategoryId() == null) {

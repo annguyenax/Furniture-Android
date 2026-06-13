@@ -30,7 +30,8 @@ public class WishlistController {
         List<Wishlist> items = wishlistRepository.findByUserId(userId);
         List<WishlistItem> result = items.stream()
                 .map(w -> {
-                    Product p = productRepository.findById(w.getProductId()).orElse(null);
+                    Product p = productRepository.findByProductIdAndStatus(
+                            w.getProductId(), Product.ProductStatus.ACTIVE).orElse(null);
                     if (p == null) return null;
                     BigDecimal price = p.getVariants() != null && !p.getVariants().isEmpty()
                             ? p.getVariants().stream()
@@ -56,7 +57,7 @@ public class WishlistController {
         if (wishlistRepository.existsByUserIdAndProductId(userId, productId)) {
             return ResponseEntity.badRequest().body(ApiResponse.error("Sản phẩm đã có trong danh sách yêu thích"));
         }
-        if (!productRepository.existsById(productId)) {
+        if (productRepository.findByProductIdAndStatus(productId, Product.ProductStatus.ACTIVE).isEmpty()) {
             return ResponseEntity.badRequest().body(ApiResponse.error("Không tìm thấy sản phẩm"));
         }
         wishlistRepository.save(Wishlist.builder().userId(userId).productId(productId).build());

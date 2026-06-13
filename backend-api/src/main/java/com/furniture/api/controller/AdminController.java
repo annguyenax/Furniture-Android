@@ -5,6 +5,7 @@ import com.furniture.api.dto.response.CategoryResponse;
 import com.furniture.api.dto.response.OrderResponse;
 import com.furniture.api.dto.response.ProductResponse;
 import com.furniture.api.dto.response.UserResponse;
+import com.furniture.api.exception.ResourceNotFoundException;
 import com.furniture.api.model.*;
 import com.furniture.api.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -86,7 +87,7 @@ public class AdminController {
             @RequestParam String status) {
 
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "id", orderId));
 
         Order.OrderStatus newStatus;
         try {
@@ -101,12 +102,29 @@ public class AdminController {
                     .body(ApiResponse.error("Khách hàng cần xác nhận đã nhận hàng để hoàn tất đơn"));
         }
 
+        if (!isAllowedAdminOrderTransition(order.getStatus(), newStatus)) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Khong the chuyen trang thai don hang tu "
+                            + order.getStatus() + " sang " + newStatus));
+        }
+
         order.setStatus(newStatus);
         order = orderRepository.save(order);
         return ResponseEntity.ok(ApiResponse.success("Đã cập nhật trạng thái", mapOrder(order)));
     }
 
     // ─── Products ─────────────────────────────────────────────────────────────
+
+    private boolean isAllowedAdminOrderTransition(Order.OrderStatus current, Order.OrderStatus next) {
+        if (current == next) return true;
+        if (current == Order.OrderStatus.DELIVERED || current == Order.OrderStatus.CANCELLED) return false;
+        return switch (current) {
+            case PENDING -> next == Order.OrderStatus.PROCESSING || next == Order.OrderStatus.CANCELLED;
+            case PROCESSING -> next == Order.OrderStatus.SHIPPED || next == Order.OrderStatus.CANCELLED;
+            case SHIPPED -> false;
+            default -> false;
+        };
+    }
 
     @PostMapping("/products")
     @Transactional
@@ -151,7 +169,9 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ApiResponse.error("Không tìm thấy sản phẩm"));
         }
-        productRepository.deleteById(productId);
+        Product product = productRepository.findById(productId).orElseThrow();
+        product.setStatus(Product.ProductStatus.INACTIVE);
+        productRepository.save(product);
         return ResponseEntity.ok(ApiResponse.success("Đã xóa sản phẩm", null));
     }
 
@@ -161,7 +181,7 @@ public class AdminController {
             @RequestBody UpdateProductRequest request) {
 
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", productId));
 
         if (request.getProductName() != null && !request.getProductName().isBlank()) {
             product.setProductName(request.getProductName());
@@ -226,7 +246,7 @@ public class AdminController {
             @RequestBody VariantMutationRequest request) {
 
         ProductVariant variant = productVariantRepository.findById(variantId)
-                .orElseThrow(() -> new RuntimeException("Variant not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Variant", "id", variantId));
         variant.setSize(request.getSize());
         variant.setColor(request.getColor());
         variant.setMaterial(request.getMaterial());
@@ -292,7 +312,7 @@ public class AdminController {
             @RequestBody CategoryMutationRequest request) {
 
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Category", "id", categoryId));
 
         if (request.getCategoryName() != null && !request.getCategoryName().isBlank()) {
             category.setCategoryName(request.getCategoryName().trim());
@@ -596,10 +616,19 @@ public class AdminController {
     @Transactional
     public ResponseEntity<ApiResponse<UserResponse>> updateUserStatus(
             @PathVariable Integer userId,
-            @RequestBody UpdateStatusRequest request) {
+            @RequestBody UpdateStatusRequest request,
+            org.springframework.security.core.Authentication auth) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+
+        Integer currentAdminId = Integer.parseInt(auth.getName());
+        if (userId.equals(currentAdminId)) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Khong the tu khoa tai khoan admin dang dang nhap"));
+        }
+        if (user.hasRole(Role.ADMIN)) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Khong the thay doi trang thai tai khoan admin"));
+        }
 
         User.UserStatus newStatus;
         try {

@@ -4,6 +4,7 @@ import com.furniture.api.dto.request.AddToCartRequest;
 import com.furniture.api.dto.request.UpdateCartItemRequest;
 import com.furniture.api.dto.response.CartResponse;
 import com.furniture.api.exception.BadRequestException;
+import com.furniture.api.exception.ResourceNotFoundException;
 import com.furniture.api.model.Cart;
 import com.furniture.api.model.CartItem;
 import com.furniture.api.model.Product;
@@ -44,13 +45,13 @@ public class CartServiceImpl implements CartService {
     public CartResponse addToCart(Integer userId, AddToCartRequest request) {
         Cart cart = getOrCreateCart(userId);
 
-        Product product = productRepository.findById(request.getProductId())
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+        Product product = productRepository.findByProductIdAndStatus(request.getProductId(), Product.ProductStatus.ACTIVE)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", request.getProductId()));
 
         int quantityToAdd = normaliseQuantity(request.getQuantity());
         ProductVariant variant = resolveVariant(product.getProductId(), request.getVariantId());
         Integer variantId = variant != null ? variant.getVariantId() : null;
-        int availableStock = variant != null ? variant.getStock() : (product.getStock() != null ? product.getStock() : 0);
+        int availableStock = variant != null ? safeStock(variant.getStock()) : safeStock(product.getStock());
         if (availableStock < quantityToAdd) {
             throw new BadRequestException("Sản phẩm không đủ hàng");
         }
@@ -75,7 +76,7 @@ public class CartServiceImpl implements CartService {
         } else {
             // Add new item - get price from variant or first variant of product
             if (variant == null) {
-                throw new RuntimeException("Product has no price information");
+                throw new BadRequestException("San pham chua co thong tin gia");
             }
             BigDecimal price = variant.getPrice();
 
@@ -105,10 +106,10 @@ public class CartServiceImpl implements CartService {
         Cart cart = getOrCreateCart(userId);
 
         CartItem item = cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cart item", "id", cartItemId));
 
         if (!item.getCartId().equals(cart.getCartId())) {
-            throw new RuntimeException("Cart item does not belong to user's cart");
+            throw new BadRequestException("San pham trong gio hang khong thuoc tai khoan nay");
         }
 
         int quantity = normaliseQuantity(request.getQuantity());
@@ -131,10 +132,10 @@ public class CartServiceImpl implements CartService {
         Cart cart = getOrCreateCart(userId);
 
         CartItem item = cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cart item", "id", cartItemId));
 
         if (!item.getCartId().equals(cart.getCartId())) {
-            throw new RuntimeException("Cart item does not belong to user's cart");
+            throw new BadRequestException("San pham trong gio hang khong thuoc tai khoan nay");
         }
 
         cartItemRepository.delete(item);
@@ -254,7 +255,7 @@ public class CartServiceImpl implements CartService {
             productImage = product.getVariants().get(0).getImageUrl();
         }
 
-        int stock = variant != null ? variant.getStock() : (product != null ? product.getStock() : 0);
+        int stock = variant != null ? safeStock(variant.getStock()) : (product != null ? safeStock(product.getStock()) : 0);
 
         return CartResponse.CartItemResponse.builder()
                 .cartItemId(item.getCartItemId())
@@ -268,5 +269,9 @@ public class CartServiceImpl implements CartService {
                 .subtotal(item.getTotalPrice())
                 .stock(stock)
                 .build();
+    }
+
+    private int safeStock(Integer stock) {
+        return stock != null ? stock : 0;
     }
 }

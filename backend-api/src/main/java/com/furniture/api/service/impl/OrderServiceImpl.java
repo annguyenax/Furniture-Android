@@ -47,10 +47,10 @@ public class OrderServiceImpl implements OrderService {
         List<CartItem> itemsToOrder;
         if (Boolean.TRUE.equals(request.getFromCart())) {
             Cart cart = cartRepository.findByUserId(userId)
-                    .orElseThrow(() -> new RuntimeException("Cart not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Cart", "userId", userId));
             itemsToOrder = cartItemRepository.findByCartId(cart.getCartId());
             if (itemsToOrder.isEmpty()) {
-                throw new RuntimeException("Cart is empty");
+                throw new BadRequestException("Gio hang dang trong");
             }
         } else {
             itemsToOrder = convertRequestItemsToCartItems(request.getItems());
@@ -58,10 +58,13 @@ public class OrderServiceImpl implements OrderService {
 
         // H2: Validate stock before creating order
         for (CartItem item : itemsToOrder) {
+            Product productForOrder = productRepository.findByProductIdAndStatus(
+                    item.getProductId(), Product.ProductStatus.ACTIVE)
+                    .orElseThrow(() -> new BadRequestException("San pham khong ton tai hoac da bi an"));
             if (item.getProductVariantId() != null) {
                 ProductVariant variant = productVariantRepository.findById(item.getProductVariantId())
                         .orElseThrow(() -> new BadRequestException("Sản phẩm không tồn tại hoặc đã bị xóa"));
-                if (variant.getStock() < item.getQuantity()) {
+                if (safeStock(variant.getStock()) < item.getQuantity()) {
                     throw new BadRequestException("Sản phẩm '" +
                             (item.getVariantInfo() != null ? item.getVariantInfo() : "#" + item.getProductId()) +
                             "' không đủ hàng (còn " + variant.getStock() + ", cần " + item.getQuantity() + ")");
@@ -69,7 +72,7 @@ public class OrderServiceImpl implements OrderService {
             } else {
                 Product product = productRepository.findById(item.getProductId())
                         .orElseThrow(() -> new BadRequestException("Sản phẩm không tồn tại"));
-                if (product.getStock() != null && product.getStock() < item.getQuantity()) {
+                if (safeStock(product.getStock()) < item.getQuantity()) {
                     throw new BadRequestException("Sản phẩm '" + product.getProductName() +
                             "' không đủ hàng (còn " + product.getStock() + ", cần " + item.getQuantity() + ")");
                 }
@@ -118,12 +121,12 @@ public class OrderServiceImpl implements OrderService {
 
             if (cartItem.getProductVariantId() != null) {
                 productVariantRepository.findById(cartItem.getProductVariantId()).ifPresent(v -> {
-                    v.setStock(Math.max(0, v.getStock() - cartItem.getQuantity()));
+                    v.setStock(Math.max(0, safeStock(v.getStock()) - cartItem.getQuantity()));
                     productVariantRepository.save(v);
                 });
             }
             productRepository.findById(cartItem.getProductId()).ifPresent(p -> {
-                p.setStock(Math.max(0, p.getStock() - cartItem.getQuantity()));
+                p.setStock(Math.max(0, safeStock(p.getStock()) - cartItem.getQuantity()));
                 productRepository.save(p);
             });
         }
@@ -140,10 +143,10 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderResponse getOrderById(Integer userId, Integer orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "id", orderId));
 
         if (!order.getUserId().equals(userId)) {
-            throw new RuntimeException("Order does not belong to user");
+            throw new BadRequestException("Don hang khong thuoc tai khoan nay");
         }
 
         Address address = findOrderAddress(order);
@@ -234,10 +237,10 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderResponse cancelOrder(Integer userId, Integer orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "id", orderId));
 
         if (!order.getUserId().equals(userId)) {
-            throw new RuntimeException("Order does not belong to user");
+            throw new BadRequestException("Don hang khong thuoc tai khoan nay");
         }
 
         // H1: Allow cancel for both PENDING and PROCESSING (match Android UI)
@@ -255,12 +258,12 @@ public class OrderServiceImpl implements OrderService {
         for (OrderItem item : items) {
             if (item.getVariantId() != null) {
                 productVariantRepository.findById(item.getVariantId()).ifPresent(v -> {
-                    v.setStock(v.getStock() + item.getQuantity());
+                    v.setStock(safeStock(v.getStock()) + item.getQuantity());
                     productVariantRepository.save(v);
                 });
             }
             productRepository.findById(item.getProductId()).ifPresent(p -> {
-                p.setStock(p.getStock() + item.getQuantity());
+                p.setStock(safeStock(p.getStock()) + item.getQuantity());
                 productRepository.save(p);
             });
         }
@@ -274,10 +277,10 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderResponse confirmReceived(Integer userId, Integer orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "id", orderId));
 
         if (!order.getUserId().equals(userId)) {
-            throw new RuntimeException("Order does not belong to user");
+            throw new BadRequestException("Don hang khong thuoc tai khoan nay");
         }
 
         if (order.getStatus() != Order.OrderStatus.SHIPPED) {
@@ -314,13 +317,13 @@ public class OrderServiceImpl implements OrderService {
 
     private List<CartItem> convertRequestItemsToCartItems(List<CreateOrderRequest.OrderItemRequest> items) {
         if (items == null || items.isEmpty()) {
-            throw new RuntimeException("No items provided");
+            throw new BadRequestException("Danh sach san pham khong duoc trong");
         }
 
         List<CartItem> cartItems = new ArrayList<>();
         for (CreateOrderRequest.OrderItemRequest item : items) {
-            Product product = productRepository.findById(item.getProductId())
-                    .orElseThrow(() -> new RuntimeException("Product not found: " + item.getProductId()));
+            Product product = productRepository.findByProductIdAndStatus(item.getProductId(), Product.ProductStatus.ACTIVE)
+                    .orElseThrow(() -> new ResourceNotFoundException("Product", "id", item.getProductId()));
 
             ProductVariant variant = null;
             if (item.getVariantId() != null) {
@@ -338,7 +341,7 @@ public class OrderServiceImpl implements OrderService {
             } else {
                 List<ProductVariant> variants = productVariantRepository.findByProductId(product.getProductId());
                 if (variants.isEmpty()) {
-                    throw new RuntimeException("Product has no price information");
+                    throw new BadRequestException("San pham chua co thong tin gia");
                 }
                 variant = variants.get(0);
                 price = variant.getPrice();
@@ -349,7 +352,7 @@ public class OrderServiceImpl implements OrderService {
             if (quantity < 1) {
                 throw new BadRequestException("Số lượng sản phẩm phải lớn hơn 0");
             }
-            if (variant.getStock() < quantity) {
+            if (safeStock(variant.getStock()) < quantity) {
                 throw new BadRequestException("Sản phẩm không đủ hàng");
             }
 
@@ -380,6 +383,10 @@ public class OrderServiceImpl implements OrderService {
             info.append(variant.getMaterial());
         }
         return info.toString();
+    }
+
+    private int safeStock(Integer stock) {
+        return stock != null ? stock : 0;
     }
 
     private List<OrderItem> getOrderItems(Integer orderId) {

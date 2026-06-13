@@ -3,6 +3,8 @@ package com.furniture.api.controller;
 import com.furniture.api.dto.response.ApiResponse;
 import com.furniture.api.dto.response.ChatMessageResponse;
 import com.furniture.api.dto.response.ChatRoomResponse;
+import com.furniture.api.exception.BadRequestException;
+import com.furniture.api.exception.ResourceNotFoundException;
 import com.furniture.api.model.ChatMessage;
 import com.furniture.api.model.User;
 import com.furniture.api.repository.ChatMessageRepository;
@@ -33,12 +35,23 @@ public class ChatController {
     private User getCurrentUser(Authentication auth) {
         Integer userId = Integer.parseInt(auth.getName());
         return userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
     }
 
     private boolean isAdmin(Authentication auth) {
         return auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+    }
+
+    private void validateChatAccess(String chatId, User user, boolean adminMode) {
+        String expectedSupportId = String.valueOf(SUPPORT_ID);
+        String[] parts = chatId != null ? chatId.split("-") : new String[0];
+        if (parts.length != 2 || !expectedSupportId.equals(parts[1])) {
+            throw new BadRequestException("Phong chat khong hop le");
+        }
+        if (!adminMode && !String.valueOf(user.getUserId()).equals(parts[0])) {
+            throw new BadRequestException("Ban khong co quyen xem phong chat nay");
+        }
     }
 
     @PostMapping("/send")
@@ -139,6 +152,7 @@ public class ChatController {
 
         boolean adminMode = isAdmin(authentication);
         User me = adminMode ? null : getCurrentUser(authentication);
+        validateChatAccess(chatId, me, adminMode);
 
         int receiverId = adminMode ? SUPPORT_ID : me.getUserId();
         chatMessageRepository.markAsRead(chatId, receiverId);

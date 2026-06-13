@@ -47,7 +47,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(String.valueOf(userId));
 
-                if (userDetails != null) {
+                if (userDetails != null
+                        && userDetails.isEnabled()
+                        && userDetails.isAccountNonLocked()
+                        && userDetails.isAccountNonExpired()
+                        && userDetails.isCredentialsNonExpired()) {
                     UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
                             userDetails,
@@ -62,6 +66,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                     request.setAttribute("userId", userId);
                     log.debug("Set authentication for user: {}", userId);
+                } else {
+                    log.debug("Skip authentication for disabled or locked user: {}", userId);
                 }
             }
         } catch (Exception ex) {
