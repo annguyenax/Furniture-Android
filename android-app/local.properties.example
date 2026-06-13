@@ -18,6 +18,5 @@ sdk.dir=C\:\\Users\\YOUR_USERNAME\\AppData\\Local\\Android\\Sdk
 #   base.url=https://your-domain.com/api/
 base.url=http://192.168.20.19:8080/api/
 
-# Google Sign-In Web Client ID (OAuth 2.0 Client ID loáº¡i Web application)
-google.web.client.id=410006278290-t2liv1f1k010lj3mqmng9230ehq40b2v.apps.googleusercontent.com
+
 
