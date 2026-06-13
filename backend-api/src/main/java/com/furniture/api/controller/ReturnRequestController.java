@@ -10,6 +10,7 @@ import com.furniture.api.model.User;
 import com.furniture.api.repository.OrderItemRepository;
 import com.furniture.api.repository.OrderRepository;
 import com.furniture.api.repository.ProductRepository;
+import com.furniture.api.repository.ProductVariantRepository;
 import com.furniture.api.repository.ReturnRequestRepository;
 import com.furniture.api.repository.UserRepository;
 import com.furniture.api.service.CloudinaryService;
@@ -25,6 +26,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -39,6 +41,7 @@ public class ReturnRequestController {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final ProductRepository productRepository;
+    private final ProductVariantRepository productVariantRepository;
     private final UserRepository userRepository;
     private final CloudinaryService cloudinaryService;
     private final com.furniture.api.repository.ProductReviewRepository reviewRepository;
@@ -151,7 +154,13 @@ public class ReturnRequestController {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<ReturnRequest> requests;
         if (status != null && !status.isBlank()) {
-            requests = returnRequestRepository.findByStatus(ReturnRequest.ReturnStatus.valueOf(status), pageable);
+            ReturnRequest.ReturnStatus parsedStatus;
+            try {
+                parsedStatus = ReturnRequest.ReturnStatus.valueOf(status.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new BadRequestException("Trang thai hoan tra khong hop le");
+            }
+            requests = returnRequestRepository.findByStatus(parsedStatus, pageable);
         } else {
             requests = returnRequestRepository.findAll(pageable);
         }
@@ -160,6 +169,7 @@ public class ReturnRequestController {
 
     @PutMapping("/admin/returns/{returnId}/status")
     @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
     public ResponseEntity<ApiResponse<ReturnRequestResponse>> updateReturnStatus(
             @PathVariable Integer returnId,
             @RequestParam String status,
@@ -168,9 +178,21 @@ public class ReturnRequestController {
         ReturnRequest request = returnRequestRepository.findById(returnId)
                 .orElseThrow(() -> new ResourceNotFoundException("Return request", "id", returnId));
 
-        ReturnRequest.ReturnStatus newStatus = ReturnRequest.ReturnStatus.valueOf(status);
+        ReturnRequest.ReturnStatus newStatus;
+        try {
+            newStatus = ReturnRequest.ReturnStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Trang thai hoan tra khong hop le");
+        }
         if (newStatus == ReturnRequest.ReturnStatus.PENDING) {
             throw new BadRequestException("Admin chi co the APPROVED hoac REJECTED yeu cau hoan tra");
+        }
+        if (request.getStatus() != ReturnRequest.ReturnStatus.PENDING) {
+            throw new BadRequestException("Yeu cau hoan tra da duoc xu ly");
+        }
+
+        if (newStatus == ReturnRequest.ReturnStatus.APPROVED) {
+            applyApprovedReturn(request);
         }
 
         request.setStatus(newStatus);
@@ -184,6 +206,47 @@ public class ReturnRequestController {
         if (!orderId.equals(item.getOrderId())) {
             throw new BadRequestException("San pham khong thuoc don hang nay");
         }
+    }
+
+    private void applyApprovedReturn(ReturnRequest request) {
+        Order order = orderRepository.findById(request.getOrderId())
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "id", request.getOrderId()));
+        if (order.getStatus() != Order.OrderStatus.DELIVERED) {
+            throw new BadRequestException("Chi co the duyet hoan tra cho don hang da giao");
+        }
+
+        List<OrderItem> items;
+        if (request.getOrderItemId() != null) {
+            OrderItem item = orderItemRepository.findById(request.getOrderItemId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Order item", "id", request.getOrderItemId()));
+            validateOrderItemBelongsToOrder(item, request.getOrderId());
+            items = List.of(item);
+        } else {
+            items = orderItemRepository.findByOrderId(request.getOrderId());
+            order.setPaymentStatus(Order.PaymentStatus.REFUNDED);
+            orderRepository.save(order);
+        }
+
+        for (OrderItem item : items) {
+            if (item.getVariantId() != null) {
+                productVariantRepository.findById(item.getVariantId()).ifPresent(variant -> {
+                    variant.setStock(safeStock(variant.getStock()) + safeQuantity(item.getQuantity()));
+                    productVariantRepository.save(variant);
+                });
+            }
+            productRepository.findById(item.getProductId()).ifPresent(product -> {
+                product.setStock(safeStock(product.getStock()) + safeQuantity(item.getQuantity()));
+                productRepository.save(product);
+            });
+        }
+    }
+
+    private int safeStock(Integer stock) {
+        return stock != null ? stock : 0;
+    }
+
+    private int safeQuantity(Integer quantity) {
+        return quantity != null ? quantity : 0;
     }
 
     private Integer parseInteger(String value, String field) {

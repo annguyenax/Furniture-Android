@@ -71,7 +71,6 @@ public class AuthViewModel extends ViewModel {
         authRepository.register(username, email, password, firstName, lastName, phone, new AuthRepository.AuthCallback() {
             @Override
             public void onSuccess(AuthResponse response) {
-                authResponseLiveData.setValue(response);
                 User user = response.getUser();
                 String role = (user.getRoles() != null && !user.getRoles().isEmpty())
                         ? user.getRoles().get(0) : "CUSTOMER";
@@ -87,6 +86,7 @@ public class AuthViewModel extends ViewModel {
                         user.getProfilePicture(),
                         role
                 );
+                authResponseLiveData.setValue(response);
                 loadingLiveData.setValue(false);
             }
 

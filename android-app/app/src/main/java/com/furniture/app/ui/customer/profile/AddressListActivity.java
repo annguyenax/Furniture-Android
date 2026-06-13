@@ -139,7 +139,7 @@ public class AddressListActivity extends AppCompatActivity {
         addressApi.setDefault(address.getAddressId()).enqueue(new Callback<ApiResponse<Address>>() {
             @Override
             public void onResponse(Call<ApiResponse<Address>> call, Response<ApiResponse<Address>> response) {
-                if (response.isSuccessful()) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     Toast.makeText(AddressListActivity.this, "Đã đặt địa chỉ mặc định", Toast.LENGTH_SHORT).show();
                     loadAddresses();
                 }

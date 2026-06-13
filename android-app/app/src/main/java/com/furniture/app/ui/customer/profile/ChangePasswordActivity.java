@@ -82,7 +82,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
                 setLoading(false);
-                if (response.isSuccessful()) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     Toast.makeText(ChangePasswordActivity.this,
                             "Đã đổi mật khẩu, vui lòng đăng nhập lại", Toast.LENGTH_LONG).show();
                     sessionManager.clearSession();

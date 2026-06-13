@@ -31,6 +31,7 @@ public class AdminController {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final AddressRepository addressRepository;
+    private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
     private final ProductVariantRepository productVariantRepository;
     private final CategoryRepository categoryRepository;
@@ -108,6 +109,11 @@ public class AdminController {
                             + order.getStatus() + " sang " + newStatus));
         }
 
+        if (newStatus == Order.OrderStatus.CANCELLED && order.getStatus() != Order.OrderStatus.CANCELLED) {
+            restoreStockForOrder(order.getOrderId());
+            order.setPaymentStatus(Order.PaymentStatus.CANCELLED);
+        }
+
         order.setStatus(newStatus);
         order = orderRepository.save(order);
         return ResponseEntity.ok(ApiResponse.success("Đã cập nhật trạng thái", mapOrder(order)));
@@ -126,6 +132,25 @@ public class AdminController {
         };
     }
 
+    private void restoreStockForOrder(Integer orderId) {
+        for (OrderItem item : orderItemRepository.findByOrderId(orderId)) {
+            if (item.getVariantId() != null) {
+                productVariantRepository.findById(item.getVariantId()).ifPresent(variant -> {
+                    variant.setStock(safeStock(variant.getStock()) + item.getQuantity());
+                    productVariantRepository.save(variant);
+                });
+            }
+            productRepository.findById(item.getProductId()).ifPresent(product -> {
+                product.setStock(safeStock(product.getStock()) + item.getQuantity());
+                productRepository.save(product);
+            });
+        }
+    }
+
+    private int safeStock(Integer stock) {
+        return stock != null ? stock : 0;
+    }
+
     @PostMapping("/products")
     @Transactional
     public ResponseEntity<ApiResponse<ProductResponse>> createProduct(
@@ -136,6 +161,15 @@ public class AdminController {
         }
         if (request.getPrice() == null || request.getPrice().compareTo(java.math.BigDecimal.ZERO) <= 0) {
             return ResponseEntity.badRequest().body(ApiResponse.error("Giá sản phẩm phải lớn hơn 0"));
+        }
+        if (request.getStock() != null && request.getStock() < 0) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("So luong ton kho khong duoc am"));
+        }
+        if (!isValidDiscount(request.getDiscount())) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Giam gia phai tu 0 den 100"));
+        }
+        if (request.getCategoryId() != null && !categoryRepository.existsById(request.getCategoryId())) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Danh muc khong ton tai"));
         }
 
         Product product = Product.builder()
@@ -172,7 +206,7 @@ public class AdminController {
         Product product = productRepository.findById(productId).orElseThrow();
         product.setStatus(Product.ProductStatus.INACTIVE);
         productRepository.save(product);
-        return ResponseEntity.ok(ApiResponse.success("Đã xóa sản phẩm", null));
+        return ResponseEntity.ok(ApiResponse.success("Da an san pham", null));
     }
 
     @PutMapping("/products/{productId}")
@@ -190,25 +224,36 @@ public class AdminController {
             product.setDescription(request.getDescription());
         }
         if (request.getStock() != null) {
+            if (request.getStock() < 0) {
+                return ResponseEntity.badRequest().body(ApiResponse.error("So luong ton kho khong duoc am"));
+            }
             product.setStock(request.getStock());
         }
         if (request.getDiscount() != null) {
+            if (!isValidDiscount(request.getDiscount())) {
+                return ResponseEntity.badRequest().body(ApiResponse.error("Giam gia phai tu 0 den 100"));
+            }
             product.setDiscount(request.getDiscount());
         }
         if (request.getStatus() != null) {
             try {
                 product.setStatus(Product.ProductStatus.valueOf(request.getStatus().toUpperCase()));
-            } catch (IllegalArgumentException ignored) {}
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body(ApiResponse.error("Trang thai san pham khong hop le"));
+            }
+        }
+
+        java.util.List<ProductVariant> imageVariants = null;
+        if (request.getImageUrl() != null) {
+            imageVariants = productVariantRepository.findByProductId(productId);
+            if (imageVariants.isEmpty()) {
+                return ResponseEntity.badRequest().body(ApiResponse.error("San pham can co it nhat mot phan loai truoc khi cap nhat anh"));
+            }
         }
 
         product = productRepository.save(product);
         if (request.getImageUrl() != null) {
-            java.util.List<ProductVariant> variants = productVariantRepository.findByProductId(productId);
-            ProductVariant variant = variants.isEmpty() ? ProductVariant.builder()
-                    .productId(productId)
-                    .price(java.math.BigDecimal.ZERO)
-                    .stock(product.getStock() != null ? product.getStock() : 0)
-                    .build() : variants.get(0);
+            ProductVariant variant = imageVariants.get(0);
             variant.setImageUrl(request.getImageUrl().isBlank() ? null : request.getImageUrl());
             productVariantRepository.save(variant);
         }
@@ -225,12 +270,18 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ApiResponse.error("Khong tim thay san pham"));
         }
+        if (request.getPrice() == null || request.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Gia phan loai phai lon hon 0"));
+        }
+        if (request.getStock() != null && request.getStock() < 0) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("So luong ton kho khong duoc am"));
+        }
         ProductVariant variant = ProductVariant.builder()
                 .productId(productId)
                 .size(request.getSize())
                 .color(request.getColor())
                 .material(request.getMaterial())
-                .price(request.getPrice() != null ? request.getPrice() : BigDecimal.ZERO)
+                .price(request.getPrice())
                 .stock(request.getStock() != null ? request.getStock() : 0)
                 .imageUrl(request.getImageUrl())
                 .build();
@@ -250,8 +301,18 @@ public class AdminController {
         variant.setSize(request.getSize());
         variant.setColor(request.getColor());
         variant.setMaterial(request.getMaterial());
-        if (request.getPrice() != null) variant.setPrice(request.getPrice());
-        if (request.getStock() != null) variant.setStock(request.getStock());
+        if (request.getPrice() != null) {
+            if (request.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+                return ResponseEntity.badRequest().body(ApiResponse.error("Gia phan loai phai lon hon 0"));
+            }
+            variant.setPrice(request.getPrice());
+        }
+        if (request.getStock() != null) {
+            if (request.getStock() < 0) {
+                return ResponseEntity.badRequest().body(ApiResponse.error("So luong ton kho khong duoc am"));
+            }
+            variant.setStock(request.getStock());
+        }
         if (request.getImageUrl() != null) variant.setImageUrl(request.getImageUrl().isBlank() ? null : request.getImageUrl());
         variant = productVariantRepository.save(variant);
         return ResponseEntity.ok(ApiResponse.success("Da cap nhat phan loai", variantResponse(variant)));
@@ -264,8 +325,27 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ApiResponse.error("Khong tim thay phan loai"));
         }
+        if (orderItemRepository.existsByVariantId(variantId)) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Khong the xoa phan loai da ton tai trong don hang"));
+        }
+        if (cartItemRepository.existsByProductVariantId(variantId)) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Khong the xoa phan loai dang nam trong gio hang"));
+        }
+        ProductVariant variant = productVariantRepository.findById(variantId).orElseThrow();
+        if (productVariantRepository.findByProductId(variant.getProductId()).size() <= 1) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("San pham phai co it nhat mot phan loai"));
+        }
         productVariantRepository.deleteById(variantId);
         return ResponseEntity.ok(ApiResponse.success("Da xoa phan loai", null));
+    }
+
+    private boolean isValidDiscount(BigDecimal discount) {
+        return discount == null
+                || (discount.compareTo(BigDecimal.ZERO) >= 0
+                && discount.compareTo(BigDecimal.valueOf(100)) <= 0);
     }
 
     private ProductResponse.VariantResponse variantResponse(ProductVariant variant) {
@@ -596,14 +676,18 @@ public class AdminController {
 
         if (search != null && !search.isBlank()) {
             String q = normalize(search.trim());
-            users = userRepository.findAll(pageable);
-            List<User> filtered = users.getContent().stream()
+            List<User> filtered = userRepository.findAll().stream()
                     .filter(u -> normalize(u.getEmail()).contains(q)
                             || normalize(u.getUsername()).contains(q)
                             || normalize(u.getFirstName()).contains(q)
                             || normalize(u.getLastName()).contains(q))
                     .collect(Collectors.toList());
-            users = new PageImpl<>(filtered, pageable, filtered.size());
+            int from = Math.min(page * size, filtered.size());
+            int to = Math.min(from + size, filtered.size());
+            users = new PageImpl<>(
+                    from < filtered.size() ? filtered.subList(from, to) : java.util.Collections.emptyList(),
+                    pageable,
+                    filtered.size());
         } else {
             users = userRepository.findAll(pageable);
         }

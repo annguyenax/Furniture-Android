@@ -103,7 +103,11 @@ public class AuthServiceImpl implements AuthService {
         // Save refresh token
         user.setRefreshToken(refreshToken);
         userRepository.save(user);
-        emailService.sendVerificationEmail(user, user.getEmailVerificationToken());
+        try {
+            emailService.sendVerificationEmail(user, user.getEmailVerificationToken());
+        } catch (Exception e) {
+            log.warn("Verification email could not be sent for {}. Registration still succeeds.", user.getEmail());
+        }
 
         return AuthResponse.builder()
             .accessToken(accessToken)
@@ -119,15 +123,7 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByEmail(request.getEmail())
             .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
 
-        // Check if account is locked
-        if (user.isAccountLocked()) {
-            throw new UnauthorizedException("Account is locked. Try again later.");
-        }
-
-        // Check if account is banned
-        if (user.isBanned()) {
-            throw new UnauthorizedException("Account has been banned");
-        }
+        ensureAccountCanAuthenticate(user);
 
         // Verify password
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
@@ -189,6 +185,7 @@ public class AuthServiceImpl implements AuthService {
                                 return userRepository.save(existing);
                             })
                             .orElseGet(() -> createGoogleUser(googleId, email, firstName, lastName, pictureUrl)));
+            ensureAccountCanAuthenticate(user);
 
             String accessToken = jwtTokenProvider.generateAccessToken(user);
             String refreshToken = jwtTokenProvider.generateRefreshToken(user);
@@ -247,6 +244,15 @@ public class AuthServiceImpl implements AuthService {
         return username;
     }
 
+    private void ensureAccountCanAuthenticate(User user) {
+        if (user.isAccountLocked()) {
+            throw new UnauthorizedException("Account is locked. Try again later.");
+        }
+        if (user.isBanned()) {
+            throw new UnauthorizedException("Account has been banned");
+        }
+    }
+
     @Override
     @Transactional
     public AuthResponse refreshToken(String refreshToken) {
@@ -262,6 +268,7 @@ public class AuthServiceImpl implements AuthService {
         Integer userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        ensureAccountCanAuthenticate(user);
 
         // Verify refresh token matches
         if (!refreshToken.equals(user.getRefreshToken())) {

@@ -56,7 +56,8 @@ public class AuthRepository {
         authApi.register(request).enqueue(new Callback<ApiResponse<AuthResponse>>() {
             @Override
             public void onResponse(Call<ApiResponse<AuthResponse>> call, Response<ApiResponse<AuthResponse>> response) {
-                if (response.isSuccessful() && response.body() != null) {
+                if (response.isSuccessful() && response.body() != null
+                        && response.body().isSuccess() && response.body().getData() != null) {
                     callback.onSuccess(response.body().getData());
                 } else {
                     callback.onError(parseErrorMessage(response, "Đăng ký thất bại"));
@@ -76,7 +77,8 @@ public class AuthRepository {
         authApi.login(request).enqueue(new Callback<ApiResponse<AuthResponse>>() {
             @Override
             public void onResponse(Call<ApiResponse<AuthResponse>> call, Response<ApiResponse<AuthResponse>> response) {
-                if (response.isSuccessful() && response.body() != null) {
+                if (response.isSuccessful() && response.body() != null
+                        && response.body().isSuccess() && response.body().getData() != null) {
                     callback.onSuccess(response.body().getData());
                 } else {
                     callback.onError(parseErrorMessage(response, "Email hoặc mật khẩu không đúng"));
@@ -96,7 +98,7 @@ public class AuthRepository {
         authApi.forgotPassword(request).enqueue(new Callback<ApiResponse<Void>>() {
             @Override
             public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
-                if (response.isSuccessful() && response.body() != null) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     String message = response.body().getMessage();
                     callback.onSuccess(message != null ? message : "Đã gửi email đặt lại mật khẩu");
                 } else {
@@ -117,7 +119,7 @@ public class AuthRepository {
         authApi.resetPassword(request).enqueue(new Callback<ApiResponse<Void>>() {
             @Override
             public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
-                if (response.isSuccessful() && response.body() != null) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     String message = response.body().getMessage();
                     callback.onSuccess(message != null ? message : "Đặt lại mật khẩu thành công");
                 } else {

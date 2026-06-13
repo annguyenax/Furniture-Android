@@ -21,6 +21,8 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Integer> {
             @org.springframework.data.repository.query.Param("orderId") Integer orderId,
             @org.springframework.data.repository.query.Param("productId") Integer productId);
 
+    boolean existsByVariantId(Integer variantId);
+
     @org.springframework.data.jpa.repository.Query(
         value = "SELECT p.product_name, SUM(oi.total) as revenue " +
                 "FROM Order_Items oi " +

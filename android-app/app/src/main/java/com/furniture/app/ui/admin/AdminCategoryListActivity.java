@@ -293,7 +293,7 @@ public class AdminCategoryListActivity extends AppCompatActivity {
                                 public void onResponse(Call<ApiResponse<Void>> call,
                                                        Response<ApiResponse<Void>> response) {
                                     loading.dismiss();
-                                    if (response.isSuccessful()) {
+                                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                                         Toast.makeText(AdminCategoryListActivity.this,
                                                 "Da xoa danh muc", Toast.LENGTH_SHORT).show();
                                         loadCategories();

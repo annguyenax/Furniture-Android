@@ -171,7 +171,7 @@ public class AdminProductListActivity extends AppCompatActivity implements Admin
         adminProductApi.deleteProduct(product.getProductId()).enqueue(new Callback<ApiResponse<Void>>() {
             @Override
             public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
-                if (response.isSuccessful()) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     Toast.makeText(AdminProductListActivity.this, "Đã xóa sản phẩm", Toast.LENGTH_SHORT).show();
                     loadProducts();
                 } else {

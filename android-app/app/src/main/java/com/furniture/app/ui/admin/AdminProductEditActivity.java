@@ -298,12 +298,30 @@ public class AdminProductEditActivity extends AppCompatActivity {
             Toast.makeText(this, "Giá và số lượng tồn kho không được trống", Toast.LENGTH_SHORT).show();
             return;
         }
+        BigDecimal price;
+        int stock;
+        try {
+            price = new BigDecimal(priceStr);
+            stock = Integer.parseInt(stockStr);
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "Gia hoac so luong khong hop le", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (price.compareTo(BigDecimal.ZERO) <= 0) {
+            Toast.makeText(this, "Gia phan loai phai lon hon 0", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (stock < 0) {
+            Toast.makeText(this, "So luong ton kho khong duoc am", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         AdminProductApi.VariantRequest request = new AdminProductApi.VariantRequest(
                 etSize.getText().toString().trim(),
                 etColor.getText().toString().trim(),
                 etMaterial.getText().toString().trim(),
-                new BigDecimal(priceStr),
-                Integer.parseInt(stockStr),
+                price,
+                stock,
                 etImage.getText().toString().trim().isEmpty() ? null : etImage.getText().toString().trim());
 
         Call<ApiResponse<ProductVariant>> call = variant == null
@@ -328,7 +346,8 @@ public class AdminProductEditActivity extends AppCompatActivity {
                     renderVariants();
                     Toast.makeText(AdminProductEditActivity.this, "Đã lưu phân loại", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(AdminProductEditActivity.this, "Lưu phân loại thất bại", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AdminProductEditActivity.this,
+                            getApiMessage(response, "Lưu phân loại thất bại"), Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -355,12 +374,13 @@ public class AdminProductEditActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
                 loading.dismiss();
-                if (response.isSuccessful()) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     existingProduct.getVariants().remove(variant);
                     renderVariants();
                     Toast.makeText(AdminProductEditActivity.this, "Đã xóa phân loại", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(AdminProductEditActivity.this, "Xóa phân loại thất bại", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AdminProductEditActivity.this,
+                            getApiMessage(response, "Xóa phân loại thất bại"), Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -386,9 +406,24 @@ public class AdminProductEditActivity extends AppCompatActivity {
             return;
         }
 
-        int stock = Integer.parseInt(stockStr);
         String discountStr = etDiscount.getText().toString().trim();
-        BigDecimal discount = discountStr.isEmpty() ? BigDecimal.ZERO : new BigDecimal(discountStr);
+        int stock;
+        BigDecimal discount;
+        try {
+            stock = Integer.parseInt(stockStr);
+            discount = discountStr.isEmpty() ? BigDecimal.ZERO : new BigDecimal(discountStr);
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "So luong hoac giam gia khong hop le", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (stock < 0) {
+            Toast.makeText(this, "So luong ton kho khong duoc am", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (discount.compareTo(BigDecimal.ZERO) < 0 || discount.compareTo(BigDecimal.valueOf(100)) > 0) {
+            Toast.makeText(this, "Giam gia phai tu 0 den 100", Toast.LENGTH_SHORT).show();
+            return;
+        }
         String status = spinnerStatus.getSelectedItem().toString();
         String imageUrl = etImageUrl.getText().toString().trim();
         if (imageUrl.isEmpty()) imageUrl = null;
@@ -418,7 +453,7 @@ public class AdminProductEditActivity extends AppCompatActivity {
                                 finish();
                             } else {
                                 Toast.makeText(AdminProductEditActivity.this,
-                                        "Cập nhật thất bại", Toast.LENGTH_SHORT).show();
+                                        getApiMessage(response, "Cập nhật thất bại"), Toast.LENGTH_SHORT).show();
                             }
                         }
 
@@ -437,7 +472,21 @@ public class AdminProductEditActivity extends AppCompatActivity {
                 Toast.makeText(this, "Vui lòng nhập giá bán", Toast.LENGTH_SHORT).show();
                 return;
             }
-            BigDecimal price = new BigDecimal(priceStr);
+            BigDecimal price;
+            try {
+                price = new BigDecimal(priceStr);
+            } catch (NumberFormatException e) {
+                saving.dismiss();
+                btnSave.setEnabled(true);
+                Toast.makeText(this, "Gia ban khong hop le", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (price.compareTo(BigDecimal.ZERO) <= 0) {
+                saving.dismiss();
+                btnSave.setEnabled(true);
+                Toast.makeText(this, "Gia ban phai lon hon 0", Toast.LENGTH_SHORT).show();
+                return;
+            }
             AdminProductApi.CreateProductRequest request =
                     new AdminProductApi.CreateProductRequest(name, description, price, stock, discount, categoryId, imageUrl);
             adminProductApi.createProduct(request).enqueue(new Callback<ApiResponse<Product>>() {
@@ -466,6 +515,12 @@ public class AdminProductEditActivity extends AppCompatActivity {
                 }
             });
         }
+    }
+
+    private <T> String getApiMessage(Response<ApiResponse<T>> response, String fallback) {
+        return response.body() != null && response.body().getMessage() != null
+                ? response.body().getMessage()
+                : fallback;
     }
 
     private void uploadProductImage(Uri uri) {

@@ -104,7 +104,7 @@ public class AdminReviewListActivity extends AppCompatActivity {
         adminApi.deleteReview(item.getReviewId()).enqueue(new Callback<ApiResponse<Void>>() {
             @Override
             public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
-                if (response.isSuccessful()) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     items.remove(position);
                     adapter.notifyItemRemoved(position);
                     if (items.isEmpty()) {

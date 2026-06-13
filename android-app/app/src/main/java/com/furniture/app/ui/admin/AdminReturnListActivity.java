@@ -103,11 +103,14 @@ public class AdminReturnListActivity extends AppCompatActivity {
             public void onResponse(Call<ApiResponse<ReturnRequestItem>> call,
                                    Response<ApiResponse<ReturnRequestItem>> response) {
                 loading.dismiss();
-                if (response.isSuccessful()) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     Toast.makeText(AdminReturnListActivity.this, "Da cap nhat", Toast.LENGTH_SHORT).show();
                     loadReturns();
                 } else {
-                    Toast.makeText(AdminReturnListActivity.this, "Cap nhat that bai", Toast.LENGTH_SHORT).show();
+                    String msg = response.body() != null && response.body().getMessage() != null
+                            ? response.body().getMessage()
+                            : "Cap nhat that bai";
+                    Toast.makeText(AdminReturnListActivity.this, msg, Toast.LENGTH_SHORT).show();
                 }
             }
 
