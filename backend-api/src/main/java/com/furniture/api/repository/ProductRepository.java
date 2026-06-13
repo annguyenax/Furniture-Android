@@ -29,6 +29,10 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
            countQuery = "SELECT COUNT(p) FROM Product p WHERE p.status = :status")
     Page<Product> findByStatusFetch(@Param("status") Product.ProductStatus status, Pageable pageable);
 
+    @Query(value = "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.variants LEFT JOIN FETCH p.category",
+           countQuery = "SELECT COUNT(p) FROM Product p")
+    Page<Product> findAllFetch(Pageable pageable);
+
     @Query("SELECT p FROM Product p WHERE p.productName LIKE %:keyword% OR p.description LIKE %:keyword%")
     Page<Product> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
 

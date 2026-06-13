@@ -1,6 +1,7 @@
 package com.furniture.app.data.remote.api;
 
 import com.furniture.app.data.model.ApiResponse;
+import com.furniture.app.data.model.PageResponse;
 import com.furniture.app.data.model.Product;
 import com.furniture.app.data.model.ProductVariant;
 
@@ -9,11 +10,21 @@ import java.math.BigDecimal;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
+import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public interface AdminProductApi {
+
+    @GET("admin/products")
+    Call<ApiResponse<PageResponse<Product>>> getAllProducts(
+            @Query("page") int page,
+            @Query("size") int size,
+            @Query("sortBy") String sortBy,
+            @Query("sortDir") String sortDir
+    );
 
     @POST("admin/products")
     Call<ApiResponse<Product>> createProduct(@Body CreateProductRequest request);

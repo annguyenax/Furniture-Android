@@ -153,6 +153,23 @@ public class AdminController {
         return stock != null ? stock : 0;
     }
 
+    @GetMapping("/products")
+    public ResponseEntity<ApiResponse<Page<ProductResponse>>> getAllProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+
+        Sort sort = sortDir.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<ProductResponse> products = productRepository.findAllFetch(pageable)
+                .map(ProductResponse::fromEntity);
+        return ResponseEntity.ok(ApiResponse.success(products));
+    }
+
     @PostMapping("/products")
     @Transactional
     public ResponseEntity<ApiResponse<ProductResponse>> createProduct(
