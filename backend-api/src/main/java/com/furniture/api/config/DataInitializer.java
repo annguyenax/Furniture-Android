@@ -25,6 +25,9 @@ public class DataInitializer implements ApplicationRunner {
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
     private final ProductVariantRepository productVariantRepository;
+    private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final ReturnRequestRepository returnRequestRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -34,6 +37,7 @@ public class DataInitializer implements ApplicationRunner {
         seedDemoAccounts();
         seedCategories();
         seedProducts();
+        seedReturnDemoData();
         log.info("Data initialization complete.");
     }
 
@@ -206,6 +210,97 @@ public class DataInitializer implements ApplicationRunner {
                 variant("Đen", "Lưới + Nhựa ABS", null, 4990000, 8, 21),
                 variant("Xám", "Lưới + Nhựa ABS", null, 4990000, 7, 22)
             ));
+    }
+
+    /**
+     * Seeds a few DELIVERED orders + return requests (PENDING/APPROVED/REJECTED)
+     * for the demo customer account, so the admin/customer return-management
+     * screens have realistic data to test against.
+     */
+    private void seedReturnDemoData() {
+        Optional<User> customerOpt = userRepository.findByEmail("customer@fur.vn");
+        if (customerOpt.isEmpty()) return;
+        Integer customerId = customerOpt.get().getUserId();
+        if (orderRepository.countByUserId(customerId) > 0) return;
+
+        OrderItem item1 = createDeliveredOrder(customerId, 1, 1, new BigDecimal("8990000"));  // Sofa Da Cao Cấp 3 Chỗ - Nâu
+        OrderItem item2 = createDeliveredOrder(customerId, 8, 21, new BigDecimal("4990000")); // Ghế Công Thái Học Ergonomic - Đen
+        OrderItem item3 = createDeliveredOrder(customerId, 2, 4, new BigDecimal("3290000"));  // Bàn Trà Gỗ Óc Chó - Tự nhiên
+        OrderItem item4 = createDeliveredOrder(customerId, 3, 6, new BigDecimal("2490000"));  // Kệ Tivi Gỗ Thông 160cm - Trắng sữa
+
+        seedReturnRequests(customerId, item1, item2, item3, item4);
+    }
+
+    private OrderItem createDeliveredOrder(Integer userId, Integer productId, Integer variantId, BigDecimal price) {
+        Order order = orderRepository.save(Order.builder()
+            .userId(userId)
+            .recipientName("Khách Hàng")
+            .recipientPhone("0900000000")
+            .shippingAddressText("123 Đường Lê Lợi, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh")
+            .totalPrice(price)
+            .shippingFee(BigDecimal.ZERO)
+            .paymentMethod(Order.PaymentMethod.COD)
+            .status(Order.OrderStatus.DELIVERED)
+            .paymentStatus(Order.PaymentStatus.PAID)
+            .build());
+
+        return orderItemRepository.save(OrderItem.builder()
+            .orderId(order.getOrderId())
+            .productId(productId)
+            .variantId(variantId)
+            .quantity(1)
+            .price(price)
+            .discount(BigDecimal.ZERO)
+            .total(price)
+            .build());
+    }
+
+    private void seedReturnRequests(Integer userId, OrderItem item1, OrderItem item2, OrderItem item3, OrderItem item4) {
+        // PENDING - chờ admin xử lý, có ảnh minh chứng
+        returnRequestRepository.save(ReturnRequest.builder()
+            .orderId(item1.getOrderId())
+            .orderItemId(item1.getOrderItemId())
+            .userId(userId)
+            .reason("Sofa bị lệch một bên chân, ngồi không vững. Mong shop kiểm tra và hỗ trợ đổi sản phẩm mới.")
+            .evidenceUrl("https://picsum.photos/seed/return1/600/400")
+            .evidenceType(ReturnRequest.EvidenceType.IMAGE)
+            .status(ReturnRequest.ReturnStatus.PENDING)
+            .build());
+
+        // PENDING - chờ admin xử lý, không có ảnh minh chứng
+        returnRequestRepository.save(ReturnRequest.builder()
+            .orderId(item2.getOrderId())
+            .orderItemId(item2.getOrderItemId())
+            .userId(userId)
+            .reason("Tựa lưng ghế bị kêu cọt kẹt khi ngả người, có thể do lỗi linh kiện bên trong.")
+            .status(ReturnRequest.ReturnStatus.PENDING)
+            .build());
+
+        // APPROVED - hoàn trả toàn bộ đơn hàng, đã được xác nhận
+        Order order3 = orderRepository.findById(item3.getOrderId()).orElse(null);
+        if (order3 != null) {
+            order3.setPaymentStatus(Order.PaymentStatus.REFUNDED);
+            orderRepository.save(order3);
+        }
+        returnRequestRepository.save(ReturnRequest.builder()
+            .orderId(item3.getOrderId())
+            .orderItemId(null)
+            .userId(userId)
+            .reason("Đặt nhầm màu, muốn hoàn trả toàn bộ đơn để đổi sang màu khác.")
+            .evidenceUrl("https://picsum.photos/seed/return3/600/400")
+            .evidenceType(ReturnRequest.EvidenceType.IMAGE)
+            .status(ReturnRequest.ReturnStatus.APPROVED)
+            .build());
+
+        // REJECTED - đã từ chối, có ghi chú của admin
+        returnRequestRepository.save(ReturnRequest.builder()
+            .orderId(item4.getOrderId())
+            .orderItemId(item4.getOrderItemId())
+            .userId(userId)
+            .reason("Kệ tivi bị nứt nhẹ ở góc cạnh, nghi do va đập trong quá trình vận chuyển.")
+            .status(ReturnRequest.ReturnStatus.REJECTED)
+            .adminNote("Đã kiểm tra hình ảnh, vết nứt không ảnh hưởng đến chất lượng sử dụng và không thuộc diện lỗi do nhà sản xuất nên không đủ điều kiện đổi trả.")
+            .build());
     }
 
     private void createProduct(Category category, String name, String description,

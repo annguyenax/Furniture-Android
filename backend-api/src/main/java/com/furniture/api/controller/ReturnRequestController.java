@@ -5,6 +5,8 @@ import com.furniture.api.exception.BadRequestException;
 import com.furniture.api.exception.ResourceNotFoundException;
 import com.furniture.api.model.Order;
 import com.furniture.api.model.OrderItem;
+import com.furniture.api.model.Product;
+import com.furniture.api.model.ProductVariant;
 import com.furniture.api.model.ReturnRequest;
 import com.furniture.api.model.User;
 import com.furniture.api.repository.OrderItemRepository;
@@ -281,6 +283,14 @@ public class ReturnRequestController {
                     .orElse(null);
         }
 
+        // Anh sản phẩm: lấy từ orderItem được hoàn (hoặc sản phẩm đầu tiên của đơn nếu hoàn toàn bộ đơn)
+        OrderItem refItem = item;
+        if (refItem == null && request.getOrderId() != null) {
+            List<OrderItem> orderItems = orderItemRepository.findByOrderId(request.getOrderId());
+            if (!orderItems.isEmpty()) refItem = orderItems.get(0);
+        }
+        String productImage = resolveProductImage(refItem);
+
         return ReturnRequestResponse.builder()
                 .returnId(request.getReturnId())
                 .orderId(request.getOrderId())
@@ -290,6 +300,7 @@ public class ReturnRequestController {
                 .userName(user != null ? user.getFullName() : null)
                 .userEmail(user != null ? user.getEmail() : null)
                 .productName(productName)
+                .productImage(productImage)
                 .reason(request.getReason())
                 .evidenceUrl(request.getEvidenceUrl())
                 .evidenceType(request.getEvidenceType() != null ? request.getEvidenceType().name() : null)
@@ -298,6 +309,21 @@ public class ReturnRequestController {
                 .createdAt(request.getCreatedAt())
                 .updatedAt(request.getUpdatedAt())
                 .build();
+    }
+
+    private String resolveProductImage(OrderItem item) {
+        if (item == null || item.getProductId() == null) return null;
+        Product product = productRepository.findById(item.getProductId()).orElse(null);
+        ProductVariant variant = item.getVariantId() != null
+                ? productVariantRepository.findById(item.getVariantId()).orElse(null)
+                : null;
+        if (variant != null && variant.getImageUrl() != null) {
+            return variant.getImageUrl();
+        }
+        if (product != null && product.getVariants() != null && !product.getVariants().isEmpty()) {
+            return product.getVariants().get(0).getImageUrl();
+        }
+        return null;
     }
 
     @Data
@@ -313,6 +339,7 @@ public class ReturnRequestController {
         private String userName;
         private String userEmail;
         private String productName;
+        private String productImage;
         private String reason;
         private String evidenceUrl;
         private String evidenceType;

@@ -203,7 +203,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                         btnReturn.setVisibility(View.GONE);
                     } else {
                         btnReturn.setVisibility(View.VISIBLE);
-                        btnReturn.setText(returned ? "Đã yêu cầu hoàn hàng" : "Hoàn hàng");
+                        btnReturn.setText(returned ? "Đã yêu cầu" : "Hoàn hàng");
                         btnReturn.setEnabled(!returned);
                         btnReturn.setAlpha(returned ? 0.6f : 1f);
                         btnReturn.setOnClickListener(v -> {

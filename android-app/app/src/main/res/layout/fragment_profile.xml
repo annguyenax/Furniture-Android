@@ -154,6 +154,44 @@
                 <View android:layout_width="match_parent" android:layout_height="1dp"
                     android:background="#F0F0F0" android:layout_marginStart="54dp" />
 
+                <!-- Return Requests -->
+                <LinearLayout
+                    android:id="@+id/menu_returns"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="16dp">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_assignment_return"
+                        android:tint="@color/primary"
+                        android:contentDescription="Yêu cầu hoàn trả" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_weight="1"
+                        android:text="Yêu cầu hoàn trả"
+                        android:textColor="#212121"
+                        android:textSize="15sp" />
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@android:drawable/ic_media_play"
+                        android:tint="#BDBDBD"
+                        android:contentDescription="Xem" />
+
+                </LinearLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp"
+                    android:background="#F0F0F0" android:layout_marginStart="54dp" />
+
                 <!-- Wishlist -->
                 <LinearLayout
                     android:id="@+id/menu_wishlist"
