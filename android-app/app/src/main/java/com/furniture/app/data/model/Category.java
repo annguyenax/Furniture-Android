@@ -21,6 +21,9 @@ public class Category implements Serializable {
     @SerializedName("parentId")
     private Integer parentId;
 
+    @SerializedName("createdAt")
+    private String createdAt;
+
     @SerializedName("children")
     private List<Category> children;
 
@@ -38,6 +41,9 @@ public class Category implements Serializable {
 
     public Integer getParentId() { return parentId; }
     public void setParentId(Integer parentId) { this.parentId = parentId; }
+
+    public String getCreatedAt() { return createdAt; }
+    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
 
     public List<Category> getChildren() { return children; }
     public void setChildren(List<Category> children) { this.children = children; }

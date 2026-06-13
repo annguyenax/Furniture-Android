@@ -379,6 +379,14 @@ public class AdminCategoryListActivity extends AppCompatActivity {
             Category cat = categories.get(position);
             holder.tvName.setText(cat.getCategoryName());
             holder.tvDesc.setText(cat.getDescription() != null ? cat.getDescription() : "");
+
+            String dateStr = cat.getCreatedAt();
+            if (dateStr != null && dateStr.length() >= 10) {
+                holder.tvDate.setText(dateStr.substring(0, 10));
+            } else {
+                holder.tvDate.setText("");
+            }
+
             Glide.with(holder.itemView.getContext())
                     .load(cat.getImage())
                     .placeholder(R.drawable.placeholder_product)
@@ -393,7 +401,7 @@ public class AdminCategoryListActivity extends AppCompatActivity {
 
         static class ViewHolder extends RecyclerView.ViewHolder {
             ImageView ivImage;
-            TextView tvName, tvDesc;
+            TextView tvName, tvDesc, tvDate;
             MaterialButton btnEdit, btnDelete;
 
             ViewHolder(View v) {
@@ -401,6 +409,7 @@ public class AdminCategoryListActivity extends AppCompatActivity {
                 ivImage = v.findViewById(R.id.iv_category);
                 tvName = v.findViewById(R.id.tv_category_name);
                 tvDesc = v.findViewById(R.id.tv_description);
+                tvDate = v.findViewById(R.id.tv_date);
                 btnEdit = v.findViewById(R.id.btn_edit_category);
                 btnDelete = v.findViewById(R.id.btn_delete_category);
             }
