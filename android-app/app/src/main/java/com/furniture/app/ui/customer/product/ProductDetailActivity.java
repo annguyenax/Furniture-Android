@@ -517,12 +517,12 @@ public class ProductDetailActivity extends AppCompatActivity {
 
     private void updatePriceDisplay(BigDecimal price, BigDecimal originalPrice, BigDecimal discount) {
         if (price != null) {
-            tvPrice.setText(String.format("₫%s", currencyFormat.format(price)));
+            tvPrice.setText(String.format("%s đ", currencyFormat.format(price)));
         }
 
         if (discount != null && discount.compareTo(BigDecimal.ZERO) > 0 && originalPrice != null) {
             tvOriginalPrice.setVisibility(View.VISIBLE);
-            tvOriginalPrice.setText(String.format("₫%s", currencyFormat.format(originalPrice)));
+            tvOriginalPrice.setText(String.format("%s đ", currencyFormat.format(originalPrice)));
             tvOriginalPrice.setPaintFlags(tvOriginalPrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
 
             tvDiscount.setVisibility(View.VISIBLE);

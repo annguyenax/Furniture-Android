@@ -126,7 +126,7 @@ public class CartItemAdapter extends RecyclerView.Adapter<CartItemAdapter.CartIt
 
             BigDecimal price = item.getPrice();
             if (price != null) {
-                priceText.setText(String.format("₫%s", currencyFormat.format(price)));
+                priceText.setText(String.format("%s đ", currencyFormat.format(price)));
             }
 
             quantityText.setText(String.valueOf(item.getQuantity()));

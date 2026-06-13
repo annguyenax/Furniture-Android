@@ -17,3 +17,6 @@ sdk.dir=C\:\\Users\\YOUR_USERNAME\\AppData\\Local\\Android\\Sdk
 # Backend deploy lên server:
 #   base.url=https://your-domain.com/api/
 base.url=http://192.168.20.19:8080/api/
+
+
+

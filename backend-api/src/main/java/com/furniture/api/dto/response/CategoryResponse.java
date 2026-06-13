@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,6 +21,7 @@ public class CategoryResponse {
     private Integer parentId;
     private String description;
     private String image;
+    private LocalDateTime createdAt;
     private List<CategoryResponse> children;
 
     public static CategoryResponse fromEntity(Category category) {
@@ -29,6 +31,7 @@ public class CategoryResponse {
             .parentId(category.getParentId())
             .description(category.getDescription())
             .image(category.getImage())
+            .createdAt(category.getCreatedAt())
             .build();
     }
 

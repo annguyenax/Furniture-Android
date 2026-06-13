@@ -9,16 +9,35 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.furniture.app.BuildConfig;
 import com.furniture.app.R;
+import com.furniture.app.data.model.ApiResponse;
+import com.furniture.app.data.model.AuthResponse;
+import com.furniture.app.data.model.User;
+import com.furniture.app.data.remote.RetrofitClient;
+import com.furniture.app.data.remote.api.AuthApi;
 import com.furniture.app.data.repository.AuthRepository;
+import com.furniture.app.ui.admin.AdminMainActivity;
 import com.furniture.app.ui.customer.CustomerMainActivity;
 import com.furniture.app.ui.viewmodel.AuthViewModel;
 import com.furniture.app.ui.viewmodel.AuthViewModelFactory;
 import com.furniture.app.util.InputValidator;
 import com.furniture.app.util.SessionManager;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.Task;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -30,6 +49,17 @@ public class RegisterActivity extends AppCompatActivity {
     private TextView errorTextView;
     private AuthViewModel authViewModel;
     private SessionManager sessionManager;
+    private GoogleSignInClient googleSignInClient;
+
+    private final ActivityResultLauncher<Intent> googleSignInLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getData() != null) {
+                    Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
+                    handleGoogleSignInResult(task);
+                } else {
+                    Toast.makeText(this, "Bạn đã hủy đăng ký Google", Toast.LENGTH_SHORT).show();
+                }
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +77,8 @@ public class RegisterActivity extends AppCompatActivity {
 
         registerButton.setOnClickListener(v -> handleRegister());
         loginButton.setOnClickListener(v -> navigateToLogin());
-        btnGoogleRegister.setOnClickListener(v -> showSocialTodo("Google"));
+        setupGoogleSignIn();
+        btnGoogleRegister.setOnClickListener(v -> signInWithGoogle());
         btnFacebookRegister.setOnClickListener(v -> showSocialTodo("Facebook"));
     }
 
@@ -96,33 +127,125 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void handleRegister() {
-        String username = usernameEditText.getText().toString().trim();
         String email = emailEditText.getText().toString().trim();
         String password = passwordEditText.getText().toString().trim();
         String firstName = firstNameEditText.getText().toString().trim();
         String lastName = lastNameEditText.getText().toString().trim();
         String phone = phoneEditText.getText().toString().trim();
 
-        if (validateInput(username, email, password, firstName, lastName, phone)) {
+        if (validateInput(email, password, firstName, lastName, phone)) {
             errorTextView.setVisibility(View.GONE);
-            authViewModel.register(username, email, password, firstName, lastName, phone);
+            authViewModel.register(buildUsernameFromEmail(email), email, password, firstName, lastName, phone);
         }
     }
 
-    private boolean validateInput(String username, String email, String password,
-                                  String firstName, String lastName, String phone) {
+    private boolean validateInput(String email, String password, String firstName, String lastName, String phone) {
         if (!InputValidator.validateRequired(firstNameEditText, "họ")) return false;
         if (!InputValidator.validateRequired(lastNameEditText, "tên")) return false;
-        if (!InputValidator.validateMinLength(usernameEditText, "Tên đăng nhập", 3)) return false;
         if (!InputValidator.validateEmail(emailEditText)) return false;
         if (!InputValidator.validatePhone(phoneEditText)) return false;
         if (!InputValidator.validatePassword(passwordEditText, 6)) return false;
         return true;
     }
 
+    private String buildUsernameFromEmail(String email) {
+        String base = email != null ? email.trim() : "";
+        if (base.length() <= 50) return base;
+
+        int atIndex = base.indexOf('@');
+        String prefix = atIndex > 0 ? base.substring(0, atIndex) : "user";
+        String suffix = "_" + Integer.toHexString(base.hashCode());
+        int maxPrefixLength = Math.max(3, 50 - suffix.length());
+        if (prefix.length() > maxPrefixLength) {
+            prefix = prefix.substring(0, maxPrefixLength);
+        }
+        return prefix + suffix;
+    }
+
     private void showSocialTodo(String provider) {
         Toast.makeText(this,
                 provider + " login chưa được cấu hình OAuth ở backend", Toast.LENGTH_SHORT).show();
+    }
+
+    private void setupGoogleSignIn() {
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(BuildConfig.GOOGLE_WEB_CLIENT_ID)
+                .requestEmail()
+                .build();
+        googleSignInClient = GoogleSignIn.getClient(this, gso);
+    }
+
+    private void signInWithGoogle() {
+        if (BuildConfig.GOOGLE_WEB_CLIENT_ID.startsWith("YOUR_WEB_CLIENT_ID")) {
+            Toast.makeText(this, "Chưa cấu hình Google Web Client ID", Toast.LENGTH_LONG).show();
+            return;
+        }
+        googleSignInClient.signOut().addOnCompleteListener(this, task -> {
+            Intent signInIntent = googleSignInClient.getSignInIntent();
+            googleSignInLauncher.launch(signInIntent);
+        });
+    }
+
+    private void handleGoogleSignInResult(Task<GoogleSignInAccount> completedTask) {
+        try {
+            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
+            String idToken = account.getIdToken();
+            if (idToken != null) {
+                sendGoogleTokenToBackend(idToken);
+            } else {
+                Toast.makeText(this, "Không lấy được token Google", Toast.LENGTH_SHORT).show();
+            }
+        } catch (ApiException e) {
+            Toast.makeText(this, "Đăng ký Google thất bại (mã lỗi: " + e.getStatusCode() + ")", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void sendGoogleTokenToBackend(String idToken) {
+        progressBar.setVisibility(View.VISIBLE);
+        btnGoogleRegister.setEnabled(false);
+
+        AuthApi authApi = RetrofitClient.getPublicRetrofit().create(AuthApi.class);
+        authApi.googleRegister(idToken).enqueue(new Callback<ApiResponse<AuthResponse>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<AuthResponse>> call, Response<ApiResponse<AuthResponse>> response) {
+                progressBar.setVisibility(View.GONE);
+                btnGoogleRegister.setEnabled(true);
+
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    saveSessionAndNavigate(response.body().getData());
+                } else {
+                    String msg = response.body() != null ? response.body().getMessage() : "Đăng ký Google thất bại";
+                    Toast.makeText(RegisterActivity.this, msg, Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<AuthResponse>> call, Throwable t) {
+                progressBar.setVisibility(View.GONE);
+                btnGoogleRegister.setEnabled(true);
+                Toast.makeText(RegisterActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void saveSessionAndNavigate(AuthResponse authResponse) {
+        User user = authResponse.getUser();
+        String role = (user.getRoles() != null && !user.getRoles().isEmpty())
+                ? user.getRoles().get(0) : "CUSTOMER";
+        sessionManager.saveUserSession(
+                authResponse.getAccessToken(),
+                authResponse.getRefreshToken(),
+                user.getUserId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getPhone(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getProfilePicture(),
+                role
+        );
+        Toast.makeText(this, "Đăng ký Google thành công!", Toast.LENGTH_SHORT).show();
+        finishAfterAuth();
     }
 
     private void navigateToLogin() {
@@ -134,7 +257,10 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void navigateToHome() {
-        Intent intent = new Intent(this, CustomerMainActivity.class);
+        Class<?> targetActivity = sessionManager.isAdmin()
+                ? AdminMainActivity.class
+                : CustomerMainActivity.class;
+        Intent intent = new Intent(this, targetActivity);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();

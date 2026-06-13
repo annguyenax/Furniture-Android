@@ -55,7 +55,7 @@ public class AdminProductAdapter extends RecyclerView.Adapter<AdminProductAdapte
         holder.tvCategory.setText(product.getCategoryName() != null ? product.getCategoryName() : "");
 
         String price = product.getLowestPrice() != null
-                ? "₫" + currencyFormat.format(product.getLowestPrice()) : "Chưa có giá";
+            ? String.format("%s đ", currencyFormat.format(product.getLowestPrice())) : "Chưa có giá";
         holder.tvPrice.setText(price);
 
         String status = product.getStatus();

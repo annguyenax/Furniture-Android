@@ -157,17 +157,7 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public AuthResponse googleLogin(String googleIdToken) {
         try {
-            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
-                    new NetHttpTransport(), GsonFactory.getDefaultInstance())
-                    .setAudience(Collections.singletonList(googleClientId))
-                    .build();
-
-            GoogleIdToken idToken = verifier.verify(googleIdToken.trim());
-            if (idToken == null) {
-                throw new UnauthorizedException("Invalid Google token");
-            }
-
-            GoogleIdToken.Payload payload = idToken.getPayload();
+            GoogleIdToken.Payload payload = verifyGoogleToken(googleIdToken);
             String googleId = payload.getSubject();
             String email = payload.getEmail();
             String firstName = (String) payload.get("given_name");
@@ -207,6 +197,66 @@ public class AuthServiceImpl implements AuthService {
             log.error("Google login failed", e);
             throw new UnauthorizedException("Google authentication failed");
         }
+    }
+
+    @Override
+    @Transactional
+    public AuthResponse googleRegister(String googleIdToken) {
+        try {
+            GoogleIdToken.Payload payload = verifyGoogleToken(googleIdToken);
+            String googleId = payload.getSubject();
+            String email = payload.getEmail();
+            String firstName = (String) payload.get("given_name");
+            String lastName = (String) payload.get("family_name");
+            String pictureUrl = (String) payload.get("picture");
+
+            if (userRepository.findByGoogleId(googleId).isPresent() || userRepository.existsByEmail(email)) {
+                throw new BadRequestException("Email already exists");
+            }
+
+            User user = createGoogleUser(googleId, email, firstName, lastName, pictureUrl);
+            String accessToken = jwtTokenProvider.generateAccessToken(user);
+            String refreshToken = jwtTokenProvider.generateRefreshToken(user);
+            user.setRefreshToken(refreshToken);
+            userRepository.save(user);
+
+            log.info("Google register successful: {}", email);
+
+            return AuthResponse.builder()
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
+                    .tokenType("Bearer")
+                    .user(UserResponse.fromEntity(user))
+                    .build();
+
+        } catch (BadRequestException | UnauthorizedException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Google register failed", e);
+            throw new UnauthorizedException("Google authentication failed");
+        }
+    }
+
+    private GoogleIdToken.Payload verifyGoogleToken(String googleIdToken) throws Exception {
+        String normalizedToken = normalizeGoogleIdToken(googleIdToken);
+        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
+                new NetHttpTransport(), GsonFactory.getDefaultInstance())
+                .setAudience(Collections.singletonList(googleClientId))
+                .build();
+
+        GoogleIdToken idToken = verifier.verify(normalizedToken);
+        if (idToken == null) {
+            throw new UnauthorizedException("Invalid Google token");
+        }
+        return idToken.getPayload();
+    }
+
+    private String normalizeGoogleIdToken(String googleIdToken) {
+        String token = googleIdToken != null ? googleIdToken.trim() : "";
+        if (token.length() >= 2 && token.startsWith("\"") && token.endsWith("\"")) {
+            token = token.substring(1, token.length() - 1);
+        }
+        return token;
     }
 
     private User createGoogleUser(String googleId, String email, String firstName, String lastName, String pictureUrl) {

@@ -66,7 +66,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="₫0"
+                android:text="0 đ"
                 android:textColor="#E53935"
                 android:textSize="16sp"
                 android:textStyle="bold" />

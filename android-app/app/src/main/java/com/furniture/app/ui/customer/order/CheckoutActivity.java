@@ -339,11 +339,11 @@ public class CheckoutActivity extends AppCompatActivity {
 
     private void updateTotals() {
         BigDecimal total = subtotal.add(shippingFee);
-        tvSubtotal.setText(String.format("₫%s", currencyFormat.format(subtotal)));
+        tvSubtotal.setText(String.format("%s đ", currencyFormat.format(subtotal)));
         tvShipping.setText(shippingFee.compareTo(BigDecimal.ZERO) > 0
-                ? String.format("₫%s", currencyFormat.format(shippingFee)) : "Miễn phí");
-        tvTotal.setText(String.format("₫%s", currencyFormat.format(total)));
-        tvBottomTotal.setText(String.format("₫%s", currencyFormat.format(total)));
+            ? String.format("%s đ", currencyFormat.format(shippingFee)) : "Miễn phí");
+        tvTotal.setText(String.format("%s đ", currencyFormat.format(total)));
+        tvBottomTotal.setText(String.format("%s đ", currencyFormat.format(total)));
     }
 
     private void placeOrder() {
@@ -364,8 +364,7 @@ public class CheckoutActivity extends AppCompatActivity {
         BigDecimal total = subtotal.add(shippingFee);
         new AlertDialog.Builder(this)
                 .setTitle("Xác nhận đặt hàng")
-                .setMessage("Tổng thanh toán: ₫" + currencyFormat.format(total) +
-                        "\n\nBạn có chắc chắn muốn đặt hàng?")
+                .setMessage("Tổng thanh toán: " + currencyFormat.format(total) + " đ\n\nBạn có chắc chắn muốn đặt hàng?")
                 .setPositiveButton("Đặt hàng", (dialog, which) -> submitOrder())
                 .setNegativeButton("Hủy", null)
                 .show();

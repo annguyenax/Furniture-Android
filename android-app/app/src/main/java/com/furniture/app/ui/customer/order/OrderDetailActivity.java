@@ -203,12 +203,12 @@ public class OrderDetailActivity extends AppCompatActivity {
         BigDecimal shipping = order.getShippingFee() != null ? order.getShippingFee() : BigDecimal.ZERO;
         BigDecimal total = order.getTotalAmount() != null ? order.getTotalAmount() : subtotal.add(shipping);
 
-        tvSubtotal.setText(String.format("₫%s", currencyFormat.format(subtotal)));
+        tvSubtotal.setText(String.format("%s đ", currencyFormat.format(subtotal)));
         if (tvShipping != null) {
-            tvShipping.setText(shipping.compareTo(BigDecimal.ZERO) > 0
-                    ? String.format("₫%s", currencyFormat.format(shipping)) : "Miễn phí");
+                tvShipping.setText(shipping.compareTo(BigDecimal.ZERO) > 0
+                    ? String.format("%s đ", currencyFormat.format(shipping)) : "Miễn phí");
         }
-        tvTotal.setText(String.format("₫%s", currencyFormat.format(total)));
+        tvTotal.setText(String.format("%s đ", currencyFormat.format(total)));
 
         String pm = "COD".equals(order.getPaymentMethod()) ? "Tiền mặt khi nhận hàng" :
                 "BANK".equals(order.getPaymentMethod()) ? "Chuyển khoản ngân hàng" :
