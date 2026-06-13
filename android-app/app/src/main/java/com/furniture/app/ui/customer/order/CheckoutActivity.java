@@ -356,6 +356,17 @@ public class CheckoutActivity extends AppCompatActivity {
             return;
         }
 
+        BigDecimal total = subtotal.add(shippingFee);
+        new AlertDialog.Builder(this)
+                .setTitle("Xác nhận đặt hàng")
+                .setMessage("Tổng thanh toán: ₫" + currencyFormat.format(total) +
+                        "\n\nBạn có chắc chắn muốn đặt hàng?")
+                .setPositiveButton("Đặt hàng", (dialog, which) -> submitOrder())
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+
+    private void submitOrder() {
         String paymentMethod = rgPaymentMethod.getCheckedRadioButtonId() == R.id.rb_bank
                 ? "BANK_TRANSFER"
                 : "COD";
