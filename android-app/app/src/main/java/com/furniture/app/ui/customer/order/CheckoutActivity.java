@@ -32,6 +32,7 @@ import com.furniture.app.data.remote.RetrofitClient;
 import com.furniture.app.data.remote.api.AddressApi;
 import com.furniture.app.data.repository.CartRepository;
 import com.furniture.app.data.repository.OrderRepository;
+import com.furniture.app.receiver.WifiConnectionReceiver;
 import com.furniture.app.ui.adapter.CheckoutItemAdapter;
 import com.furniture.app.ui.customer.profile.AddAddressActivity;
 import com.furniture.app.ui.viewmodel.CartViewModel;
@@ -346,6 +347,10 @@ public class CheckoutActivity extends AppCompatActivity {
     }
 
     private void placeOrder() {
+        if (!WifiConnectionReceiver.isWifiConnected(this)) {
+            Toast.makeText(this, "Lỗi kết nối mạng", Toast.LENGTH_SHORT).show();
+            return;
+        }
         if (orderItems.isEmpty()) {
             Toast.makeText(this, "Không có sản phẩm để đặt hàng", Toast.LENGTH_SHORT).show();
             return;
@@ -356,6 +361,17 @@ public class CheckoutActivity extends AppCompatActivity {
             return;
         }
 
+        BigDecimal total = subtotal.add(shippingFee);
+        new AlertDialog.Builder(this)
+                .setTitle("Xác nhận đặt hàng")
+                .setMessage("Tổng thanh toán: ₫" + currencyFormat.format(total) +
+                        "\n\nBạn có chắc chắn muốn đặt hàng?")
+                .setPositiveButton("Đặt hàng", (dialog, which) -> submitOrder())
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+
+    private void submitOrder() {
         String paymentMethod = rgPaymentMethod.getCheckedRadioButtonId() == R.id.rb_bank
                 ? "BANK_TRANSFER"
                 : "COD";

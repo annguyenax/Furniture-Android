@@ -207,7 +207,7 @@ public class LoginActivity extends AppCompatActivity {
         progressBar.setVisibility(View.VISIBLE);
         btnGoogleLogin.setEnabled(false);
 
-        AuthApi authApi = RetrofitClient.getInstance().create(AuthApi.class);
+        AuthApi authApi = RetrofitClient.getPublicRetrofit().create(AuthApi.class);
         authApi.googleLogin(idToken).enqueue(new Callback<ApiResponse<AuthResponse>>() {
             @Override
             public void onResponse(Call<ApiResponse<AuthResponse>> call, Response<ApiResponse<AuthResponse>> response) {

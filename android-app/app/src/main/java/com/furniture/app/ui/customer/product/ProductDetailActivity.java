@@ -32,6 +32,7 @@ import com.furniture.app.data.remote.api.ReviewApi;
 import com.furniture.app.data.remote.api.WishlistApi;
 import com.furniture.app.data.repository.CartRepository;
 import com.furniture.app.data.repository.ProductRepository;
+import com.furniture.app.receiver.WifiConnectionReceiver;
 import com.furniture.app.ui.adapter.ImageSliderAdapter;
 import com.furniture.app.ui.adapter.RelatedProductAdapter;
 import com.furniture.app.ui.adapter.ReviewAdapter;
@@ -610,6 +611,10 @@ public class ProductDetailActivity extends AppCompatActivity {
 
     private void addToCart() {
         if (currentProduct == null) return;
+        if (!WifiConnectionReceiver.isWifiConnected(this)) {
+            Toast.makeText(this, "Lỗi kết nối mạng", Toast.LENGTH_SHORT).show();
+            return;
+        }
         if (isOutOfStock()) {
             Toast.makeText(this, "Sản phẩm này đã hết hàng", Toast.LENGTH_SHORT).show();
             return;

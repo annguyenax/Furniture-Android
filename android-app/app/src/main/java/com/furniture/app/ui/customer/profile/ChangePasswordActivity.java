@@ -17,6 +17,7 @@ import com.furniture.app.ui.auth.LoginActivity;
 import com.furniture.app.util.SessionManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -24,8 +25,13 @@ import retrofit2.Response;
 
 public class ChangePasswordActivity extends AppCompatActivity {
 
-    private TextInputEditText etOldPassword, etNewPassword, etConfirmPassword;
-    private MaterialButton btnChangePassword;
+    private TextInputLayout oldPasswordLayout;
+    private TextInputLayout newPasswordLayout;
+    private TextInputLayout confirmPasswordLayout;
+    private TextInputEditText oldPasswordEditText;
+    private TextInputEditText newPasswordEditText;
+    private TextInputEditText confirmPasswordEditText;
+    private MaterialButton changePasswordButton;
     private ProgressBar progressBar;
     private SessionManager sessionManager;
     private UserApi userApi;
@@ -42,38 +48,24 @@ public class ChangePasswordActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
-        etOldPassword = findViewById(R.id.et_old_password);
-        etNewPassword = findViewById(R.id.et_new_password);
-        etConfirmPassword = findViewById(R.id.et_confirm_password);
-        btnChangePassword = findViewById(R.id.btn_change_password);
+        oldPasswordLayout = findViewById(R.id.old_password_layout);
+        newPasswordLayout = findViewById(R.id.new_password_layout);
+        confirmPasswordLayout = findViewById(R.id.confirm_password_layout);
+        oldPasswordEditText = findViewById(R.id.et_old_password);
+        newPasswordEditText = findViewById(R.id.et_new_password);
+        confirmPasswordEditText = findViewById(R.id.et_confirm_password);
+        changePasswordButton = findViewById(R.id.btn_change_password);
         progressBar = findViewById(R.id.progress_bar);
 
-        btnChangePassword.setOnClickListener(v -> changePassword());
+        changePasswordButton.setOnClickListener(v -> changePassword());
     }
 
     private void changePassword() {
-        String oldPassword = textOf(etOldPassword);
-        String newPassword = textOf(etNewPassword);
-        String confirmPassword = textOf(etConfirmPassword);
+        String oldPassword = textOf(oldPasswordEditText);
+        String newPassword = textOf(newPasswordEditText);
+        String confirmPassword = textOf(confirmPasswordEditText);
 
-        if (oldPassword.isEmpty()) {
-            etOldPassword.setError("Vui lòng nhập mật khẩu hiện tại");
-            etOldPassword.requestFocus();
-            return;
-        }
-        if (newPassword.length() < 6) {
-            etNewPassword.setError("Mật khẩu mới phải từ 6 ký tự");
-            etNewPassword.requestFocus();
-            return;
-        }
-        if (newPassword.equals(oldPassword)) {
-            etNewPassword.setError("Mật khẩu mới phải khác mật khẩu hiện tại");
-            etNewPassword.requestFocus();
-            return;
-        }
-        if (!newPassword.equals(confirmPassword)) {
-            etConfirmPassword.setError("Mật khẩu nhập lại không khớp");
-            etConfirmPassword.requestFocus();
+        if (!validateInput(oldPassword, newPassword, confirmPassword)) {
             return;
         }
 
@@ -84,15 +76,17 @@ public class ChangePasswordActivity extends AppCompatActivity {
                 setLoading(false);
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     Toast.makeText(ChangePasswordActivity.this,
-                            "Đã đổi mật khẩu, vui lòng đăng nhập lại", Toast.LENGTH_LONG).show();
+                            "Đã đổi mật khẩu. Vui lòng đăng nhập lại.", Toast.LENGTH_LONG).show();
                     sessionManager.clearSession();
                     RetrofitClient.resetInstance();
                     Intent intent = new Intent(ChangePasswordActivity.this, LoginActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                 } else {
+                    oldPasswordLayout.setError("Mật khẩu cũ không đúng");
+                    oldPasswordEditText.requestFocus();
                     Toast.makeText(ChangePasswordActivity.this,
-                            "Đổi mật khẩu thất bại, kiểm tra mật khẩu hiện tại", Toast.LENGTH_SHORT).show();
+                            "Đổi mật khẩu thất bại. Vui lòng kiểm tra mật khẩu cũ.", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -100,14 +94,55 @@ public class ChangePasswordActivity extends AppCompatActivity {
             public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
                 setLoading(false);
                 Toast.makeText(ChangePasswordActivity.this,
-                        "Không có kết nối mạng, thử lại sau", Toast.LENGTH_SHORT).show();
+                        "Không có kết nối mạng, thử lại sau.", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
+    private boolean validateInput(String oldPassword, String newPassword, String confirmPassword) {
+        clearErrors();
+
+        if (oldPassword.isEmpty()) {
+            oldPasswordLayout.setError("Vui lòng nhập mật khẩu cũ");
+            oldPasswordEditText.requestFocus();
+            return false;
+        }
+        if (newPassword.length() < 6) {
+            newPasswordLayout.setError("Mật khẩu mới phải có ít nhất 6 ký tự");
+            newPasswordEditText.requestFocus();
+            return false;
+        }
+        if (newPassword.equals(oldPassword)) {
+            newPasswordLayout.setError("Mật khẩu mới phải khác mật khẩu cũ");
+            newPasswordEditText.requestFocus();
+            return false;
+        }
+        if (confirmPassword.isEmpty()) {
+            confirmPasswordLayout.setError("Vui lòng xác nhận mật khẩu mới");
+            confirmPasswordEditText.requestFocus();
+            return false;
+        }
+        if (!newPassword.equals(confirmPassword)) {
+            confirmPasswordLayout.setError("Xác nhận mật khẩu mới không khớp");
+            confirmPasswordEditText.requestFocus();
+            return false;
+        }
+
+        return true;
+    }
+
     private void setLoading(boolean loading) {
         progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
-        btnChangePassword.setEnabled(!loading);
+        changePasswordButton.setEnabled(!loading);
+        oldPasswordEditText.setEnabled(!loading);
+        newPasswordEditText.setEnabled(!loading);
+        confirmPasswordEditText.setEnabled(!loading);
+    }
+
+    private void clearErrors() {
+        oldPasswordLayout.setError(null);
+        newPasswordLayout.setError(null);
+        confirmPasswordLayout.setError(null);
     }
 
     private String textOf(TextInputEditText editText) {

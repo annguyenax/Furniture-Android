@@ -242,9 +242,7 @@ public class OrderDetailActivity extends AppCompatActivity {
                     updateReturnButton();
                     btnReturn.setOnClickListener(v -> {
                         if (returnStatus == null || "REJECTED".equals(returnStatus)) {
-                            Intent intent = new Intent(this, ReturnRequestActivity.class);
-                            intent.putExtra(ReturnRequestActivity.EXTRA_ORDER_ID, currentOrderId);
-                            startActivityForResult(intent, REQUEST_RETURN);
+                            showReturnPicker(currentItems);
                         }
                     });
                 }
@@ -378,6 +376,45 @@ public class OrderDetailActivity extends AppCompatActivity {
                 .setTitle("Chọn sản phẩm để đánh giá")
                 .setItems(names, (d, which) -> openReview(unreviewed.get(which)))
                 .show();
+    }
+
+    private void showReturnPicker(List<OrderItem> items) {
+        if (items == null || items.isEmpty()) {
+            openReturnRequest(-1);
+            return;
+        }
+        if (items.size() == 1) {
+            Integer orderItemId = items.get(0).getOrderItemId();
+            openReturnRequest(orderItemId != null ? orderItemId : -1);
+            return;
+        }
+
+        String[] options = new String[items.size() + 1];
+        options[0] = "Toàn bộ đơn hàng";
+        for (int i = 0; i < items.size(); i++) {
+            OrderItem item = items.get(i);
+            options[i + 1] = item.getProductName() != null ? item.getProductName() : "Sản phẩm #" + item.getProductId();
+        }
+        new AlertDialog.Builder(this)
+                .setTitle("Chọn phạm vi hoàn trả")
+                .setItems(options, (d, which) -> {
+                    if (which == 0) {
+                        openReturnRequest(-1);
+                    } else {
+                        Integer orderItemId = items.get(which - 1).getOrderItemId();
+                        openReturnRequest(orderItemId != null ? orderItemId : -1);
+                    }
+                })
+                .show();
+    }
+
+    private void openReturnRequest(int orderItemId) {
+        Intent intent = new Intent(this, ReturnRequestActivity.class);
+        intent.putExtra(ReturnRequestActivity.EXTRA_ORDER_ID, currentOrderId);
+        if (orderItemId != -1) {
+            intent.putExtra(ReturnRequestActivity.EXTRA_ORDER_ITEM_ID, orderItemId);
+        }
+        startActivityForResult(intent, REQUEST_RETURN);
     }
 
     private void openReview(OrderItem item) {

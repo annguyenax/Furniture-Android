@@ -79,6 +79,7 @@
 
                 <!-- Banner/Carousel -->
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/banner_card"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="16dp"
@@ -95,6 +96,7 @@
 
                 <!-- Categories Section -->
                 <LinearLayout
+                    android:id="@+id/categories_section_header"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="16dp"
@@ -126,6 +128,7 @@
 
                 <!-- Featured Products Section -->
                 <LinearLayout
+                    android:id="@+id/featured_section_header"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="16dp"
@@ -167,6 +170,52 @@
                     android:paddingHorizontal="8dp"
                     android:paddingBottom="16dp"
                     android:clipToPadding="false" />
+
+                <!-- Offline State -->
+                <LinearLayout
+                    android:id="@+id/offline_state"
+                    android:layout_width="match_parent"
+                    android:layout_height="360dp"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="24dp"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:layout_width="112dp"
+                        android:layout_height="112dp"
+                        android:contentDescription="Không có kết nối Wi-Fi"
+                        android:src="@drawable/ic_wifi_off" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:gravity="center"
+                        android:text="Bạn đang ngoại tuyến"
+                        android:textColor="@color/text_primary"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="280dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center"
+                        android:text="Vui lòng kết nối Wi-Fi để xem sản phẩm."
+                        android:textColor="@color/text_secondary"
+                        android:textSize="14sp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_enable_wifi"
+                        android:layout_width="wrap_content"
+                        android:layout_height="48dp"
+                        android:layout_marginTop="18dp"
+                        android:text="Bật Wi-Fi"
+                        app:backgroundTint="@color/primary"
+                        app:cornerRadius="8dp" />
+
+                </LinearLayout>
 
                 <!-- Loading -->
                 <ProgressBar

@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.furniture.app.data.model.AuthResponse;
 import com.furniture.app.data.model.User;
+import com.furniture.app.data.remote.RetrofitClient;
 import com.furniture.app.data.repository.AuthRepository;
 import com.furniture.app.util.SessionManager;
 
@@ -100,6 +101,7 @@ public class AuthViewModel extends ViewModel {
 
     public void logout() {
         sessionManager.clearSession();
+        RetrofitClient.resetInstance();
         authResponseLiveData.setValue(null);
         errorLiveData.setValue(null);
     }

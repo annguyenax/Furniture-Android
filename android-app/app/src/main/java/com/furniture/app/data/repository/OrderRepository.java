@@ -108,7 +108,7 @@ public class OrderRepository {
             public void onFailure(Call<ApiResponse<Order>> call, Throwable t) {
                 ApiResponse<Order> errorResponse = new ApiResponse<>();
                 errorResponse.setSuccess(false);
-                errorResponse.setMessage("Lỗi kết nối: " + t.getMessage());
+                errorResponse.setMessage("Lỗi kết nối mạng");
                 resultLiveData.setValue(errorResponse);
             }
         });
@@ -136,7 +136,7 @@ public class OrderRepository {
             public void onFailure(Call<ApiResponse<Order>> call, Throwable t) {
                 ApiResponse<Order> errorResponse = new ApiResponse<>();
                 errorResponse.setSuccess(false);
-                errorResponse.setMessage("Lỗi kết nối: " + t.getMessage());
+                errorResponse.setMessage("Lỗi kết nối mạng");
                 resultLiveData.setValue(errorResponse);
             }
         });
@@ -164,7 +164,7 @@ public class OrderRepository {
             public void onFailure(Call<ApiResponse<Order>> call, Throwable t) {
                 ApiResponse<Order> errorResponse = new ApiResponse<>();
                 errorResponse.setSuccess(false);
-                errorResponse.setMessage("Lỗi kết nối: " + t.getMessage());
+                errorResponse.setMessage("Lỗi kết nối mạng");
                 resultLiveData.setValue(errorResponse);
             }
         });

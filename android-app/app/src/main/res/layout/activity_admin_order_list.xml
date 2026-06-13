@@ -50,73 +50,67 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Status filter chips -->
-    <HorizontalScrollView
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chip_group_status"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingHorizontal="8dp"
         android:paddingVertical="6dp"
-        android:scrollbars="none">
+        app:singleSelection="true"
+        app:selectionRequired="true"
+        app:singleLine="false">
 
-        <com.google.android.material.chip.ChipGroup
-            android:id="@+id/chip_group_status"
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_all"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:singleSelection="true"
-            app:selectionRequired="true">
+            android:checked="true"
+            android:text="Tất cả"
+            app:chipBackgroundColor="@color/primary"
+            app:checkedIconVisible="false" />
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_all"
-                style="@style/Widget.MaterialComponents.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="Tất cả"
-                app:chipBackgroundColor="@color/primary"
-                app:checkedIconVisible="false" />
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_pending"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Chờ xác nhận"
+            app:checkedIconVisible="false" />
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_pending"
-                style="@style/Widget.MaterialComponents.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Chờ xác nhận"
-                app:checkedIconVisible="false" />
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_processing"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Đang xử lý"
+            app:checkedIconVisible="false" />
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_processing"
-                style="@style/Widget.MaterialComponents.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Đang xử lý"
-                app:checkedIconVisible="false" />
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_shipped"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Đang giao"
+            app:checkedIconVisible="false" />
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_shipped"
-                style="@style/Widget.MaterialComponents.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Đang giao"
-                app:checkedIconVisible="false" />
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_delivered"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Đã giao"
+            app:checkedIconVisible="false" />
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_delivered"
-                style="@style/Widget.MaterialComponents.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Đã giao"
-                app:checkedIconVisible="false" />
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_cancelled"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Đã hủy"
+            app:checkedIconVisible="false" />
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_cancelled"
-                style="@style/Widget.MaterialComponents.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Đã hủy"
-                app:checkedIconVisible="false" />
-
-        </com.google.android.material.chip.ChipGroup>
-
-    </HorizontalScrollView>
+    </com.google.android.material.chip.ChipGroup>
 
     <ProgressBar
         android:id="@+id/progress_bar"

@@ -23,6 +23,7 @@ import com.furniture.app.ui.auth.RegisterActivity;
 import com.furniture.app.ui.customer.CustomerMainActivity;
 import com.furniture.app.ui.customer.chat.ChatActivity;
 import com.furniture.app.ui.customer.order.OrderHistoryActivity;
+import com.furniture.app.ui.customer.order.ReturnHistoryActivity;
 import com.furniture.app.ui.customer.profile.AddressListActivity;
 import com.furniture.app.ui.customer.profile.WishlistActivity;
 import com.furniture.app.util.SessionManager;
@@ -39,6 +40,7 @@ public class ProfileFragment extends Fragment {
     private TextView userName;
     private TextView userEmail;
     private View menuOrders;
+    private View menuReturns;
     private View menuWishlist;
     private View menuAddresses;
     private View menuChat;
@@ -74,6 +76,7 @@ public class ProfileFragment extends Fragment {
         userName = view.findViewById(R.id.user_name);
         userEmail = view.findViewById(R.id.user_email);
         menuOrders = view.findViewById(R.id.menu_orders);
+        menuReturns = view.findViewById(R.id.menu_returns);
         menuWishlist = view.findViewById(R.id.menu_wishlist);
         menuAddresses = view.findViewById(R.id.menu_addresses);
         menuChat = view.findViewById(R.id.menu_chat);
@@ -153,6 +156,9 @@ public class ProfileFragment extends Fragment {
 
         menuOrders.setOnClickListener(v ->
                 requireLogin(() -> startActivity(new Intent(requireContext(), OrderHistoryActivity.class))));
+
+        menuReturns.setOnClickListener(v ->
+                requireLogin(() -> startActivity(new Intent(requireContext(), ReturnHistoryActivity.class))));
 
         menuWishlist.setOnClickListener(v ->
                 requireLogin(() -> startActivity(new Intent(requireContext(), WishlistActivity.class))));
