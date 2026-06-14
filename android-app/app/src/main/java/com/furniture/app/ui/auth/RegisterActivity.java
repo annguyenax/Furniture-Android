@@ -34,6 +34,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -214,7 +218,7 @@ public class RegisterActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     saveSessionAndNavigate(response.body().getData());
                 } else {
-                    String msg = response.body() != null ? response.body().getMessage() : "Đăng ký Google thất bại";
+                    String msg = parseGoogleRegisterError(response);
                     Toast.makeText(RegisterActivity.this, msg, Toast.LENGTH_LONG).show();
                 }
             }
@@ -226,6 +230,32 @@ public class RegisterActivity extends AppCompatActivity {
                 Toast.makeText(RegisterActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private String parseGoogleRegisterError(Response<ApiResponse<AuthResponse>> response) {
+        String message = null;
+        try {
+            if (response.body() != null) {
+                message = response.body().getMessage();
+            } else if (response.errorBody() != null) {
+                String errorJson = response.errorBody().string();
+                Type type = new TypeToken<ApiResponse<Void>>() {}.getType();
+                ApiResponse<Void> errorResponse = new Gson().fromJson(errorJson, type);
+                if (errorResponse != null) {
+                    if (errorResponse.getErrors() != null && !errorResponse.getErrors().isEmpty()) {
+                        message = errorResponse.getErrors().values().iterator().next();
+                    } else {
+                        message = errorResponse.getMessage();
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
+        if (message != null && message.toLowerCase().contains("email already exists")) {
+            return "Email này đã có tài khoản. Vui lòng đăng nhập bằng Google.";
+        }
+        return message != null && !message.isEmpty() ? message : "Đăng ký Google thất bại";
     }
 
     private void saveSessionAndNavigate(AuthResponse authResponse) {
