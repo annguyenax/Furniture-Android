@@ -73,7 +73,7 @@ public class CheckoutItemAdapter extends RecyclerView.Adapter<CheckoutItemAdapte
 
             BigDecimal price = item.getPrice();
             if (price != null) {
-                priceText.setText(String.format("₫%s", currencyFormat.format(price)));
+                priceText.setText(String.format("%s đ", currencyFormat.format(price)));
             }
 
             quantityText.setText(String.format("x%d", item.getQuantity()));

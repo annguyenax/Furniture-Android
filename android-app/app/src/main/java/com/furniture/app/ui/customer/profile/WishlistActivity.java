@@ -148,7 +148,7 @@ public class WishlistActivity extends AppCompatActivity {
             WishlistItem item = list.get(position);
             h.tvName.setText(item.getProductName());
             if (item.getPrice() != null) {
-                h.tvPrice.setText(String.format("₫%s", currencyFormat.format(item.getPrice())));
+                h.tvPrice.setText(String.format("%s đ", currencyFormat.format(item.getPrice())));
             }
             if (item.getProductImage() != null && !item.getProductImage().isEmpty()) {
                 Glide.with(h.ivImage.getContext()).load(item.getProductImage())

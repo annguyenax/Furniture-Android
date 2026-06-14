@@ -79,6 +79,7 @@ public class Product {
     private Category category;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    @OrderBy("variantId ASC")
     @ToString.Exclude
     @Builder.Default
     private List<ProductVariant> variants = new ArrayList<>();

@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -70,6 +71,7 @@ public class ProductResponse {
 
         if (product.getVariants() != null && !product.getVariants().isEmpty()) {
             builder.variants(product.getVariants().stream()
+                .sorted(Comparator.comparing(ProductVariant::getVariantId))
                 .map(ProductResponse::variantFromEntity)
                 .collect(Collectors.toList()));
         }

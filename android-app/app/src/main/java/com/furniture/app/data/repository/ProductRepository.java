@@ -9,6 +9,8 @@ import com.furniture.app.data.model.Product;
 import com.furniture.app.data.remote.RetrofitClient;
 import com.furniture.app.data.remote.api.ProductApi;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import retrofit2.Call;
@@ -25,14 +27,18 @@ public class ProductRepository {
     }
 
     public void getAllProducts(int page, int size, final ProductCallback callback) {
-        productApi.getAllProducts(page, size, "createdAt", "DESC")
+        productApi.getAllProducts(page, 50, "createdAt", "DESC")
                 .enqueue(new Callback<ApiResponse<PageResponse<Product>>>() {
                     @Override
                     public void onResponse(Call<ApiResponse<PageResponse<Product>>> call,
                                            Response<ApiResponse<PageResponse<Product>>> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             PageResponse<Product> pageResponse = response.body().getData();
-                            List<Product> products = pageResponse.getContent();
+                            List<Product> products = new ArrayList<>(pageResponse.getContent());
+                            Collections.shuffle(products);
+                            if (products.size() > size) {
+                                products = new ArrayList<>(products.subList(0, size));
+                            }
                             productCacheStore.saveHomeProducts(products);
                             callback.onSuccess(products);
                         } else {

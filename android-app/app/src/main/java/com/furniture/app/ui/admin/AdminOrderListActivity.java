@@ -202,7 +202,7 @@ public class AdminOrderListActivity extends AppCompatActivity {
             h.tvCode.setText(o.getOrderCode() != null ? o.getOrderCode() : "#" + o.getOrderId());
             h.tvCustomer.setText(o.getRecipientName() != null ? "👤 " + o.getRecipientName() : "");
             h.tvStatus.setText(o.getStatusDisplay());
-            h.tvTotal.setText(o.getTotalAmount() != null ? "₫" + fmt.format(o.getTotalAmount()) : "");
+            h.tvTotal.setText(o.getTotalAmount() != null ? String.format("%s đ", fmt.format(o.getTotalAmount())) : "");
 
             bindProductInfo(h, o);
 

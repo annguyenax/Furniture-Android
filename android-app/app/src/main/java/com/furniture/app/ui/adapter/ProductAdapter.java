@@ -86,7 +86,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             // Format price
             BigDecimal price = product.getLowestPrice();
             if (price != null && price.compareTo(BigDecimal.ZERO) > 0) {
-                priceTextView.setText(String.format("\u20ab%s", currencyFormat.format(price)));
+                priceTextView.setText(String.format("%s đ", currencyFormat.format(price)));
             } else {
                 priceTextView.setText("Lien he");
             }
@@ -99,7 +99,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                 BigDecimal originalPrice = getOriginalPrice(product, price, hasDiscount);
                 if (originalPrice != null) {
                     originalPriceTextView.setVisibility(View.VISIBLE);
-                    originalPriceTextView.setText(String.format("\u20ab%s", currencyFormat.format(originalPrice)));
+                    originalPriceTextView.setText(String.format("%s đ", currencyFormat.format(originalPrice)));
                     originalPriceTextView.setPaintFlags(
                             originalPriceTextView.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
                 } else {

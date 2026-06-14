@@ -15,7 +15,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -31,9 +30,14 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.furniture.app.R;
 import com.furniture.app.data.model.ApiResponse;
 import com.furniture.app.data.model.Category;
+import com.furniture.app.data.model.ChatRoomItem;
+import com.furniture.app.data.model.Order;
+import com.furniture.app.data.model.PageResponse;
 import com.furniture.app.data.model.Product;
 import com.furniture.app.data.remote.RetrofitClient;
 import com.furniture.app.data.remote.api.CategoryApi;
+import com.furniture.app.data.remote.api.ChatApi;
+import com.furniture.app.data.remote.api.OrderApi;
 import com.furniture.app.data.repository.ProductRepository;
 import com.furniture.app.receiver.WifiConnectionReceiver;
 import com.furniture.app.ui.adapter.BannerAdapter;
@@ -42,10 +46,12 @@ import com.furniture.app.ui.adapter.ProductAdapter;
 import com.furniture.app.ui.auth.LoginActivity;
 import com.furniture.app.ui.customer.CustomerMainActivity;
 import com.furniture.app.ui.customer.chat.ChatActivity;
+import com.furniture.app.ui.customer.notification.NotificationActivity;
 import com.furniture.app.ui.customer.product.CategoryProductsActivity;
 import com.furniture.app.ui.customer.product.ProductDetailActivity;
 import com.furniture.app.ui.viewmodel.ProductViewModel;
 import com.furniture.app.ui.viewmodel.ProductViewModelFactory;
+import com.furniture.app.util.NotificationReadStore;
 import com.furniture.app.util.SessionManager;
 
 import java.util.ArrayList;
@@ -72,6 +78,8 @@ public class HomeFragment extends Fragment {
     private com.google.android.material.button.MaterialButton btnEnableWifi;
     private View btnChatHome;
     private View btnNotificationHome;
+    private View badgeChatHome;
+    private View badgeNotificationHome;
     private View seeAllFeatured;
     private ViewPager2 bannerViewPager;
     private ProductViewModel productViewModel;
@@ -80,6 +88,7 @@ public class HomeFragment extends Fragment {
     private CategoryAdapter categoryAdapter;
     private CategoryApi categoryApi;
     private SessionManager sessionManager;
+    private NotificationReadStore notificationReadStore;
     private boolean refreshProductsOnResume = false;
 
     private final Handler bannerHandler = new Handler(Looper.getMainLooper());
@@ -87,6 +96,10 @@ public class HomeFragment extends Fragment {
     private static final long BANNER_INTERVAL_MS = 3500;
     private boolean networkReceiverRegistered;
     private boolean showingCachedProducts;
+    private boolean hasLoadedHomeProducts;
+    private boolean isLoadingHomeProducts;
+    private long lastHomeProductsLoadAt;
+    private static final long HOME_PRODUCTS_REFRESH_INTERVAL_MS = 60_000;
 
     private final BroadcastReceiver networkReceiver = new BroadcastReceiver() {
         @Override
@@ -109,6 +122,7 @@ public class HomeFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         sessionManager = new SessionManager(requireContext());
+        notificationReadStore = new NotificationReadStore(requireContext());
         categoryApi = RetrofitClient.getPublicRetrofit().create(CategoryApi.class);
 
         initViews(view);
@@ -116,6 +130,7 @@ public class HomeFragment extends Fragment {
         setupRecyclerViews();
         setupListeners();
         setupBanner();
+        setHeaderBadges(false, false);
         updateConnectionState();
     }
 
@@ -134,6 +149,8 @@ public class HomeFragment extends Fragment {
         btnEnableWifi = view.findViewById(R.id.btn_enable_wifi);
         btnChatHome = view.findViewById(R.id.btn_chat_home);
         btnNotificationHome = view.findViewById(R.id.btn_notification_home);
+        badgeChatHome = view.findViewById(R.id.badge_chat_home);
+        badgeNotificationHome = view.findViewById(R.id.badge_notification_home);
         seeAllFeatured = view.findViewById(R.id.see_all_featured);
         bannerViewPager = view.findViewById(R.id.banner_viewpager);
     }
@@ -145,6 +162,7 @@ public class HomeFragment extends Fragment {
 
         productViewModel.getProducts().observe(getViewLifecycleOwner(), products -> {
             if (!isWifiConnected()) {
+                isLoadingHomeProducts = false;
                 if (products != null && !products.isEmpty()) {
                     showCachedContentState();
                     productAdapter.setProducts(products);
@@ -155,17 +173,24 @@ public class HomeFragment extends Fragment {
                 return;
             }
             if (products != null && !products.isEmpty()) {
+                hasLoadedHomeProducts = true;
+                lastHomeProductsLoadAt = System.currentTimeMillis();
+                isLoadingHomeProducts = false;
                 productAdapter.setProducts(products);
                 updateBannerFromProducts(products);
                 emptyState.setVisibility(View.GONE);
                 featuredProductsRecyclerView.setVisibility(View.VISIBLE);
             } else {
+                isLoadingHomeProducts = false;
                 emptyState.setVisibility(View.VISIBLE);
                 featuredProductsRecyclerView.setVisibility(View.GONE);
             }
         });
 
         productViewModel.getLoading().observe(getViewLifecycleOwner(), isLoading -> {
+            if (!isLoading) {
+                isLoadingHomeProducts = false;
+            }
             if (!isWifiConnected()) {
                 progressBar.setVisibility(View.GONE);
                 swipeRefreshLayout.setRefreshing(false);
@@ -178,9 +203,11 @@ public class HomeFragment extends Fragment {
         productViewModel.getError().observe(getViewLifecycleOwner(), error -> {
             if (error != null && !error.isEmpty()) {
                 if (!isWifiConnected()) {
+                    isLoadingHomeProducts = false;
                     loadCachedProductsOrShowOffline();
                     return;
                 }
+                isLoadingHomeProducts = false;
                 emptyState.setVisibility(View.VISIBLE);
                 featuredProductsRecyclerView.setVisibility(View.GONE);
                 if (tvEmptyMessage != null) tvEmptyMessage.setText("Không thể tải dữ liệu. Kiểm tra kết nối mạng.");
@@ -209,7 +236,7 @@ public class HomeFragment extends Fragment {
             }
             if (btnRetry != null) btnRetry.setVisibility(View.GONE);
             if (tvEmptyMessage != null) tvEmptyMessage.setText("Không có sản phẩm");
-            loadProducts();
+            loadProducts(true);
             loadCategories();
         });
 
@@ -220,7 +247,7 @@ public class HomeFragment extends Fragment {
             }
             btnRetry.setVisibility(View.GONE);
             if (tvEmptyMessage != null) tvEmptyMessage.setText("Không có sản phẩm");
-            loadProducts();
+            loadProducts(true);
             loadCategories();
         });
 
@@ -244,7 +271,7 @@ public class HomeFragment extends Fragment {
             if (!sessionManager.isLoggedIn()) {
                 startLoginForReturn();
             } else {
-                Toast.makeText(requireContext(), "Chưa có thông báo mới", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(requireContext(), NotificationActivity.class));
             }
         });
     }
@@ -254,6 +281,17 @@ public class HomeFragment extends Fragment {
         super.onStart();
         registerNetworkReceiver();
         updateConnectionState();
+        updateHeaderBadges();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (refreshProductsOnResume) {
+            loadProducts();
+        }
+        refreshProductsOnResume = true;
+        updateHeaderBadges();
     }
 
     @Override
@@ -271,10 +309,10 @@ public class HomeFragment extends Fragment {
     private void setupBanner() {
         if (bannerViewPager == null) return;
         List<String> bannerUrls = Arrays.asList(
-            "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=80",
-            "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&q=80",
-            "https://images.unsplash.com/photo-1449247709967-d4461a6a6103?w=600&q=80",
-            "https://images.unsplash.com/photo-1493663284031-b7e3aaa4cab8?w=600&q=80"
+            "https://images.unsplash.com/photo-1631679706909-1844bbd07221?w=600&q=80",
+            "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=600&q=80",
+            "https://images.unsplash.com/photo-1634712282287-14ed57b9cc89?w=600&q=80",
+            "https://images.unsplash.com/photo-1577538928305-3807c3993047?w=600&q=80"
         );
         bannerAdapter = new BannerAdapter(bannerUrls);
         bannerViewPager.setAdapter(bannerAdapter);
@@ -315,15 +353,6 @@ public class HomeFragment extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        if (refreshProductsOnResume) {
-            loadProducts();
-        }
-        refreshProductsOnResume = true;
-    }
-
-    @Override
     public void onDestroyView() {
         super.onDestroyView();
         bannerHandler.removeCallbacksAndMessages(null);
@@ -331,10 +360,21 @@ public class HomeFragment extends Fragment {
     }
 
     private void loadProducts() {
+        loadProducts(false);
+    }
+
+    private void loadProducts(boolean forceRefresh) {
         if (!isWifiConnected()) {
             loadCachedProductsOrShowOffline();
             return;
         }
+        long now = System.currentTimeMillis();
+        boolean recentlyLoaded = hasLoadedHomeProducts
+                && now - lastHomeProductsLoadAt < HOME_PRODUCTS_REFRESH_INTERVAL_MS;
+        if (!forceRefresh && (isLoadingHomeProducts || recentlyLoaded)) {
+            return;
+        }
+        isLoadingHomeProducts = true;
         showContentState();
         productViewModel.loadProducts(0, 20);
     }
@@ -446,6 +486,83 @@ public class HomeFragment extends Fragment {
         if (!networkReceiverRegistered || getContext() == null) return;
         requireContext().unregisterReceiver(networkReceiver);
         networkReceiverRegistered = false;
+    }
+
+    private void updateHeaderBadges() {
+        if (!isAdded() || !sessionManager.isLoggedIn() || !isWifiConnected()) {
+            setHeaderBadges(false, false);
+            return;
+        }
+
+        setHeaderBadges(false, false);
+
+        ChatApi chatApi = RetrofitClient.getInstance(sessionManager.getToken()).create(ChatApi.class);
+        chatApi.getChatRooms().enqueue(new Callback<ApiResponse<List<ChatRoomItem>>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<List<ChatRoomItem>>> call,
+                                   Response<ApiResponse<List<ChatRoomItem>>> response) {
+                if (!isAdded()) return;
+                boolean hasUnreadChat = false;
+                if (response.isSuccessful() && response.body() != null
+                        && response.body().getData() != null) {
+                    for (ChatRoomItem room : response.body().getData()) {
+                        if (room.getUnreadCount() > 0) {
+                            hasUnreadChat = true;
+                            break;
+                        }
+                    }
+                }
+                setChatBadge(hasUnreadChat);
+                if (hasUnreadChat) setNotificationBadge(true);
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<List<ChatRoomItem>>> call, Throwable t) {
+                if (isAdded()) setChatBadge(false);
+            }
+        });
+
+        OrderApi orderApi = RetrofitClient.getInstance(sessionManager.getToken()).create(OrderApi.class);
+        orderApi.getOrders(0, 20).enqueue(new Callback<ApiResponse<PageResponse<Order>>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<PageResponse<Order>>> call,
+                                   Response<ApiResponse<PageResponse<Order>>> response) {
+                if (!isAdded()) return;
+                List<Order> orders = null;
+                if (response.isSuccessful() && response.body() != null
+                        && response.body().getData() != null) {
+                    orders = response.body().getData().getContent();
+                }
+                boolean hasUnreadOrderNotification = notificationReadStore.hasUnreadOrderNotifications(orders);
+                setNotificationBadge(hasUnreadOrderNotification || isChatBadgeVisible());
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<PageResponse<Order>>> call, Throwable t) {
+                if (isAdded()) setNotificationBadge(isChatBadgeVisible());
+            }
+        });
+    }
+
+    private void setHeaderBadges(boolean showChatBadge, boolean showNotificationBadge) {
+        setChatBadge(showChatBadge);
+        setNotificationBadge(showNotificationBadge);
+    }
+
+    private void setChatBadge(boolean visible) {
+        if (badgeChatHome != null) {
+            badgeChatHome.setVisibility(visible ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    private void setNotificationBadge(boolean visible) {
+        if (badgeNotificationHome != null) {
+            badgeNotificationHome.setVisibility(visible ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    private boolean isChatBadgeVisible() {
+        return badgeChatHome != null && badgeChatHome.getVisibility() == View.VISIBLE;
     }
 
     private void navigateToTab(int tab) {

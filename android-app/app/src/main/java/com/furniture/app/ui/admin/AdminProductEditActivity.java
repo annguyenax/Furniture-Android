@@ -209,7 +209,7 @@ public class AdminProductEditActivity extends AppCompatActivity {
             title.setTypeface(null, android.graphics.Typeface.BOLD);
 
             TextView meta = new TextView(this);
-            meta.setText("Giá: ₫" + (variant.getPrice() != null ? variant.getPrice().toPlainString() : "0")
+                meta.setText("Giá: " + (variant.getPrice() != null ? variant.getPrice().toPlainString() : "0") + " đ"
                     + " | Tồn: " + variant.getStock()
                     + (variant.getImageUrl() != null ? " | Có ảnh" : ""));
             meta.setTextColor(0xFF757575);
