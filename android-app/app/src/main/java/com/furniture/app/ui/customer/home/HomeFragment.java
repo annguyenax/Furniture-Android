@@ -96,6 +96,10 @@ public class HomeFragment extends Fragment {
     private static final long BANNER_INTERVAL_MS = 3500;
     private boolean networkReceiverRegistered;
     private boolean showingCachedProducts;
+    private boolean hasLoadedHomeProducts;
+    private boolean isLoadingHomeProducts;
+    private long lastHomeProductsLoadAt;
+    private static final long HOME_PRODUCTS_REFRESH_INTERVAL_MS = 60_000;
 
     private final BroadcastReceiver networkReceiver = new BroadcastReceiver() {
         @Override
@@ -158,6 +162,7 @@ public class HomeFragment extends Fragment {
 
         productViewModel.getProducts().observe(getViewLifecycleOwner(), products -> {
             if (!isWifiConnected()) {
+                isLoadingHomeProducts = false;
                 if (products != null && !products.isEmpty()) {
                     showCachedContentState();
                     productAdapter.setProducts(products);
@@ -168,17 +173,24 @@ public class HomeFragment extends Fragment {
                 return;
             }
             if (products != null && !products.isEmpty()) {
+                hasLoadedHomeProducts = true;
+                lastHomeProductsLoadAt = System.currentTimeMillis();
+                isLoadingHomeProducts = false;
                 productAdapter.setProducts(products);
                 updateBannerFromProducts(products);
                 emptyState.setVisibility(View.GONE);
                 featuredProductsRecyclerView.setVisibility(View.VISIBLE);
             } else {
+                isLoadingHomeProducts = false;
                 emptyState.setVisibility(View.VISIBLE);
                 featuredProductsRecyclerView.setVisibility(View.GONE);
             }
         });
 
         productViewModel.getLoading().observe(getViewLifecycleOwner(), isLoading -> {
+            if (!isLoading) {
+                isLoadingHomeProducts = false;
+            }
             if (!isWifiConnected()) {
                 progressBar.setVisibility(View.GONE);
                 swipeRefreshLayout.setRefreshing(false);
@@ -191,9 +203,11 @@ public class HomeFragment extends Fragment {
         productViewModel.getError().observe(getViewLifecycleOwner(), error -> {
             if (error != null && !error.isEmpty()) {
                 if (!isWifiConnected()) {
+                    isLoadingHomeProducts = false;
                     loadCachedProductsOrShowOffline();
                     return;
                 }
+                isLoadingHomeProducts = false;
                 emptyState.setVisibility(View.VISIBLE);
                 featuredProductsRecyclerView.setVisibility(View.GONE);
                 if (tvEmptyMessage != null) tvEmptyMessage.setText("Không thể tải dữ liệu. Kiểm tra kết nối mạng.");
@@ -222,7 +236,7 @@ public class HomeFragment extends Fragment {
             }
             if (btnRetry != null) btnRetry.setVisibility(View.GONE);
             if (tvEmptyMessage != null) tvEmptyMessage.setText("Không có sản phẩm");
-            loadProducts();
+            loadProducts(true);
             loadCategories();
         });
 
@@ -233,7 +247,7 @@ public class HomeFragment extends Fragment {
             }
             btnRetry.setVisibility(View.GONE);
             if (tvEmptyMessage != null) tvEmptyMessage.setText("Không có sản phẩm");
-            loadProducts();
+            loadProducts(true);
             loadCategories();
         });
 
@@ -295,10 +309,10 @@ public class HomeFragment extends Fragment {
     private void setupBanner() {
         if (bannerViewPager == null) return;
         List<String> bannerUrls = Arrays.asList(
-            "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=80",
-            "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&q=80",
-            "https://images.unsplash.com/photo-1449247709967-d4461a6a6103?w=600&q=80",
-            "https://images.unsplash.com/photo-1493663284031-b7e3aaa4cab8?w=600&q=80"
+            "https://images.unsplash.com/photo-1631679706909-1844bbd07221?w=600&q=80",
+            "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=600&q=80",
+            "https://images.unsplash.com/photo-1634712282287-14ed57b9cc89?w=600&q=80",
+            "https://images.unsplash.com/photo-1577538928305-3807c3993047?w=600&q=80"
         );
         bannerAdapter = new BannerAdapter(bannerUrls);
         bannerViewPager.setAdapter(bannerAdapter);
@@ -346,10 +360,21 @@ public class HomeFragment extends Fragment {
     }
 
     private void loadProducts() {
+        loadProducts(false);
+    }
+
+    private void loadProducts(boolean forceRefresh) {
         if (!isWifiConnected()) {
             loadCachedProductsOrShowOffline();
             return;
         }
+        long now = System.currentTimeMillis();
+        boolean recentlyLoaded = hasLoadedHomeProducts
+                && now - lastHomeProductsLoadAt < HOME_PRODUCTS_REFRESH_INTERVAL_MS;
+        if (!forceRefresh && (isLoadingHomeProducts || recentlyLoaded)) {
+            return;
+        }
+        isLoadingHomeProducts = true;
         showContentState();
         productViewModel.loadProducts(0, 20);
     }
