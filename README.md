@@ -202,6 +202,18 @@ debug {
 
 **Bước 3** — Tạo AVD API 24+ và nhấn Run (Shift+F10).
 
+**Google Sign-In local dev**
+
+- Debug build dung chung `android-app/shared-debug.keystore`, nen cac thanh vien trong team co cung SHA-1 khi build local.
+- Them SHA-1 nay vao Google Cloud Android OAuth client mot lan:
+
+```text
+E1:1D:2B:E3:6F:D9:5C:1E:FE:F7:16:5A:48:93:58:F3:4F:6E:98:94
+```
+
+- Package name: `com.furniture.app`
+- Web Client ID van nam trong `android-app/local.properties` voi key `google.web.client.id`.
+
 ---
 
 ## API Endpoints

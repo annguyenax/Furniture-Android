@@ -23,6 +23,7 @@ captures/
 # Keystore files
 *.jks
 *.keystore
+!shared-debug.keystore
 
 # Proguard
 proguard/
