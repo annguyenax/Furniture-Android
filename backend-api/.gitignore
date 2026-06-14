@@ -37,3 +37,7 @@ build/
 application-dev.properties
 application-prod.properties
 application-local.properties
+
+### Runtime logs ###
+logs/
+*.log

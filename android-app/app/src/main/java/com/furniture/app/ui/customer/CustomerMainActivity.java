@@ -9,8 +9,10 @@ import com.furniture.app.data.remote.RetrofitClient;
 import com.furniture.app.data.remote.interceptor.AuthInterceptor;
 import com.furniture.app.ui.adapter.ViewPagerAdapter;
 import com.furniture.app.ui.auth.LoginActivity;
+import com.furniture.app.ui.customer.aichat.AiChatBottomSheetFragment;
 import com.furniture.app.util.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class CustomerMainActivity extends AppCompatActivity {
 
@@ -42,6 +44,10 @@ public class CustomerMainActivity extends AppCompatActivity {
 
         viewPager = findViewById(R.id.view_pager);
         bottomNavigationView = findViewById(R.id.bottom_navigation);
+
+        FloatingActionButton fabAiChat = findViewById(R.id.fab_ai_chat);
+        fabAiChat.setOnClickListener(v ->
+                new AiChatBottomSheetFragment().show(getSupportFragmentManager(), "ai_chat"));
 
         // Setup ViewPager with adapter
         viewPagerAdapter = new ViewPagerAdapter(this);

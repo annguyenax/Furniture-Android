@@ -137,6 +137,19 @@ public class SessionManager {
         sharedPreferences.edit().putString(KEY_ACCESS_TOKEN, token).apply();
     }
 
+    public void setRefreshToken(String token) {
+        sharedPreferences.edit().putString(KEY_REFRESH_TOKEN, token).apply();
+    }
+
+    public void saveTokens(String accessToken, String refreshToken) {
+        SharedPreferences.Editor editor = sharedPreferences.edit()
+                .putString(KEY_ACCESS_TOKEN, accessToken);
+        if (refreshToken != null && !refreshToken.isEmpty()) {
+            editor.putString(KEY_REFRESH_TOKEN, refreshToken);
+        }
+        editor.apply();
+    }
+
     public String getToken() { return getAccessToken(); }
 
     public String getUserPhone() { return getPhone(); }
