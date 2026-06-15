@@ -18,6 +18,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,6 +50,11 @@ public class AuthServiceImpl implements AuthService {
     private static final int LOCK_TIME_MINUTES = 15;
     private static final int EMAIL_VERIFICATION_EXPIRY_HOURS = 24;
     private static final int PASSWORD_RESET_EXPIRY_MINUTES = 30;
+
+    @PostConstruct
+    void logGoogleAuthConfig() {
+        log.info("Google auth configured with clientId={}", maskClientId(googleClientId));
+    }
 
     @Override
     @Transactional
@@ -202,43 +208,12 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AuthResponse googleRegister(String googleIdToken) {
-        try {
-            GoogleIdToken.Payload payload = verifyGoogleToken(googleIdToken);
-            String googleId = payload.getSubject();
-            String email = payload.getEmail();
-            String firstName = (String) payload.get("given_name");
-            String lastName = (String) payload.get("family_name");
-            String pictureUrl = (String) payload.get("picture");
-
-            if (userRepository.findByGoogleId(googleId).isPresent() || userRepository.existsByEmail(email)) {
-                throw new BadRequestException("Email already exists");
-            }
-
-            User user = createGoogleUser(googleId, email, firstName, lastName, pictureUrl);
-            String accessToken = jwtTokenProvider.generateAccessToken(user);
-            String refreshToken = jwtTokenProvider.generateRefreshToken(user);
-            user.setRefreshToken(refreshToken);
-            userRepository.save(user);
-
-            log.info("Google register successful: {}", email);
-
-            return AuthResponse.builder()
-                    .accessToken(accessToken)
-                    .refreshToken(refreshToken)
-                    .tokenType("Bearer")
-                    .user(UserResponse.fromEntity(user))
-                    .build();
-
-        } catch (BadRequestException | UnauthorizedException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("Google register failed", e);
-            throw new UnauthorizedException("Google authentication failed");
-        }
+        return googleLogin(googleIdToken);
     }
 
     private GoogleIdToken.Payload verifyGoogleToken(String googleIdToken) throws Exception {
         String normalizedToken = normalizeGoogleIdToken(googleIdToken);
+        logUnverifiedGoogleTokenInfo(normalizedToken);
         GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
                 new NetHttpTransport(), GsonFactory.getDefaultInstance())
                 .setAudience(Collections.singletonList(googleClientId))
@@ -246,9 +221,24 @@ public class AuthServiceImpl implements AuthService {
 
         GoogleIdToken idToken = verifier.verify(normalizedToken);
         if (idToken == null) {
+            log.warn("Google token verification failed for expectedClientId={}", maskClientId(googleClientId));
             throw new UnauthorizedException("Invalid Google token");
         }
         return idToken.getPayload();
+    }
+
+    private void logUnverifiedGoogleTokenInfo(String token) {
+        try {
+            GoogleIdToken parsed = GoogleIdToken.parse(GsonFactory.getDefaultInstance(), token);
+            GoogleIdToken.Payload payload = parsed.getPayload();
+            log.info("Google token received aud={} iss={} email={} emailVerified={}",
+                    payload.getAudience(),
+                    payload.getIssuer(),
+                    payload.getEmail(),
+                    payload.getEmailVerified());
+        } catch (Exception e) {
+            log.warn("Google token could not be parsed before verification: {}", e.getMessage());
+        }
     }
 
     private String normalizeGoogleIdToken(String googleIdToken) {
@@ -257,6 +247,16 @@ public class AuthServiceImpl implements AuthService {
             token = token.substring(1, token.length() - 1);
         }
         return token;
+    }
+
+    private String maskClientId(String clientId) {
+        if (clientId == null || clientId.isBlank()) {
+            return "(empty)";
+        }
+        if (clientId.length() <= 18) {
+            return clientId;
+        }
+        return clientId.substring(0, 12) + "..." + clientId.substring(clientId.length() - 10);
     }
 
     private User createGoogleUser(String googleId, String email, String firstName, String lastName, String pictureUrl) {

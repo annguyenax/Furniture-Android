@@ -40,6 +40,9 @@ public class ChatbotToolExecutor {
     private static final int MAX_CART_QUANTITY = 10;
     private static final int DEFAULT_ORDER_LIMIT = 5;
     private static final int MAX_ORDER_LIMIT = 10;
+    private static final List<String> PRODUCT_SEARCH_STOP_WORDS = List.of(
+            "nhe", "nha", "minh", "toi", "can", "tim", "goi", "y", "cho", "san", "pham", "noi", "that", "co", "khong"
+    );
 
     private final ProductService productService;
     private final CategoryService categoryService;
@@ -81,6 +84,9 @@ public class ChatbotToolExecutor {
         } else {
             products = productService.searchProducts(keyword, PageRequest.of(0, 100)).getContent();
         }
+        if (products.isEmpty() && keyword != null && !keyword.isBlank()) {
+            products = normalizedProductSearch(keyword);
+        }
 
         List<ChatbotMessageResponse.ChatbotProductResponse> mapped = products.stream()
                 .map(this::toChatbotProduct)
@@ -90,6 +96,26 @@ public class ChatbotToolExecutor {
                 .toList();
 
         return ToolExecutionResult.success(Map.of("products", mapped, "count", mapped.size()), mapped);
+    }
+
+    private List<ProductResponse> normalizedProductSearch(String keyword) {
+        String q = normalize(keyword);
+        List<String> tokens = List.of(q.split("[^a-z0-9]+")).stream()
+                .filter(token -> token.length() > 1)
+                .filter(token -> !PRODUCT_SEARCH_STOP_WORDS.contains(token))
+                .toList();
+        return productService.getAllProducts(PageRequest.of(0, 100)).getContent().stream()
+                .filter(product -> matchesProductLookup(product, q, tokens))
+                .toList();
+    }
+
+    private boolean matchesProductLookup(ProductResponse product, String query, List<String> tokens) {
+        String haystack = normalize(String.join(" ",
+                product.getProductName() != null ? product.getProductName() : "",
+                product.getDescription() != null ? product.getDescription() : "",
+                product.getCategoryName() != null ? product.getCategoryName() : ""));
+        return (!query.isBlank() && haystack.contains(query))
+                || (!tokens.isEmpty() && tokens.stream().allMatch(haystack::contains));
     }
 
     private ToolExecutionResult getProductDetail(Map<String, Object> args) {
@@ -622,7 +648,7 @@ public class ChatbotToolExecutor {
         if (text == null) {
             return "";
         }
-        String lower = text.toLowerCase().replace("đ", "d");
+        String lower = text.toLowerCase().replace('\u0111', 'd');
         return Normalizer.normalize(lower, Normalizer.Form.NFD)
                 .replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
     }

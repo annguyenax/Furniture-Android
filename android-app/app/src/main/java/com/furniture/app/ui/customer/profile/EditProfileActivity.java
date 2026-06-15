@@ -38,7 +38,7 @@ import retrofit2.Response;
 
 public class EditProfileActivity extends AppCompatActivity {
 
-    private EditText etFirstName, etLastName, etPhone, etAddress;
+    private EditText etFirstName, etLastName;
     private MaterialButton btnSave, btnChangePassword;
     private TextView btnChangePhoto;
     private CircleImageView profileImage;
@@ -68,8 +68,6 @@ public class EditProfileActivity extends AppCompatActivity {
     private void initViews() {
         etFirstName = findViewById(R.id.et_first_name);
         etLastName = findViewById(R.id.et_last_name);
-        etPhone = findViewById(R.id.et_phone);
-        etAddress = findViewById(R.id.et_address);
         btnSave = findViewById(R.id.btn_save);
         btnChangePassword = findViewById(R.id.btn_change_password);
         btnChangePhoto = findViewById(R.id.btn_change_photo);
@@ -90,8 +88,6 @@ public class EditProfileActivity extends AppCompatActivity {
     private void loadUserData() {
         etFirstName.setText(sessionManager.getFirstName());
         etLastName.setText(sessionManager.getLastName());
-        etPhone.setText(sessionManager.getPhone());
-        etAddress.setText(sessionManager.getUserAddress());
 
         userApi.getMe().enqueue(new Callback<ApiResponse<User>>() {
             @Override
@@ -100,7 +96,6 @@ public class EditProfileActivity extends AppCompatActivity {
                     User user = response.body().getData();
                     etFirstName.setText(user.getFirstName() != null ? user.getFirstName() : "");
                     etLastName.setText(user.getLastName() != null ? user.getLastName() : "");
-                    etPhone.setText(user.getPhone() != null ? user.getPhone() : "");
                     if (user.getProfilePicture() != null && !user.getProfilePicture().isEmpty()) {
                         Glide.with(EditProfileActivity.this)
                                 .load(user.getProfilePicture())
@@ -172,8 +167,7 @@ public class EditProfileActivity extends AppCompatActivity {
     private void saveProfile() {
         String firstName = etFirstName.getText().toString().trim();
         String lastName = etLastName.getText().toString().trim();
-        String phone = etPhone.getText().toString().trim();
-        String address = etAddress.getText().toString().trim();
+        String phone = sessionManager.getPhone();
 
         if (firstName.isEmpty()) {
             etFirstName.setError("Vui long nhap ho");
@@ -185,12 +179,6 @@ public class EditProfileActivity extends AppCompatActivity {
             etLastName.requestFocus();
             return;
         }
-        if (!phone.isEmpty() && !phone.matches("^(0|\\+84)[0-9]{9,10}$")) {
-            etPhone.setError("So dien thoai khong hop le");
-            etPhone.requestFocus();
-            return;
-        }
-
         LoadingDialog loading = LoadingDialog.show(this, "Đang lưu thông tin...");
         btnSave.setEnabled(false);
 
@@ -206,9 +194,6 @@ public class EditProfileActivity extends AppCompatActivity {
                         sessionManager.updateUserInfo(user.getFirstName(), user.getLastName(), user.getPhone());
                     } else {
                         sessionManager.updateUserInfo(firstName, lastName, phone);
-                    }
-                    if (!address.isEmpty()) {
-                        sessionManager.setUserAddress(address);
                     }
                     Toast.makeText(EditProfileActivity.this, "Da luu thong tin", Toast.LENGTH_SHORT).show();
                     finish();

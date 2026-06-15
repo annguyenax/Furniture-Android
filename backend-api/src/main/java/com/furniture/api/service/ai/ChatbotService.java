@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,6 +60,7 @@ public class ChatbotService {
             log.warn("Gemini chatbot failed for user {}: {}", userId, e.getMessage());
             assistantText = fallbackMessage(e);
         }
+        ensureProductCardsIfNeeded(userId, message, assistantText, collectedProducts, collectedActions, toolCalls);
 
         saveMessage(userId, conversationId, AiChatMessage.Role.USER, message, null);
         AiChatMessage assistantMessage = saveMessage(
@@ -125,6 +127,79 @@ public class ChatbotService {
             contents.add(GeminiContent.functionResponse(result.getFunctionName(), toolResult.getResponse()));
         }
         return "Mình đã xử lý khá nhiều bước. Bạn hỏi cụ thể hơn một chút để mình hỗ trợ tiếp nhé.";
+    }
+
+    private void ensureProductCardsIfNeeded(Integer userId,
+                                            String userMessage,
+                                            String assistantText,
+                                            List<ChatbotMessageResponse.ChatbotProductResponse> collectedProducts,
+                                            List<ChatbotMessageResponse.ChatbotSuggestedAction> collectedActions,
+                                            List<Map<String, Object>> toolCalls) {
+        if (!collectedProducts.isEmpty() || !looksLikeProductLookup(userMessage, assistantText)) {
+            return;
+        }
+
+        Map<String, Object> args = Map.of("keyword", cleanupProductKeyword(userMessage));
+        ChatbotToolExecutor.ToolExecutionResult toolResult = toolExecutor.execute("search_products", args, userId);
+        if (toolResult.getProducts() == null || toolResult.getProducts().isEmpty()) {
+            return;
+        }
+
+        log.info("TOOL -> user={} name=search_products_fallback args={} responseKeys={}",
+                userId,
+                args,
+                toolResult.getResponse() != null ? toolResult.getResponse().keySet() : List.of());
+        collectedProducts.addAll(toolResult.getProducts());
+        collectedActions.addAll(toolResult.getSuggestedActions());
+        toolCalls.add(Map.of(
+                "name", "search_products_fallback",
+                "args", args,
+                "response", toolResult.getResponse()
+        ));
+    }
+
+    private boolean looksLikeProductLookup(String userMessage, String assistantText) {
+        String text = normalizeText((userMessage == null ? "" : userMessage) + " " + (assistantText == null ? "" : assistantText));
+        if (text.contains("gio hang")
+                || text.contains("don hang")
+                || text.contains("dia chi")
+                || text.contains("wishlist")
+                || text.contains("yeu thich")
+                || text.contains("xoa ")) {
+            return false;
+        }
+        return text.contains("tim")
+                || text.contains("goi y")
+                || text.contains("san pham")
+                || text.contains("noi that")
+                || text.contains("mau")
+                || text.contains("sofa")
+                || text.contains("ban ")
+                || text.contains("ghe")
+                || text.contains("tu ")
+                || text.contains("ke ")
+                || text.contains("giuong")
+                || text.contains("den ")
+                || text.contains("trang diem");
+    }
+
+    private String cleanupProductKeyword(String userMessage) {
+        if (userMessage == null || userMessage.isBlank()) {
+            return "";
+        }
+        String keyword = userMessage.trim();
+        keyword = keyword.replaceAll("(?i)\\b(nhe|nha|a|ah|oi|cho minh|giup minh|minh muon|toi muon|can|tim|goi y)\\b", " ");
+        keyword = keyword.replaceAll("\\s+", " ").trim();
+        return keyword.isBlank() ? userMessage.trim() : keyword;
+    }
+
+    private String normalizeText(String text) {
+        if (text == null) {
+            return "";
+        }
+        String lower = text.toLowerCase().replace('\u0111', 'd');
+        return Normalizer.normalize(lower, Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
     }
 
     private List<GeminiContent> buildHistory(Integer userId, String conversationId) {
