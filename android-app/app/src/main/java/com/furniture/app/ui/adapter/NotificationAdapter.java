@@ -3,14 +3,17 @@ package com.furniture.app.ui.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.furniture.app.R;
 import com.furniture.app.data.model.ChatRoomItem;
 import com.furniture.app.data.model.Order;
+import com.furniture.app.data.model.OrderItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -80,6 +83,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         holder.title.setText(buildTitle(item));
         holder.message.setText(buildMessage(item));
         holder.time.setText(buildTime(item));
+        bindProductPreview(holder, item);
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onClick(item);
         });
@@ -130,6 +134,61 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         return value.length() >= 10 ? value.substring(0, 10) : value;
     }
 
+    private void bindProductPreview(NotificationViewHolder holder, NotificationItem item) {
+        if (item.getType() != NotificationItem.TYPE_ORDER) {
+            holder.productImage.setVisibility(View.GONE);
+            holder.productName.setVisibility(View.GONE);
+            setTextContainerStartMargin(holder, 0);
+            return;
+        }
+
+        OrderItem firstItem = getFirstOrderItem(item.getOrder());
+        holder.productImage.setVisibility(View.VISIBLE);
+        holder.productName.setVisibility(View.VISIBLE);
+        setTextContainerStartMargin(holder, holder.itemView.getResources()
+                .getDimensionPixelSize(R.dimen.notification_product_spacing));
+
+        if (firstItem == null) {
+            holder.productName.setText("Sản phẩm");
+            holder.productImage.setImageResource(R.drawable.placeholder_product);
+            return;
+        }
+
+        String productName = firstItem.getProductName();
+        holder.productName.setText(productName != null && !productName.isEmpty()
+                ? productName
+                : "Sản phẩm #" + firstItem.getProductId());
+
+        String imageUrl = firstItem.getProductImage();
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            Glide.with(holder.itemView.getContext())
+                    .load(imageUrl)
+                    .placeholder(R.drawable.placeholder_product)
+                    .error(R.drawable.placeholder_product)
+                    .centerCrop()
+                    .into(holder.productImage);
+        } else {
+            holder.productImage.setImageResource(R.drawable.placeholder_product);
+        }
+    }
+
+    private OrderItem getFirstOrderItem(Order order) {
+        return order != null
+                && order.getItems() != null
+                && !order.getItems().isEmpty()
+                ? order.getItems().get(0)
+                : null;
+    }
+
+    private void setTextContainerStartMargin(NotificationViewHolder holder, int marginStart) {
+        ViewGroup.MarginLayoutParams params =
+                (ViewGroup.MarginLayoutParams) holder.textContainer.getLayoutParams();
+        if (params.getMarginStart() != marginStart) {
+            params.setMarginStart(marginStart);
+            holder.textContainer.setLayoutParams(params);
+        }
+    }
+
     private String resolveChatSenderName(ChatRoomItem room) {
         if (room == null) return "Hỗ trợ Shop";
         boolean roomUserIsCurrentUser = currentUserId != null
@@ -148,14 +207,20 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
     static class NotificationViewHolder extends RecyclerView.ViewHolder {
         TextView title;
+        TextView productName;
         TextView message;
         TextView time;
+        ImageView productImage;
+        View textContainer;
 
         NotificationViewHolder(@NonNull View itemView) {
             super(itemView);
             title = itemView.findViewById(R.id.tv_notification_title);
+            productName = itemView.findViewById(R.id.tv_notification_product_name);
             message = itemView.findViewById(R.id.tv_notification_message);
             time = itemView.findViewById(R.id.tv_notification_time);
+            productImage = itemView.findViewById(R.id.iv_notification_product);
+            textContainer = itemView.findViewById(R.id.notification_text_container);
         }
     }
 }
