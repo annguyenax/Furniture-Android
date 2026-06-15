@@ -61,6 +61,7 @@ public class SecurityConfig {
                 .requestMatchers("/reviews/**").authenticated()
                 .requestMatchers("/addresses/**").authenticated()
                 .requestMatchers("/chat/**").authenticated()
+                .requestMatchers("/chatbot/**").authenticated()
 
                 // Role-specific endpoints
                 .requestMatchers("/admin/**").hasRole("ADMIN")
@@ -69,7 +70,8 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterAfter(new ApiLoggingFilter(), JwtAuthenticationFilter.class);
 
         return http.build();
     }

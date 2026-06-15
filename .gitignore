@@ -7,3 +7,6 @@
 # .env files — không commit (chứa credentials)
 **/.env
 !**/.env.example
+
+# Local portable JDK
+.jdk/

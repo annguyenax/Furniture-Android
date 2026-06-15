@@ -209,7 +209,7 @@ public class RegisterActivity extends AppCompatActivity {
         btnGoogleRegister.setEnabled(false);
 
         AuthApi authApi = RetrofitClient.getPublicRetrofit().create(AuthApi.class);
-        authApi.googleRegister(idToken).enqueue(new Callback<ApiResponse<AuthResponse>>() {
+        authApi.googleLogin(idToken).enqueue(new Callback<ApiResponse<AuthResponse>>() {
             @Override
             public void onResponse(Call<ApiResponse<AuthResponse>> call, Response<ApiResponse<AuthResponse>> response) {
                 progressBar.setVisibility(View.GONE);

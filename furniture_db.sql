@@ -210,6 +210,27 @@ SET `category_name` = CASE `category_id`
 WHERE `category_id` BETWEEN 1 AND 15;
 
 --
+-- Table structure for table `ai_chat_messages`
+--
+
+DROP TABLE IF EXISTS `ai_chat_messages`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ai_chat_messages` (
+  `message_id` bigint NOT NULL AUTO_INCREMENT,
+  `conversation_id` varchar(64) NOT NULL,
+  `user_id` int NOT NULL,
+  `role` enum('USER','ASSISTANT') NOT NULL,
+  `content` text NOT NULL,
+  `metadata_json` text,
+  `created_at` datetime(6) DEFAULT NULL,
+  PRIMARY KEY (`message_id`),
+  KEY `idx_ai_chat_user_conversation` (`user_id`,`conversation_id`),
+  CONSTRAINT `fk_ai_chat_messages_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `chat_messages`
 --
 
