@@ -9,6 +9,7 @@ import com.furniture.api.model.ReturnRequest;
 import com.furniture.api.repository.*;
 import com.furniture.api.service.CartService;
 import com.furniture.api.service.OrderService;
+import com.furniture.api.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -35,12 +36,13 @@ public class OrderServiceImpl implements OrderService {
     private final ProductVariantRepository productVariantRepository;
     private final CartService cartService;
     private final ReturnRequestRepository returnRequestRepository;
+    private final PaymentService paymentService;
 
     private static final BigDecimal DEFAULT_SHIPPING_FEE = BigDecimal.ZERO;
 
     @Override
     @Transactional
-    public OrderResponse createOrder(Integer userId, CreateOrderRequest request) {
+    public OrderResponse createOrder(Integer userId, CreateOrderRequest request, jakarta.servlet.http.HttpServletRequest requestHttp) {
         Address address = resolveShippingAddress(userId, request);
 
         // Get items to order
@@ -136,7 +138,16 @@ public class OrderServiceImpl implements OrderService {
             cartService.clearCart(userId);
         }
 
-        return mapToOrderResponse(order, address, allOrderItems);
+        OrderResponse response = mapToOrderResponse(order, address, allOrderItems);
+
+        // Generate VNPay URL if needed
+        if (order.getPaymentMethod() == Order.PaymentMethod.VNPAY) {
+            String orderCode = response.getOrderCode();
+            String paymentUrl = paymentService.createVnPayPaymentUrl(requestHttp, orderCode, order.getTotalPrice(), "Thanh toan don hang " + orderCode);
+            response.setPaymentUrl(paymentUrl);
+        }
+
+        return response;
     }
 
     @Override
@@ -401,6 +412,12 @@ public class OrderServiceImpl implements OrderService {
         String normalized = method.trim().toUpperCase();
         if ("BANK_TRANSFER".equals(normalized)) {
             return Order.PaymentMethod.BANK_TRANSFER;
+        }
+        if ("VNPAY".equals(normalized)) {
+            return Order.PaymentMethod.VNPAY;
+        }
+        if ("MOMO".equals(normalized)) {
+            return Order.PaymentMethod.MOMO;
         }
         return Order.PaymentMethod.COD;
     }

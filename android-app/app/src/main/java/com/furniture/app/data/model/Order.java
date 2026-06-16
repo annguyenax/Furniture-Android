@@ -33,6 +33,8 @@ public class Order implements Serializable {
     private BigDecimal totalAmount;
     private List<OrderItem> items;
     private String createdAt;
+    // VNPay payment link — only present when paymentMethod == VNPAY
+    private String paymentUrl;
 
     public Integer getOrderId() {
         return orderId;
@@ -160,6 +162,14 @@ public class Order implements Serializable {
 
     public void setReturnStatus(String returnStatus) {
         this.returnStatus = returnStatus;
+    }
+
+    public String getPaymentUrl() {
+        return paymentUrl;
+    }
+
+    public void setPaymentUrl(String paymentUrl) {
+        this.paymentUrl = paymentUrl;
     }
 
     public String getStatusDisplay() {

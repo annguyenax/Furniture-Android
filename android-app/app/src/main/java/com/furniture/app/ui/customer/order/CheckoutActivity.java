@@ -1,6 +1,7 @@
 package com.furniture.app.ui.customer.order;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -76,6 +77,7 @@ public class CheckoutActivity extends AppCompatActivity {
     private TextView tvRecipientName, tvPhone, tvAddress, tvNoAddress;
     private RecyclerView rvOrderItems;
     private RadioGroup rgPaymentMethod;
+    private RadioButton rbVnpay;
     private TextInputEditText etNote;
     private TextView tvSubtotal, tvShipping, tvTotal, tvBottomTotal;
     private MaterialButton btnPlaceOrder;
@@ -114,6 +116,7 @@ public class CheckoutActivity extends AppCompatActivity {
         tvNoAddress = findViewById(R.id.tv_no_address);
         rvOrderItems = findViewById(R.id.rv_order_items);
         rgPaymentMethod = findViewById(R.id.rg_payment_method);
+        rbVnpay = findViewById(R.id.rb_vnpay);
         etNote = findViewById(R.id.et_note);
         tvSubtotal = findViewById(R.id.tv_subtotal);
         tvShipping = findViewById(R.id.tv_shipping);
@@ -154,7 +157,16 @@ public class CheckoutActivity extends AppCompatActivity {
             btnPlaceOrder.setEnabled(true);
 
             if (result != null && result.isSuccess()) {
-                cleanupCartAfterOrder(() -> showOrderSuccessDialog(result.getData()));
+                Order order = result.getData();
+                // BUG FIX: If payment method is VNPAY, open payment URL in browser.
+                // Do NOT show success dialog yet — payment is not confirmed until VNPay callback.
+                if (order != null && order.getPaymentUrl() != null && !order.getPaymentUrl().isEmpty()) {
+                    // Clean up cart first, then open VNPay browser
+                    cleanupCartAfterOrder(() -> openVnPayBrowser(order.getPaymentUrl()));
+                } else {
+                    // COD or BANK_TRANSFER: show success dialog immediately
+                    cleanupCartAfterOrder(() -> showOrderSuccessDialog(order));
+                }
             } else {
                 String message = result != null ? result.getMessage() : "Đặt hàng thất bại";
                 Toast.makeText(this, message, Toast.LENGTH_LONG).show();
@@ -280,6 +292,17 @@ public class CheckoutActivity extends AppCompatActivity {
     private void setupListeners() {
         btnPlaceOrder.setOnClickListener(v -> placeOrder());
         findViewById(R.id.btn_change_address).setOnClickListener(v -> showAddressPicker());
+
+        // Show/hide VNPay hint banner when user selects payment method
+        if (rgPaymentMethod != null) {
+            rgPaymentMethod.setOnCheckedChangeListener((group, checkedId) -> {
+                boolean isVnpay = checkedId == R.id.rb_vnpay;
+                // Change button label
+                if (btnPlaceOrder != null) {
+                    btnPlaceOrder.setText(isVnpay ? "Đặt hàng & Thanh toán" : "Đặt hàng");
+                }
+            });
+        }
     }
 
     private void showAddressPicker() {
@@ -371,9 +394,15 @@ public class CheckoutActivity extends AppCompatActivity {
     }
 
     private void submitOrder() {
-        String paymentMethod = rgPaymentMethod.getCheckedRadioButtonId() == R.id.rb_bank
-                ? "BANK_TRANSFER"
-                : "COD";
+        int checkedId = rgPaymentMethod.getCheckedRadioButtonId();
+        String paymentMethod;
+        if (checkedId == R.id.rb_vnpay) {
+            paymentMethod = "VNPAY";
+        } else if (checkedId == R.id.rb_bank) {
+            paymentMethod = "BANK_TRANSFER";
+        } else {
+            paymentMethod = "COD";
+        }
         String note = etNote.getText() != null ? etNote.getText().toString().trim() : "";
 
         progressBar.setVisibility(View.VISIBLE);
@@ -447,6 +476,19 @@ public class CheckoutActivity extends AppCompatActivity {
             Toast.makeText(this, "Đơn hàng đã tạo, nhưng giỏ hàng chưa cập nhật xong. Vui lòng tải lại giỏ hàng.", Toast.LENGTH_LONG).show();
         }
         onComplete.run();
+    }
+
+    /**
+     * Opens the VNPay payment page in the device browser.
+     * After payment, VNPay redirects to our backend /payment/vnpay-return,
+     * which then deep-links back to PaymentCallbackActivity.
+     */
+    private void openVnPayBrowser(String paymentUrl) {
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(paymentUrl));
+        browserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(browserIntent);
+        // Finish CheckoutActivity so back-press from browser goes to main screen
+        finish();
     }
 
     private void showOrderSuccessDialog(Order order) {

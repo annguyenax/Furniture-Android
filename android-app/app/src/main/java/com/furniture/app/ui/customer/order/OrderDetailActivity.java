@@ -1,6 +1,7 @@
 package com.furniture.app.ui.customer.order;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -62,10 +63,12 @@ public class OrderDetailActivity extends AppCompatActivity {
     private RecyclerView rvOrderItems;
     private TextView tvSubtotal, tvShipping, tvTotal, tvPaymentMethod;
     private MaterialCardView cardReview;
+    private MaterialCardView cardVnpayPending;
     private MaterialButton btnReview;
     private MaterialButton btnCancel;
     private MaterialButton btnReturn;
     private MaterialButton btnConfirmReceived;
+    private MaterialButton btnPayNow;
 
     private int currentOrderId = -1;
     private boolean autoOpenReview = false;
@@ -119,6 +122,8 @@ public class OrderDetailActivity extends AppCompatActivity {
         btnCancel = findViewById(R.id.btn_cancel_order);
         btnReturn = findViewById(R.id.btn_return_order);
         btnConfirmReceived = findViewById(R.id.btn_confirm_received);
+        cardVnpayPending = findViewById(R.id.card_vnpay_pending);
+        btnPayNow = cardVnpayPending != null ? cardVnpayPending.findViewById(R.id.btn_pay_now) : null;
 
         rvOrderItems.setLayoutManager(new LinearLayoutManager(this));
     }
@@ -210,10 +215,34 @@ public class OrderDetailActivity extends AppCompatActivity {
         }
         tvTotal.setText(String.format("%s đ", currencyFormat.format(total)));
 
+        // Display payment method
         String pm = "COD".equals(order.getPaymentMethod()) ? "Tiền mặt khi nhận hàng" :
-                "BANK".equals(order.getPaymentMethod()) ? "Chuyển khoản ngân hàng" :
+                "BANK_TRANSFER".equals(order.getPaymentMethod()) ? "Chuyển khoản ngân hàng" :
+                "VNPAY".equals(order.getPaymentMethod()) ? "VNPay" :
                         order.getPaymentMethod() != null ? order.getPaymentMethod() : "";
-        tvPaymentMethod.setText(pm);
+        // Append payment status for VNPAY
+        if ("VNPAY".equals(order.getPaymentMethod())) {
+            String payStatus = "PAID".equals(order.getPaymentStatus()) ? " ✓ Đã thanh toán" : " ⏳ Chưa thanh toán";
+            tvPaymentMethod.setText(pm + payStatus);
+            tvPaymentMethod.setTextColor("PAID".equals(order.getPaymentStatus()) ? 0xFF4CAF50 : 0xFFE65100);
+        } else {
+            tvPaymentMethod.setText(pm);
+            tvPaymentMethod.setTextColor(0xFF212121);
+        }
+
+        // VNPay pending banner — show when VNPAY order is not yet paid
+        boolean showVnpayBanner = "VNPAY".equals(order.getPaymentMethod())
+                && "PENDING".equals(order.getPaymentStatus())
+                && !"CANCELLED".equals(status);
+        if (cardVnpayPending != null) {
+            cardVnpayPending.setVisibility(showVnpayBanner ? View.VISIBLE : View.GONE);
+        }
+        if (btnPayNow != null && showVnpayBanner) {
+            btnPayNow.setOnClickListener(v -> {
+                // Re-generate payment URL via backend
+                reopenVnPayPayment(order.getOrderId());
+            });
+        }
 
         if (btnCancel != null) {
             boolean canCancel = "PENDING".equals(status) || "PROCESSING".equals(status);
@@ -451,6 +480,24 @@ public class OrderDetailActivity extends AppCompatActivity {
         result.putExtra(RESULT_EXTRA_RETURNED, resultReturned);
         result.putExtra(RESULT_EXTRA_RECEIVED, resultReceived);
         setResult(RESULT_OK, result);
+    }
+
+    /**
+     * Re-opens the VNPay payment page for an unpaid order.
+     * Fetches the order from server to get a fresh paymentUrl, then opens it in browser.
+     */
+    private void reopenVnPayPayment(int orderId) {
+        SessionManager sessionManager = new SessionManager(this);
+        OrderRepository repository = new OrderRepository(sessionManager.getToken());
+        // getOrderById returns LiveData<Order>
+        repository.getOrderById(orderId).observe(this, order -> {
+            if (order != null && order.getPaymentUrl() != null && !order.getPaymentUrl().isEmpty()) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(order.getPaymentUrl()));
+                startActivity(browserIntent);
+            } else {
+                Toast.makeText(this, "Link thanh toán đã hết hạn. Vui lòng liên hệ hỗ trợ.", Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     private void confirmReceived() {

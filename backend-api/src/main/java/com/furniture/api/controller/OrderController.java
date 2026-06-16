@@ -32,9 +32,10 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<ApiResponse<OrderResponse>> createOrder(
             @RequestAttribute("userId") Integer userId,
-            @Valid @RequestBody CreateOrderRequest request) {
+            @Valid @RequestBody CreateOrderRequest request,
+            jakarta.servlet.http.HttpServletRequest requestHttp) {
 
-        OrderResponse order = orderService.createOrder(userId, request);
+        OrderResponse order = orderService.createOrder(userId, request, requestHttp);
         return ResponseEntity.ok(ApiResponse.success("Order created successfully", order));
     }
 

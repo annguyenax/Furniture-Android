@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Blue left half background -->
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="4dp" />
+            <solid android:color="#003087" />
+        </shape>
+    </item>
+
+    <!-- Red right portion (overlay at 50%) -->
+    <item android:left="42dp">
+        <shape android:shape="rectangle">
+            <corners
+                android:bottomRightRadius="4dp"
+                android:topRightRadius="4dp" />
+            <solid android:color="#CC0000" />
+        </shape>
+    </item>
+
+</layer-list>

@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,16 +30,29 @@ public class DataInitializer implements ApplicationRunner {
     private final OrderItemRepository orderItemRepository;
     private final ReturnRequestRepository returnRequestRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JdbcTemplate jdbcTemplate;
 
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
+        fixDatabaseSchema();
         seedRoles();
         seedDemoAccounts();
         seedCategories();
         seedProducts();
         seedReturnDemoData();
         log.info("Data initialization complete.");
+    }
+
+    private void fixDatabaseSchema() {
+        try {
+            log.info("Fixing database schema: Converting ENUM to VARCHAR for payment_method...");
+            jdbcTemplate.execute("ALTER TABLE orders MODIFY payment_method VARCHAR(20) NOT NULL");
+            jdbcTemplate.execute("ALTER TABLE payments MODIFY payment_method VARCHAR(20) NOT NULL");
+            log.info("Database schema fix applied successfully.");
+        } catch (Exception e) {
+            log.warn("Database schema fix skipped or already applied: {}", e.getMessage());
+        }
     }
 
     private void seedRoles() {

@@ -188,23 +188,73 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp">
 
+                        <!-- COD -->
                         <RadioButton
                             android:id="@+id/rb_cod"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:padding="8dp"
+                            android:layout_height="48dp"
+                            android:gravity="center_vertical"
+                            android:paddingHorizontal="8dp"
                             android:text="Thanh toán khi nhận hàng (COD)"
                             android:checked="true" />
 
+                        <!-- Bank Transfer -->
                         <RadioButton
                             android:id="@+id/rb_bank"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:padding="8dp"
+                            android:layout_height="48dp"
+                            android:gravity="center_vertical"
+                            android:paddingHorizontal="8dp"
                             android:text="Chuyển khoản ngân hàng" />
+
+                        <!-- VNPay — direct child so RadioGroup manages exclusive selection -->
+                        <RadioButton
+                            android:id="@+id/rb_vnpay"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:gravity="center_vertical"
+                            android:paddingHorizontal="8dp"
+                            android:paddingEnd="110dp"
+                            android:text="Thanh toán qua VNPay" />
 
                     </RadioGroup>
 
+                    <!-- VNPay logo badge — overlaid at end of rb_vnpay row, purely decorative -->
+                    <LinearLayout
+                        android:id="@+id/layout_vnpay_logo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="28dp"
+                        android:layout_gravity="end"
+                        android:layout_marginTop="-40dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/bg_vnpay_badge"
+                        android:orientation="horizontal"
+                        android:paddingVertical="4dp">
+
+                        <TextView
+                            android:layout_width="42dp"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:text="VN"
+                            android:textColor="#FFFFFF"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.05" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:paddingHorizontal="8dp"
+                            android:text="PAY"
+                            android:textColor="#FFFFFF"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.08" />
+
+                    </LinearLayout>
+
+                    <!-- Removed layout_vnpay_hint per user request -->
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>

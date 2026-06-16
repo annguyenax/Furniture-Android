@@ -52,6 +52,8 @@ public class SecurityConfig {
                 .requestMatchers("/products/**").permitAll()
                 .requestMatchers("/categories/**").permitAll()
                 .requestMatchers("/reviews/product/**").permitAll()
+                // VNPay callbacks are called by VNPay server/browser — no JWT token
+                .requestMatchers("/payment/**").permitAll()
 
                 // Authenticated endpoints
                 .requestMatchers("/users/**").authenticated()
