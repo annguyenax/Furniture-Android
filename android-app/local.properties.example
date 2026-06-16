@@ -21,5 +21,4 @@ base.url=http://192.168.20.19:8080/api/
 # Google Sign-In Web Client ID (OAuth 2.0 Client ID type: Web application).
 #
 # Debug builds use the shared key at android-app/shared-debug.keystore.
-# Add this SHA-1 to the Google Cloud Android OAuth client:
 

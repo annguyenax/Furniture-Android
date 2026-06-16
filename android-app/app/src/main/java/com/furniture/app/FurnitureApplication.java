@@ -37,8 +37,21 @@ public class FurnitureApplication extends Application {
     }
 
     private void setupAuthHandler() {
+        SessionManager sessionManager = new SessionManager(getApplicationContext());
+        AuthInterceptor.setTokenStore(new AuthInterceptor.TokenStore() {
+            @Override
+            public String getRefreshToken() {
+                return sessionManager.getRefreshToken();
+            }
+
+            @Override
+            public void saveTokens(String accessToken, String refreshToken) {
+                sessionManager.saveTokens(accessToken, refreshToken);
+            }
+        });
+
         AuthInterceptor.setUnauthorizedHandler(() -> {
-            new SessionManager(getApplicationContext()).clearSession();
+            sessionManager.clearSession();
             RetrofitClient.resetInstance();
             Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
