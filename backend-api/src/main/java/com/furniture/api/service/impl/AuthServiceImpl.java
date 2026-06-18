@@ -208,7 +208,48 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AuthResponse googleRegister(String googleIdToken) {
-        return googleLogin(googleIdToken);
+        try {
+            GoogleIdToken.Payload payload = verifyGoogleToken(googleIdToken);
+            String googleId = payload.getSubject();
+            String email = payload.getEmail();
+
+            // Kiểm tra đã đăng ký bằng Google ID chưa
+            if (userRepository.findByGoogleId(googleId).isPresent()) {
+                throw new BadRequestException("Email already exists");
+            }
+
+            // Kiểm tra email đã tồn tại chưa (đăng ký bằng form thường)
+            if (userRepository.existsByEmail(email)) {
+                throw new BadRequestException("Email already exists");
+            }
+
+            // Chưa có → tạo tài khoản mới
+            String firstName = (String) payload.get("given_name");
+            String lastName  = (String) payload.get("family_name");
+            String pictureUrl = (String) payload.get("picture");
+
+            User user = createGoogleUser(googleId, email, firstName, lastName, pictureUrl);
+
+            String accessToken  = jwtTokenProvider.generateAccessToken(user);
+            String refreshToken = jwtTokenProvider.generateRefreshToken(user);
+            user.setRefreshToken(refreshToken);
+            userRepository.save(user);
+
+            log.info("Google register successful: {}", email);
+
+            return AuthResponse.builder()
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
+                    .tokenType("Bearer")
+                    .user(UserResponse.fromEntity(user))
+                    .build();
+
+        } catch (BadRequestException | UnauthorizedException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Google register failed", e);
+            throw new UnauthorizedException("Google authentication failed");
+        }
     }
 
     private GoogleIdToken.Payload verifyGoogleToken(String googleIdToken) throws Exception {
